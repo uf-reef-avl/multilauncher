@@ -6,4 +6,6 @@
 
 build/
 
+dist/
+
 Multilauncher.spec
