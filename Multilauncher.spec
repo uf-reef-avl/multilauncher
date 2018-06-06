@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['src/py_files/Main.py'],
+a = Analysis(['/home/matthewh/multilauncher/src/py_files/Main.py'],
              pathex=['/home/matthewh/multilauncher'],
              binaries=[],
              datas=[],
@@ -18,16 +18,12 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          exclude_binaries=True,
+          a.binaries,
+          a.zipfiles,
+          a.datas,
           name='Multilauncher',
           debug=False,
           strip=False,
           upx=True,
+          runtime_tmpdir=None,
           console=True )
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='Multilauncher')
