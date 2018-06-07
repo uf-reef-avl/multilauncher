@@ -111,12 +111,15 @@ executing a series of commands simultaneously on the computers.
 
 **File Transfer:**
 
--From the MainWindow and after successfully pinging the listed robots, select the number of that need to be pulled
-    from remote repositories with the "Select number of Packages" spinbox.
+1. From the MainWindow and after successfully pinging the listed robots, select the number of that need to be pulled
+    from remote repositories with the "Select number of Packages" spinbox.  (If you need 3 packages for turtlebots and 
+    2 for quadcopters you would set the spinbox to 5)
 
-    Example: If you need 3 packages for turtlebots and 2 for quadcopters you would set the spinbox to 5
+2. Use the "Parent Package Directory" to use a FileDialog window to select your destination for the remote repository or
+    manually type the destination
 
--
+    
+
 
 
 

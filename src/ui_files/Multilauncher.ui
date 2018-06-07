@@ -21,7 +21,7 @@
        <number>0</number>
       </property>
       <item row="1" column="1">
-       <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,0">
+       <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
@@ -40,68 +40,72 @@
         <property name="verticalSpacing">
          <number>30</number>
         </property>
-        <item row="4" column="0">
-         <widget class="QPushButton" name="buttontransfer">
-          <property name="text">
-           <string>Transfer file</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QScrollArea" name="scrollareapackage">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>250</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>709</width>
-             <height>134</height>
-            </rect>
-           </property>
-           <widget class="QWidget" name="gridLayoutWidget_2">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>20</y>
-              <width>351</width>
-              <height>141</height>
-             </rect>
-            </property>
-            <layout class="QGridLayout" name="gridpackage">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetMaximumSize</enum>
-             </property>
-            </layout>
-           </widget>
-          </widget>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="1" column="1" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegituserlabel">
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
+          <item>
+           <widget class="QLabel" name="label_2">
             <property name="text">
-             <string>Remote Git Username</string>
+             <string/>
             </property>
            </widget>
           </item>
-          <item row="2" column="1" alignment="Qt::AlignRight">
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Destination Directory</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Remote Repository</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="2" column="2" alignment="Qt::AlignRight">
            <widget class="QLabel" name="remotegitpasswordlabel">
             <property name="text">
              <string>Remote Git Password</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="lineUsername">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="numofpackageslabel">
+            <property name="text">
+             <string>Select Number of Packages</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
            <widget class="QLineEdit" name="linePasswordn">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
@@ -111,10 +115,16 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="numofpackageslabel">
-            <property name="text">
-             <string>Select Number of Packages</string>
+          <item row="0" column="3">
+           <widget class="QSpinBox" name="spinpackage">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="value">
+             <number>0</number>
             </property>
            </widget>
           </item>
@@ -132,32 +142,16 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="2">
-           <widget class="QLineEdit" name="lineUsername">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <widget class="QSpinBox" name="spinpackage">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="value">
-             <number>0</number>
+          <item row="1" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegituserlabel">
+            <property name="text">
+             <string>Remote Git Username</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
-        <item row="5" column="0">
+        <item row="4" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item alignment="Qt::AlignRight">
            <widget class="QLabel" name="masterurilable">
@@ -184,6 +178,51 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="2" column="0">
+         <widget class="QScrollArea" name="scrollareapackage">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>250</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>709</width>
+             <height>85</height>
+            </rect>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>20</y>
+              <width>351</width>
+              <height>141</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridpackage" columnstretch="1">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMaximumSize</enum>
+             </property>
+            </layout>
+           </widget>
+          </widget>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="buttontransfer">
+          <property name="text">
+           <string>Transfer File</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

@@ -593,8 +593,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     typeNames.append(typeName)
             tempRobotTypeWidget.addItems(typeNames)
             tempPackageDirectoryWidget = QtWidgets.QPushButton()
-            tempPackageDirectoryWidget.setText("Parent package directory")
-            tempPackageDirectoryWidget.clicked.connect(lambda: self.specifyPackagePath(i))
+            tempPackageDirectoryWidget.setText("Parent Package Directory")
+            tempPackageDirectoryWidget.clicked.connect(lambda state, arg = i:self.specifyPackagePath(arg))
             self.linePathParentPackage.append(tempPackageWidget)
             self.linePathGitRepoList.append(tempGitRepoWidget)
             self.comboRobotTypeList.append(tempRobotTypeWidget)
@@ -605,12 +605,16 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.gridpackage.addWidget(tempGitRepoWidget, i, 2)
             self.gridpackage.addWidget(tempRobotTypeWidget, i, 3)
             self.gridpackage.addWidget(tempMakeWidget, i, 4)
+            self.gridpackage.setColumnStretch(0,1)
+            self.gridpackage.setColumnStretch(1,1)
+            self.gridpackage.setColumnStretch(2,1)
+            self.gridpackage.setColumnStretch(3,1)
+            self.gridpackage.setColumnStretch(4,1)
 
 
     #Creates the specified package path for cloning the remote repos
     def specifyPackagePath(self, n):
-        print("button num: "+str(n))
-        tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the package directory", "~/")
+        tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the Package Directory", "~/")
         lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
         directoryPath = "~/"
         for i in range(len(lastPartDirectoryPath)):
@@ -946,7 +950,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 def main():
     app = QtWidgets.QApplication(sys.argv)
     form = Multilaunch()
-    form.show()
+    form.showMaximized()
     app.exec_()
 
 
