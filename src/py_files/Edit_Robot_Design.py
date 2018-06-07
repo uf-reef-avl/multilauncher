@@ -79,7 +79,7 @@ class Ui_robotEditDialog(object):
         item = self.robotTable.horizontalHeaderItem(2)
         item.setText(_translate("robotEditDialog", "Robot\'s Type/Configuration"))
         self.deleteRobotButton.setText(_translate("robotEditDialog", "Delete Robot"))
-        self.selectedLabel.setText(_translate("robotEditDialog", "Selected"))
+        self.selectedLabel.setText(_translate("robotEditDialog", "Selected:"))
         self.addRobotButton.setText(_translate("robotEditDialog", "Add Robot"))
         self.resultLabel.setText(_translate("robotEditDialog", "Result:"))
         self.saveAndExitButton.setText(_translate("robotEditDialog", "Save and Exit"))

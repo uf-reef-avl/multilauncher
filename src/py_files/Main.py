@@ -303,7 +303,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.bashrcbutton.setEnabled(available)
         self.argumentbutton.setEnabled(available)
         self.rsacheckbox.setEnabled(available)
-
+        self.spinpackage.setEnabled(available)
+        self.lineUsername.setEnabled(available)
+        self.linePasswordn.setEnabled(available)
+        self.masteruriline.setEnabled(available)
+        self.childLaunchWindow.lineDebugCommand.setEnabled(True)
 
     #Flushes the tabbed command terminal in the Main Window
     def flushCommand(self):
@@ -360,7 +364,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         if self.threadStillRunning == 'no':
 
             #Open a dialog box where the user can select an existing file
-            filePath = QtWidgets.QFileDialog.getOpenFileName(self,"Find your Robotlist file")
+            filePath = QtWidgets.QFileDialog.getOpenFileName(self,"Find your Robotlist file", filter = "csv (*.csv *.)")
 
             #Test to see if the user selected a valid path or canceled
             self.STRINGOFPATH = filePath[0]
@@ -429,7 +433,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #If there is data to be saved
         if self.saveFileAndPingCheck():
 
-            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file",filter = "csv (*.csv *.)")
+            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", filter = "csv (*.csv *.)")
 
             try:
                 #Test to see if the user selected a valid path or canceled
@@ -471,7 +475,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #If there is data to be saved
         if self.saveCommandCheck():
 
-            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file",filter = "txt (*.txt *.)")
+            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", filter = "txt (*.txt *.)")
             try:
 
                 #Test to see if the user selected a valid path or canceled
@@ -503,7 +507,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())].clear()
 
         #Prompt the user for a file selection
-        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your command file")
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your command file", filter = "txt (*.txt *.)")
         try:
 
             # Test to see if the user selected a valid path or canceled
@@ -761,6 +765,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 #If the user is pinging the listed robots
                 elif threadType == "ping":
+                    self.childLaunchWindow.lineDebugCommand.setEnabled(False)
                     for index in range(len(self.IPS)):
                         tempThread = QtCore.QThread()
                         tempThread.start()

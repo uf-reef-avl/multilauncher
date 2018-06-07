@@ -20,79 +20,6 @@
       <property name="horizontalSpacing">
        <number>0</number>
       </property>
-      <item row="1" column="2">
-       <layout class="QGridLayout" name="gridLayout_4">
-        <property name="horizontalSpacing">
-         <number>1</number>
-        </property>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="savecommandsbutton">
-          <property name="text">
-           <string>Save Current Commands</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="3" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="commandeditorlabel">
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Command Editor</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="loadcommandsbutton">
-          <property name="text">
-           <string>Load Commands File</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QCheckBox" name="rsacheckbox">
-          <property name="text">
-           <string>Use RSA Key</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="launchbutton">
-          <property name="text">
-           <string>Launch All</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="3">
-         <widget class="QTextEdit" name="commands">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>610</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="commandFileLable">
-          <property name="text">
-           <string>Current File:</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="1" column="1">
        <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,0">
         <property name="sizeConstraint">
@@ -160,6 +87,37 @@
         </item>
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_8">
+          <item row="1" column="1" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegituserlabel">
+            <property name="text">
+             <string>Remote Git Username</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegitpasswordlabel">
+            <property name="text">
+             <string>Remote Git Password</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLineEdit" name="linePasswordn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="numofpackageslabel">
+            <property name="text">
+             <string>Select number of Packages</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0" rowspan="3" alignment="Qt::AlignHCenter">
            <widget class="QLabel" name="fileTransferLabel">
             <property name="font">
@@ -174,13 +132,6 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegituserlabel">
-            <property name="text">
-             <string>Remote Git Username</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="2">
            <widget class="QLineEdit" name="lineUsername">
             <property name="sizePolicy">
@@ -188,30 +139,6 @@
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="2">
-           <widget class="QLineEdit" name="linePasswordn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegitpasswordlabel">
-            <property name="text">
-             <string>Remote Git Password</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="numofpackageslabel">
-            <property name="text">
-             <string>Select number of Packages</string>
             </property>
            </widget>
           </item>
@@ -507,6 +434,79 @@
           </property>
           <property name="invertedAppearance">
            <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="2">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <property name="horizontalSpacing">
+         <number>1</number>
+        </property>
+        <item row="2" column="0">
+         <widget class="QPushButton" name="loadcommandsbutton">
+          <property name="text">
+           <string>Load Commands File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="3">
+         <widget class="QTextEdit" name="commands">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>610</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="savecommandsbutton">
+          <property name="text">
+           <string>Save Current Commands</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QCheckBox" name="rsacheckbox">
+          <property name="text">
+           <string>Use RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QPushButton" name="launchbutton">
+          <property name="text">
+           <string>Launch All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="commandeditorlabel">
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Command Editor</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="commandFileLable">
+          <property name="text">
+           <string>Current File:</string>
           </property>
          </widget>
         </item>
