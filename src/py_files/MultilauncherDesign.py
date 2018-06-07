@@ -299,7 +299,7 @@ class Ui_MainWindow(object):
         self.buttontransfer.setText(_translate("MainWindow", "Transfer file"))
         self.remotegituserlabel.setText(_translate("MainWindow", "Remote Git Username"))
         self.remotegitpasswordlabel.setText(_translate("MainWindow", "Remote Git Password"))
-        self.numofpackageslabel.setText(_translate("MainWindow", "Select number of Packages"))
+        self.numofpackageslabel.setText(_translate("MainWindow", "Select Number of Packages"))
         self.fileTransferLabel.setText(_translate("MainWindow", "File Transfer"))
         self.masterurilable.setText(_translate("MainWindow", "ROS MASTER URI IP ADDRESS:"))
         self.bashrcbutton.setText(_translate("MainWindow", "Update .bashrc"))

@@ -609,6 +609,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Creates the specified package path for cloning the remote repos
     def specifyPackagePath(self, n):
+        print("button num: "+str(n))
         tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the package directory", "~/")
         lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
         directoryPath = "~/"
