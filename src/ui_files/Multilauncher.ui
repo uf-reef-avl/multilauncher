@@ -20,207 +20,74 @@
       <property name="horizontalSpacing">
        <number>0</number>
       </property>
-      <item row="1" column="1">
-       <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
-        <property name="sizeConstraint">
-         <enum>QLayout::SetMinimumSize</enum>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
+      <item row="2" column="2">
+       <layout class="QGridLayout" name="gridLayout_4">
         <property name="horizontalSpacing">
          <number>1</number>
         </property>
-        <property name="verticalSpacing">
-         <number>30</number>
-        </property>
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Destination Directory</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Remote Repository</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="0">
-         <layout class="QGridLayout" name="gridLayout_8">
-          <item row="2" column="2" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegitpasswordlabel">
-            <property name="text">
-             <string>Remote Git Password</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QLineEdit" name="lineUsername">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="numofpackageslabel">
-            <property name="text">
-             <string>Select Number of Packages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QLineEdit" name="linePasswordn">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QSpinBox" name="spinpackage">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="value">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" rowspan="3" alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="fileTransferLabel">
-            <property name="font">
-             <font>
-              <pointsize>18</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>File Transfer</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegituserlabel">
-            <property name="text">
-             <string>Remote Git Username</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="4" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item alignment="Qt::AlignRight">
-           <widget class="QLabel" name="masterurilable">
-            <property name="text">
-             <string>ROS MASTER URI IP ADDRESS:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="masteruriline">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="bashrcbutton">
-            <property name="text">
-             <string>Update .bashrc</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
         <item row="2" column="0">
-         <widget class="QScrollArea" name="scrollareapackage">
+         <widget class="QPushButton" name="loadcommandsbutton">
+          <property name="text">
+           <string>Load Commands File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="3">
+         <widget class="QTextEdit" name="commands">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-            <horstretch>250</horstretch>
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="widgetResizable">
-           <bool>true</bool>
+          <property name="minimumSize">
+           <size>
+            <width>610</width>
+            <height>0</height>
+           </size>
           </property>
-          <widget class="QWidget" name="scrollAreaWidgetContents">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>709</width>
-             <height>85</height>
-            </rect>
-           </property>
-           <widget class="QWidget" name="gridLayoutWidget_2">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>20</y>
-              <width>351</width>
-              <height>141</height>
-             </rect>
-            </property>
-            <layout class="QGridLayout" name="gridpackage" columnstretch="1">
-             <property name="sizeConstraint">
-              <enum>QLayout::SetMaximumSize</enum>
-             </property>
-            </layout>
-           </widget>
-          </widget>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QPushButton" name="buttontransfer">
+         <widget class="QPushButton" name="savecommandsbutton">
           <property name="text">
-           <string>Transfer File</string>
+           <string>Save Current Commands</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QCheckBox" name="rsacheckbox">
+          <property name="text">
+           <string>Use RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="2">
+         <widget class="QPushButton" name="launchbutton">
+          <property name="text">
+           <string>Launch All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="commandeditorlabel">
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Command Editor</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QLabel" name="commandFileLable">
+          <property name="text">
+           <string>Current File:</string>
           </property>
          </widget>
         </item>
@@ -478,78 +345,237 @@
         </item>
        </layout>
       </item>
-      <item row="1" column="2">
-       <layout class="QGridLayout" name="gridLayout_4">
+      <item row="2" column="1">
+       <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetMinimumSize</enum>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
         <property name="horizontalSpacing">
          <number>1</number>
         </property>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="loadcommandsbutton">
-          <property name="text">
-           <string>Load Commands File</string>
-          </property>
-         </widget>
+        <property name="verticalSpacing">
+         <number>30</number>
+        </property>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Destination Directory</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Remote Repository</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Robot Type</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Catkin Option</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="1" column="0" colspan="3">
-         <widget class="QTextEdit" name="commands">
+        <item row="0" column="0">
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="2" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegitpasswordlabel">
+            <property name="text">
+             <string>Remote Git Password</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QLineEdit" name="lineUsername">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="numofpackageslabel">
+            <property name="text">
+             <string>Select Number of Packages</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QLineEdit" name="linePasswordn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QSpinBox" name="spinpackage">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="3" alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="fileTransferLabel">
+            <property name="font">
+             <font>
+              <pointsize>18</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>File Transfer</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegituserlabel">
+            <property name="text">
+             <string>Remote Git Username</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="4" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item alignment="Qt::AlignRight">
+           <widget class="QLabel" name="masterurilable">
+            <property name="text">
+             <string>ROS MASTER URI IP ADDRESS:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="masteruriline">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="bashrcbutton">
+            <property name="text">
+             <string>Update .bashrc</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
+         <widget class="QScrollArea" name="scrollareapackage">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>250</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>610</width>
-            <height>0</height>
-           </size>
+          <property name="widgetResizable">
+           <bool>true</bool>
           </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>688</width>
+             <height>73</height>
+            </rect>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget_2">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>20</y>
+              <width>351</width>
+              <height>141</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridpackage" columnstretch="1">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetMaximumSize</enum>
+             </property>
+            </layout>
+           </widget>
+          </widget>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QPushButton" name="savecommandsbutton">
+         <widget class="QPushButton" name="buttontransfer">
           <property name="text">
-           <string>Save Current Commands</string>
+           <string>Transfer File(s)</string>
           </property>
          </widget>
         </item>
-        <item row="3" column="2">
-         <widget class="QCheckBox" name="rsacheckbox">
-          <property name="text">
-           <string>Use RSA Key</string>
+        <item row="2" column="1">
+         <spacer name="verticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
           </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="launchbutton">
-          <property name="text">
-           <string>Launch All</string>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
           </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="commandeditorlabel">
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Command Editor</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
-         <widget class="QLabel" name="commandFileLable">
-          <property name="text">
-           <string>Current File:</string>
-          </property>
-         </widget>
+         </spacer>
         </item>
        </layout>
+      </item>
+      <item row="1" column="1">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </item>

@@ -47,7 +47,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.buttonStopThread.setText(_translate("Dialog", "Stop all unfinished threads"))
+        self.buttonStopThread.setText(_translate("Dialog", "Stop All Unfinished Threads"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab), _translate("Dialog", "Tab 1"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab_2), _translate("Dialog", "Tab 2"))
         self.debugLabel.setText(_translate("Dialog", "Debug:"))

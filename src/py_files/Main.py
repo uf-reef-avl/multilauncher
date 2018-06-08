@@ -244,9 +244,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #Updates the "Type" combo box in the File Transfer section whenever there is a new type of robot listed
             for combo in self.comboRobotTypeList:
+                text = combo.currentText()
+
                 combo.clear()
                 combo.addItems(self.DICT_TYPES.keys())
-            
+                if text in self.DICT_TYPES.keys():
+                    index = combo.findText(text)
+                    combo.setCurrentIndex(index)
+
             #Checks to see if the application should allow the other functions to be active or not
             self.setLaunchEnable(self.checkConnectionAvailable())
 

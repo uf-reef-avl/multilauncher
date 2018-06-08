@@ -33,6 +33,7 @@ executing a series of commands simultaneously on the computers.
 -A majority of the Multilauncher's functions will be deactivated until valid data is present in the textfields and
 	when the listed computers/robots have all been successfully pinged as denoted in the Connection Status textfield.
 
+**File Browsing**
 
 **Adding/Removing Robots Manually:**
 
@@ -46,7 +47,7 @@ executing a series of commands simultaneously on the computers.
 **-Remove a robot:** Click on any of the intended robot's table entries and then click the "Delete Robot" button.
 				 To help identify the robot to be deleted its data will be loaded into the three textfields under the table.
 	
-	Warning! If you have multiple robots listed in the robot table and have selected one, clicking the "Delete Robot" button multiple times
+	Warning!: If you have multiple robots listed in the robot table and have selected one, clicking the "Delete Robot" button multiple times
 				will delete the currently selected robot, then the robots above the original deletion, and finally the ones under the original deletion.
 				
     Example: Robots listed in the order of: 1, 2, 3, 4, 5.  
@@ -85,9 +86,9 @@ executing a series of commands simultaneously on the computers.
 -If all IP addresses have been successfully found the application will "unlock" the remaining buttons and textfields
     in the MainWindow
         
-    Warning! Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-             from editing the listed robots or performing any other thread based function.
-             Warnings will be displayed if attempting one of these functions.
+    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
+              from editing the listed robots or performing any other thread based function.
+              Warnings will be displayed if attempting to run one of these functions.
 
 
 **Adjusting Robot Arguments:**
@@ -109,42 +110,136 @@ executing a series of commands simultaneously on the computers.
 **-Save the current list of robot arguments in the argument tree to the MainWindow:** Click the "Save" button.
 
 
-**File Transfer:**
+**File Transfer**
+
+
+**Transferring Repositories:**
+
+-To prevent reentering data multiple times please follow this sequence of steps.
 
 1. From the MainWindow and after successfully pinging the listed robots, select the number of that need to be pulled
     from remote repositories with the "Select number of Packages" spinbox.  (If you need 3 packages for turtlebots and 
     2 for quadcopters you would set the spinbox to 5)
 
-2. Use the "Parent Package Directory" to use a FileDialog window to select your destination for the remote repository or
-    manually type the destination
+2. Use the "Parent Package Directory" button to use a FileDialog window to select your destination for the remote repository or
+    manually type the destination directory into the corresponding text field under "Destination Directory".
+
+3. Manually type the remote repository into the corresponding text field under "Remote Repository".
+
+4. Select the type of robot this git pull operation should be performed on in the corresponding spinbox under "Robot Type".
+
+5. Select the Catkin operation that should be performed on this directory  in the corresponding spinbox under "Catkin Option".
+    "no make" is the default option and does not perform a catkin make or build operation.
+    
+6. Repeat steps 2-5 until all packages are setup for transfer.
+    
+7. When all the packages are ready to be transferred to the remote robots, click the "Transfer Files" button.
+    This will either bring up the PasswordWindow for processing passwords for each robot or if the
+    "Use RSA Key" checkbox is currently checked the application will skip the PasswordWindow and go straight into starting the
+    LaunchWindow.  
+    
+    
+-Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
 
     
+    Warning!: Changing the number of packages in the "Select Number of Packages" spinbox will reset all previously set
+              data for "Destination Directory", "Remote Repository", "Robot Type", and "Catkin Option" columns.
+
+    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
+              from editing the listed robots or performing any other thread based function.
+              Warnings will be displayed if attempting to run one of these functions.
 
 
+**Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots:**
 
+-From the MainWindow and after successfully pinging the listed robots, type the desired IP address into the 
+    "ROS MASTER URI IP ADDRESS" textfield and click the "Update .bashrc" button.  This will either bring up 
+    the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox is currently checked
+    the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
+    
+-Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
 
-
-
-
-**Update ROS MASTER URI IP for Remote .bashrc:**
-
-
+    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
+              from editing the listed robots or performing any other thread based function.
+              Warnings will be displayed if attempting to run one of these functions.
 
 
 **Command Editor**
 
 
+**Preparing Commands for Robots:**
+
+-From the MainWindow and after successfully pinging the listed robots, the tabbed section of the Command will display
+    one tab per listed robot type from the "Robot's Type/Configuration" list.
+    
+-Within each tab is a textfield that can be edited manually and is used to save and send a series of commands to the remote robots.
+
+-A majority of commandline style commands are valid for use with the Command Editor.
+
+
+**Adding Commands via a .txt File:**
+
+-From the MainWindow, click on the "Load Commands File" button and a FileDialog window will be displayed.
+    Navigate to your commands.txt file is located and click "Open".
+
+    Note about loading commands from a file: The application will only load the commands present in the .txt file
+    to the currently selected tab.
+	
+
+**Saving the Current List of Commands to a .txt File:**
+
+-From the MainWindow, click on the "Save Current Data to File" button and a FileDialog window will be displayed.
+    Navigate to where you want your .csv to reside, give the file a name, and click "Save".
+
+    Note about saving commands to a file: The application will only save the commands present in the currently selected
+    tab to the .txt file.
+
+
+**Launching the Listed Robots and Commands:**
+
+-From the MainWindow and after commands have been entered into the tabbed textfields, click the "Launch All" button. 
+    This will either bring up the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox
+    is currently checked the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
+    
+-Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
+
+    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
+              from editing the listed robots or performing any other thread based function.
+              Warnings will be displayed if attempting to run one of these functions.
+
+
+**Passwords and Using RSA KEYS**
+
+
+**PasswordWindow:**
+
+-When the PasswordWindow is displayed, the center will list all of the remote robots with a corresponding textfield
+    for password entry.
+
+-To either launch the commands or generate a new RSA key all password fields must be filled (Correct is optional).
 
 
 
-**Using RSA KEYS**
 
 
+**GenerateRSAKeyWindow**
+
+
+
+
+
+
+
+
+
+    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
+              from editing the listed robots or performing any other thread based function.
+              Warnings will be displayed if attempting to run one of these functions.
 
 
 **Developer tips**
 ------------------
 
-
+Just Don't
 
 

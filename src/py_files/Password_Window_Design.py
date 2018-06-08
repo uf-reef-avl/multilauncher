@@ -36,9 +36,11 @@ class Ui_Dialog(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.button_generate_RSA = QtWidgets.QPushButton(Dialog)
+        self.button_generate_RSA.setAutoDefault(False)
         self.button_generate_RSA.setObjectName("button_generate_RSA")
         self.horizontalLayout_2.addWidget(self.button_generate_RSA)
         self.launchButton = QtWidgets.QPushButton(Dialog)
+        self.launchButton.setAutoDefault(False)
         self.launchButton.setObjectName("launchButton")
         self.horizontalLayout_2.addWidget(self.launchButton)
         self.gridLayout_2.addLayout(self.horizontalLayout_2, 3, 0, 1, 1)
@@ -49,7 +51,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.label_password.setText(_translate("Dialog", "In order to launch the command,  specify the devices\'s password or generate a rsa key:"))
-        self.button_generate_RSA.setText(_translate("Dialog", "Generate Rsa key"))
-        self.launchButton.setText(_translate("Dialog", "Launch the command"))
+        self.label_password.setText(_translate("Dialog", "In order to launch the command,  specify the device\'s password or generate a RSA key:"))
+        self.button_generate_RSA.setText(_translate("Dialog", "Generate RSA Key"))
+        self.launchButton.setText(_translate("Dialog", "Launch the Command"))
 

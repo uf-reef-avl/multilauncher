@@ -52,7 +52,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		try:
 			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-			if self.password != None:
+			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
@@ -62,10 +62,23 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			for i in range(len(self.gitRepoList)):
 				if self.stopSignal:
 					break
-				self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
-				self.waitFinishCommand()
-				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
-				self.waitFinishCommand()
+
+				directory = self.parentPackageDirList[i].split('/')[-2]
+
+				#If the selected destination directory is not a src directory
+				if directory != "src":
+					self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + 'src\n')
+					self.waitFinishCommand()
+					self.channel.send('cd ' + self.parentPackageDirList[i] + 'src\n')
+					self.waitFinishCommand()
+
+				#If the selected destination directory is a src directory
+				else:
+					self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
+					self.waitFinishCommand()
+					self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+					self.waitFinishCommand()
+
 				package_name = self.gitRepoList[i].split('/')[-1]
 				self.channel.send('rm -rf ' + package_name + '\n')
 				self.waitFinishCommand()
@@ -90,7 +103,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
-			elif self.password == None:
+			elif self.password is None:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
 
 		#finish thread
