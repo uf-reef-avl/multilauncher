@@ -9,8 +9,11 @@ executing a series of commands simultaneously on the computers.
 **Installation**
 ----------------
 
+1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
+2. Pull this repository to your local machine.
 
+3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
 **Important notes before running**
@@ -18,7 +21,7 @@ executing a series of commands simultaneously on the computers.
 
 -Make sure all computers are on the same network.
 
--Check that port 11311 is allowed through the firewall on the rosmaster machine (if not type: sudo ufw allow 11311).
+-Check that port 11311 is allowed through the firewall on the ROSMASTER machine (if not type: sudo ufw allow 11311).
 
 -If you intend to work with more than 10 computers go to the directory at "/etc/ssh/sshd_config" and
 	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used.
@@ -211,6 +214,10 @@ executing a series of commands simultaneously on the computers.
 **Passwords and Using RSA KEYS**
 
 
+-The "Use RSA Key" checkbox is used when a RSA key has been successfully pushed to all the remote robots and is used
+    to skip entering in all robot passwords for every launch.  
+
+
 **PasswordWindow:**
 
 -When the PasswordWindow is displayed, the center will list all of the remote robots with a corresponding textfield
@@ -218,23 +225,22 @@ executing a series of commands simultaneously on the computers.
 
 -To either launch the commands or generate a new RSA key all password fields must be filled (Correct is optional).
 
+-Clicking the "Launch the Command" button starts the process of remote SSH'ing and sending the commands to the robots.
 
-
-
-
-**GenerateRSAKeyWindow**
-
-
-
-
-
-
-
-
+-Clicking the "Generate RSA Key" button brings up the GenerateRSAKeyWindow.
 
     Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
               from editing the listed robots or performing any other thread based function.
               Warnings will be displayed if attempting to run one of these functions.
+
+
+**GenerateRSAKeyWindow:**
+
+-To generate a new set of RSA keys, enter the username and password of the computer running this application into
+    the appropriate textfields and click on the "Generate Key" button.
+    
+    Warning!: When generating the RSA Key the ownership of the ~/.ssh directory on the remote machine will be set
+              to the user and the file permissions will be set to default.
 
 
 **Developer tips**
@@ -242,4 +248,21 @@ executing a series of commands simultaneously on the computers.
 
 Just Don't
 
+
+**Built With**
+--------------
+-PyCharm: IDE used
+
+-QtDesigner: Used to create base .ui files
+
+
+**Authors**
+-----------
+-Matthew Hovatter: Co-Author
+
+-Paul Buzaud: Co-Author
+
+
+**License**
+-----------
 
