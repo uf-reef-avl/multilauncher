@@ -11,6 +11,11 @@ executing a series of commands simultaneously on the computers.
 1. [Installation](#Installation)
 2. [Important Notes Before Running](#Important Notes Before Running)
 3. [Running the Application](#Running the Application)
+    A. [File Browser](#File Browser)
+    B. [File Transfer](#File Transfer)
+    C. [Command Editor](#Command Editor)
+    D. [Passwords and Using RSA KEYS](#Passwords and Using RSA KEYS)
+    
 4. [Developer Tips](#Developer Tips)
 5. [Built With](#Built With)
 6. [Authors](#Authors)
@@ -30,6 +35,8 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
+
+
 <a name="Important Notes Before Running"/>
 
 
@@ -47,6 +54,7 @@ executing a series of commands simultaneously on the computers.
 
 <a name="Running the Application"/>
 
+
 **Running the Application**
 ---------------------------
 
@@ -55,7 +63,10 @@ executing a series of commands simultaneously on the computers.
 -A majority of the Multilauncher's functions will be deactivated until valid data is present in the textfields and
 	when the listed computers/robots have all been successfully pinged as denoted in the Connection Status textfield.
 
-**File Browsing**
+
+
+**File Browser** <a name="File Browser"/>
+
 
 **Adding/Removing Robots Manually:**
 
@@ -132,7 +143,7 @@ executing a series of commands simultaneously on the computers.
 **-Save the current list of robot arguments in the argument tree to the MainWindow:** Click the "Save" button.
 
 
-**File Transfer**
+**File Transfer** <a name="File Transfer"/>
 
 
 **Transferring Repositories:**
@@ -186,7 +197,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**Command Editor**
+**Command Editor** <a name="Command Editor"/>
 
 
 **Preparing Commands for Robots:**
@@ -230,7 +241,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**Passwords and Using RSA KEYS**
+**Passwords and Using RSA KEYS** <a name="Passwords and Using RSA KEY"/>
 
 
 -The "Use RSA Key" checkbox is used when a RSA key has been successfully pushed to all the remote robots and is used
@@ -273,6 +284,7 @@ Just Don't
 
 <a name="Built With"/>
 
+
 **Built With**
 --------------
 
@@ -283,6 +295,7 @@ Just Don't
 
 <a name="Author"/>
 
+
 **Authors**
 -----------
 
@@ -292,6 +305,7 @@ Just Don't
 
 
 <a name="License"/>
+
 
 **License**
 -----------
