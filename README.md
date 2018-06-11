@@ -15,12 +15,38 @@ executing a series of commands simultaneously on the computers.
 3. [Running the Application](#Running the Application)
 
     A. [File Browser](#File Browser)
+        
+     1. [Adding/Removing Robots Manually](#Adding/Removing Robots Manually)
+     
+     2. [Adding Robots via a .csv File](#Adding Robots via a csv File)
+     
+     3. [Saving the Current List of Robots to a .csv File](#Saving the Current List of Robots to a csv File)
+     
+     4. [Pinging the Listed Robots](#Pinging the Listed Robots)
+     
+     5. [Adjusting Robot Arguments](#Adjusting Robot Arguments)
     
     B. [File Transfer](#File Transfer)
+     
+     1. [Transferring Repositories](#Transferring Repositories)
+     
+     2. [Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots](#Update ROS MASTER URI IP in the bashrc on the Remote Robots)
    
     C. [Command Editor](#Command Editor)
+     
+     1. [Preparing Commands for Robots](#Preparing Commands for Robots)
+     
+     2. [Adding Commands via a .txt File](#Adding Commands via a txt File)
+     
+     3. [Saving the Current List of Commands to a .txt File](#Saving the Current List of Commands to a txt File)
+     
+     4. [Launching the Listed Robots and Commands](#Launching the Listed Robots and Commands)
     
     D. [Passwords and Using RSA KEYS](#Passwords and Using RSA KEYS)
+    
+     1. [PasswordWindow](#PasswordWindow)
+     
+     2. [GenerateRSAKeyWindow](#GenerateRSAKeyWindow)
     
 4. [Developer Tips](#Developer Tips)
 
@@ -77,16 +103,16 @@ executing a series of commands simultaneously on the computers.
 **File Browser** <a name="File Browser"/>
 
 
-**Adding/Removing Robots Manually:**
+**Adding/Removing Robots Manually:** <a name="Adding/Removing Robots Manually"/>
 
 -From the MainWindow, click on the "Add/Edit/Remove Robots" button to bring up the EditRobot dialog window.
 
-**-Add a new robot:** Type the robot's IP address into the first textfield to the right of the "Selected" label,
+-Add a new robot: Type the robot's IP address into the first textfield to the right of the "Selected" label,
                   the robot's user/host name in the middle textfield, the robot's type/model in the last textfield, and
 			      finally click on the "Add Robot" button to add the new robot to the robot table.
                   A message will appear next to the "result" label informing you if the operation was successful or how it might have failed.
 	
-**-Remove a robot:** Click on any of the intended robot's table entries and then click the "Delete Robot" button.
+-Remove a robot: Click on any of the intended robot's table entries and then click the "Delete Robot" button.
 				 To help identify the robot to be deleted its data will be loaded into the three textfields under the table.
 	
 	Warning!: If you have multiple robots listed in the robot table and have selected one, clicking the "Delete Robot" button multiple times
@@ -96,22 +122,22 @@ executing a series of commands simultaneously on the computers.
               If 3 is selected first and the "Delete Robot" button is clicked multiple times it will 
               delete in this order: 3, 2, 1, 4, 5. 
 
-**-Save the current list of robots in the robot table to the MainWindow:** Click the "Save and Exit" button.
+-Save the current list of robots in the robot table to the MainWindow by clicking the "Save and Exit" button.
 
 
-**Adding Robots via a .csv File:**
+**Adding Robots via a .csv File:** <a name="Adding Robots via a csv File"/>
 
 -From the MainWindow, click on the "Find Robotlist file" button and a FileDialog window will be displayed.
     Navigate to your robotlist.csv file is located and click "Open".
 	
 
-**Saving the Current List of Robots to a .csv File:**
+**Saving the Current List of Robots to a .csv File:** <a name="Saving the Current List of Robots to a csv File"/>
 
 -From the MainWindow, click on the "Save Current Data to File" button and a FileDialog window will be displayed.
     Navigate to where you want your .csv to reside, give the file a name, and click "Save".
 
 
-**Pinging the Listed Robots:**
+**Pinging the Listed Robots:** <a name="Pinging the Listed Robots"/>
 
 -From the MainWindow, click on the "Ping Robots" button to begin pinging the robots listed under "Robot's IP Address".  
     
@@ -133,7 +159,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**Adjusting Robot Arguments:**
+**Adjusting Robot Arguments:** <a name="Adjusting Robot Arguments"/>
 
 -From the MainWindow and after successfully pinging the listed robots, click on the "Adjust Arguments" button to open
     the Adjust Arguments dialog window.
@@ -149,13 +175,13 @@ executing a series of commands simultaneously on the computers.
 -Red lines in the Argument Column indicate missing arguments for that robot and green lines indicate acknowledged 
     arguments.  It is up to the user to make sure the arguments themselves are correct.
     
-**-Save the current list of robot arguments in the argument tree to the MainWindow:** Click the "Save" button.
+-Save the current list of robot arguments in the argument tree to the MainWindow by clicking the "Save" button.
 
 
 **File Transfer** <a name="File Transfer"/>
 
 
-**Transferring Repositories:**
+**Transferring Repositories:** <a name="Transferring Repositories"/>
 
 -To prevent re-entering data multiple times please follow this sequence of steps.
 
@@ -192,7 +218,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots:**
+**Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots:** <a name="Update ROS MASTER URI IP in the bashrc on the Remote Robots"/>
 
 -From the MainWindow and after successfully pinging the listed robots, type the desired IP address into the 
     "ROS MASTER URI IP ADDRESS" textfield and click the "Update .bashrc" button.  This will either bring up 
@@ -209,7 +235,7 @@ executing a series of commands simultaneously on the computers.
 **Command Editor** <a name="Command Editor"/>
 
 
-**Preparing Commands for Robots:**
+**Preparing Commands for Robots:** <a name="Preparing Commands for Robots"/>
 
 -From the MainWindow and after successfully pinging the listed robots, the tabbed section of the Command will display
     one tab per listed robot type from the "Robot's Type/Configuration" list.
@@ -219,7 +245,7 @@ executing a series of commands simultaneously on the computers.
 -A majority of commandline style commands are valid for use with the Command Editor.
 
 
-**Adding Commands via a .txt File:**
+**Adding Commands via a .txt File:** <a name="Adding Commands via a txt File"/>
 
 -From the MainWindow, click on the "Load Commands File" button and a FileDialog window will be displayed.
     Navigate to your commands.txt file is located and click "Open".
@@ -228,7 +254,7 @@ executing a series of commands simultaneously on the computers.
     to the currently selected tab.
 	
 
-**Saving the Current List of Commands to a .txt File:**
+**Saving the Current List of Commands to a .txt File:** <a name="Saving the Current List of Commands to a txt File"/>
 
 -From the MainWindow, click on the "Save Current Data to File" button and a FileDialog window will be displayed.
     Navigate to where you want your .csv to reside, give the file a name, and click "Save".
@@ -237,7 +263,7 @@ executing a series of commands simultaneously on the computers.
     tab to the .txt file.
 
 
-**Launching the Listed Robots and Commands:**
+**Launching the Listed Robots and Commands:** <a name="Launching the Listed Robots and Commands"/>
 
 -From the MainWindow and after commands have been entered into the tabbed textfields, click the "Launch All" button. 
     This will either bring up the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox
@@ -257,7 +283,7 @@ executing a series of commands simultaneously on the computers.
     to skip entering in all robot passwords for every launch.  
 
 
-**PasswordWindow:**
+**PasswordWindow:** <a name="PasswordWindow"/>
 
 -When the PasswordWindow is displayed, the center will list all of the remote robots with a corresponding textfield
     for password entry.
@@ -273,7 +299,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**GenerateRSAKeyWindow:**
+**GenerateRSAKeyWindow:** <a name="GenerateRSAKeyWindow"/>
 
 -To generate a new set of RSA keys, enter the username and password of the computer running this application into
     the appropriate textfields and click on the "Generate Key" button.
