@@ -9,18 +9,18 @@ executing a series of commands simultaneously on the computers.
 ---------------------
 
 1. [Installation](#Installation)
-2. [Important Notes Before Running](#Notes)
-3. [Running the Application](#Running)
-4. [Developer Tips](#Developer)
-5. [Built With](#Built)
-6. [Authors](#Author)
+2. [Important Notes Before Running](#Important Notes Before Running)
+3. [Running the Application](#Running the Application)
+4. [Developer Tips](#Developer Tips)
+5. [Built With](#Built With)
+6. [Authors](#Authors)
 7. [License](#License)
 
 
 
 ##Installation
-**Installation**
-----------------
+<a name="Installation"/>
+
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -29,9 +29,8 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
-##Notes
-**Important Notes Before Running**
-----------------------------------
+##Important Notes Before Running
+<a name="Important Notes Before Running"/>
 
 -Make sure all computers are on the same network.
 
@@ -41,9 +40,9 @@ executing a series of commands simultaneously on the computers.
 	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
-##Running
-**Running the Application**
---------------------------
+
+##Running the Application
+<a name="Running the Application"/>
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
@@ -257,33 +256,29 @@ executing a series of commands simultaneously on the computers.
               to the user and the file permissions will be set to default.
 
 
-##Developer
-**Developer Tips**
-------------------
+##Developer Tips
+<a name="Developer Tips"/>
 
 Just Don't
 
 
-##Built
-**Built With**
---------------
+##Built With
+<a name="Built With"/>
 
 -PyCharm: IDE used
 
 -QtDesigner: Used to create base .ui files
 
 
-##Author
-**Authors**
------------
+##Authors
+<a name="Author"/>
 
 -Matthew Hovatter: Co-Author
 
 -Paul Buzaud: Co-Author
 
 
-<a name="License"/>
-
 ## License
+<a name="License"/>
 
 
