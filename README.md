@@ -19,7 +19,7 @@ executing a series of commands simultaneously on the computers.
 
 
 
-##Installation
+#Installation
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -28,7 +28,7 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
-##Important Notes Before Running
+#Important Notes Before Running
 
 -Make sure all computers are on the same network.
 
@@ -272,6 +272,6 @@ Just Don't
 -Paul Buzaud: Co-Author
 
 
-##License
+#License
 
 
