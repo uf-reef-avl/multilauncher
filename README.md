@@ -276,7 +276,7 @@ executing a series of commands simultaneously on the computers.
               Warnings will be displayed if attempting to run one of these functions.
 
 
-**Passwords and Using RSA KEYS** <a name="Passwords and Using RSA KEYs"/>
+**Passwords and Using RSA KEYS** <a name="Passwords and Using RSA KEYS"/>
 
 
 -The "Use RSA Key" checkbox is used when a RSA key has been successfully pushed to all the remote robots and is used
