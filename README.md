@@ -87,11 +87,9 @@ executing a series of commands simultaneously on the computers.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
-<a name="Running the Application"/>
-
-
 **Running the Application**
 ---------------------------
+<a name="Running the Application"/>
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
