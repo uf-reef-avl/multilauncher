@@ -278,7 +278,8 @@ Just Don't
 -Paul Buzaud: Co-Author
 
 
-##**License**
+**License**
+-----------
 <a name="License"/>
 
 
