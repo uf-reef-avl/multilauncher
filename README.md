@@ -11,9 +11,13 @@ executing a series of commands simultaneously on the computers.
 1. [Installation](#Installation)
 2. [Important Notes Before Running](#Important Notes Before Running)
 3. [Running the Application](#Running the Application)
+
     A. [File Browser](#File Browser)
+    
     B. [File Transfer](#File Transfer)
+   
     C. [Command Editor](#Command Editor)
+    
     D. [Passwords and Using RSA KEYS](#Passwords and Using RSA KEYS)
     
 4. [Developer Tips](#Developer Tips)
@@ -23,10 +27,9 @@ executing a series of commands simultaneously on the computers.
 
 
 
-<a name="Installation"/>
 
-**Installation**
-----------------
+##Installation <a name="Installation"/>
+
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
