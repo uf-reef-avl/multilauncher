@@ -61,15 +61,25 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
     #Saves the list of passwords for the robots and returns True if successful, False if one or more passwords are missing
     def saveData(self):
         save = True
+        error = ""
         self.PASSWORDS = []
         for index,linePassword in enumerate(self.linePasswords):
-           if str(linePassword.text()) == "":
-               temp = QtWidgets.QMessageBox.warning(self, "Warning", "the password of " + str(self.labelIPS[index].text()) +" has not be set")
+           if str(linePassword.text().strip()) == "":
+               eMessage = "The password of " + str(self.labelUSERS[index].text()) +" has not be set"
+               error += "\n"+eMessage +"\n"
+               #temp = QtWidgets.QMessageBox.warning(self, "Warning", "the password of " + str(self.labelIPS[index].text()) +" has not be set")
                save = False
-               break
-           self.PASSWORDS.append(str(linePassword.text()))
+               #break
+           self.PASSWORDS.append(str(linePassword.text().strip()))
 
-        return save
+        #If all robots have passwords entered
+        if save is True:
+          return save
+
+        #If one or more robots is missing a password
+        else:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", error)
+            return save
 
 
     #Closes the Password Window and emits the password list back to Main

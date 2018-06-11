@@ -5,6 +5,7 @@ A utility that facilitates connecting to multiple remote computers/robots,
 downloading remote repositories to those remote computers, and
 executing a series of commands simultaneously on the computers.
 
+
 **Table of Contents**
 ---------------------
 
@@ -60,6 +61,7 @@ executing a series of commands simultaneously on the computers.
 
 <a name="Installation"/>
 
+
 **Installation**
 ----------------
 
@@ -68,8 +70,6 @@ executing a series of commands simultaneously on the computers.
 2. Pull this repository to your local machine.
 
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
-
-
 
 
 <a name="Important Notes Before Running"/>
@@ -87,9 +87,11 @@ executing a series of commands simultaneously on the computers.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
+<a name="Running the Application"/>
+
+
 **Running the Application**
 ---------------------------
-<a name="Running the Application"/>
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
@@ -312,7 +314,7 @@ executing a series of commands simultaneously on the computers.
 **Developer Tips**
 ------------------
 
-Just Don't
+-
 
 
 <a name="Built With"/>
@@ -320,6 +322,8 @@ Just Don't
 
 **Built With**
 --------------
+
+-Python 2.7: Version of Python
 
 -PyCharm: IDE used
 
@@ -342,3 +346,4 @@ Just Don't
 
 **License**
 -----------
+

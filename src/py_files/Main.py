@@ -314,6 +314,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.masteruriline.setEnabled(available)
         self.childLaunchWindow.lineDebugCommand.setEnabled(True)
 
+
     #Flushes the tabbed command terminal in the Main Window
     def flushCommand(self):
 
@@ -739,7 +740,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         tempThread.start()
 
                         commandLinesList = str(self.plaintextCommandDict[self.TYPES[index]].toPlainText()).split("\n")
-                        
+                        commandLinesList.append("\n")
+
                         #replacing the arguments in command lines
                         commandLinesArgsList = []
                         for line in commandLinesList:
@@ -798,9 +800,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         
                         #RSA checkbox test 
                         if passwordType == "password":
-                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text()),self.PASSWORDS[index], self.myKey)
+                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()),self.PASSWORDS[index], self.myKey)
                         elif passwordType == "rsa":
-                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text()), None, self.myKey)
+                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()), None, self.myKey)
 
                         #Create the worker
                         worker.finishThread.connect(self.killthread)
@@ -840,6 +842,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             tempLayout = QtWidgets.QVBoxLayout()
             tempWidget = QtWidgets.QWidget()
             temp_terminal = QtWidgets.QPlainTextEdit()
+            temp_terminal.setReadOnly(True)
             tempLayout.addWidget(temp_terminal, 0)
             tempWidget.setLayout(tempLayout)
             self.widgetTerminalList.append(tempWidget)
@@ -850,7 +853,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Allows the user to send commands to the remote robots for unexpected requests of authorization and y/n checks
     def sendDebugCommand(self):
-        debugCommand = self.childLaunchWindow.lineDebugCommand.text()
+        debugCommand = self.childLaunchWindow.lineDebugCommand.text().strip()
         self.childLaunchWindow.lineDebugCommand.clear()
         IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
         if "Finished" not in IP_text:
@@ -930,9 +933,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Interrupts any currently running threads
     def interruptRemainingThreads(self):
         for workerKey in self.workerList.keys():
-            if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'launch files still running':
+            if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
                 try:
-                    self.workerList[workerKey].channel.send("\x03/n")
+                    self.workerList[workerKey].channel.send("\x03\n")
                 except:
                     pass
             self.workerList[workerKey].stopSignal = True

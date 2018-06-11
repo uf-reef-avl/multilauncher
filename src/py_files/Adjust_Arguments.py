@@ -82,7 +82,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
                 tempIpUserItem = QtWidgets.QTreeWidgetItem()
                 tempIpUserItem.setText(0,IP)
 
-                #check if there is already some arguments setup for the IP adress in the mainwindow
+                #check if there is already some arguments setup for the IP address in the MainWindow
                 #loop on the number of argument setup by the user for the current type
                 for indexArg in range(self.spinTypeDict[type].value()):
                     tempArgument = QtWidgets.QTreeWidgetItem()
@@ -132,14 +132,14 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
     #This function let the user modify the arguments slot in column 1 by double clicking on it
     def editItem(self, item, column):
         item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
-        if (column != 1 or str(item.text(0))[0] != "$"):
+        if column != 1 or str(item.text(0))[0] != "$":
             item.setFlags(item.flags()  & ~QtCore.Qt.ItemIsEditable)
 
 
-    #Create the text of arguments which will populate the QPlainText in Mainwindow
+    #Create the text of arguments which will populate the QPlainText in MainWindow
     def createArgumentResume(self):
 
-        #loop on the Ip global Mainwindow
+        #loop on the Ip global MainWindow
         for index, IP in enumerate(self.ipList):
 
             #loop on the type item in the tree widget to gather all the type
@@ -150,7 +150,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
                 for itemIpIndex in range(topItemType.childCount()):
                     itemIp = topItemType.child(itemIpIndex)
 
-                    #compare the IPItem with IP of the global Mainwindow list in order to find the IP key (index)
+                    #compare the IPItem with IP of the global MainWindow list in order to find the IP key (index)
                     if IP == itemIp.text(0):
                         if itemIp.childCount() != 0:
 
@@ -158,9 +158,9 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
                             for itemArgIndex in range(itemIp.childCount()):
                                 itemArg = itemIp.child(itemArgIndex)
                                 if itemArgIndex != itemIp.childCount()-1:
-                                    self.argumentResume = self.argumentResume + str(itemArg.text(0))+ str(itemArg.text(1))+'|'
+                                    self.argumentResume = self.argumentResume + str(itemArg.text(0))+ str(itemArg.text(1).strip())+'|'
                                 else:
-                                    self.argumentResume = self.argumentResume + str(itemArg.text(0)) + str(itemArg.text(1))
+                                    self.argumentResume = self.argumentResume + str(itemArg.text(0)) + str(itemArg.text(1).strip())
                         else:
                             self.argumentResume = self.argumentResume +"No Args Selected"
                         self.argumentResume = self.argumentResume + "\n"
@@ -169,8 +169,8 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
     #Updates the the argument lines in the Argument terminal to red if there is an argument missing
     # or green if the argument is found
     def changeArgumentColor(self, item):
-        if str(item.text(0)[0]) == '$':
-            if str(item.text(1)) == '':
+        if str(item.text(0)[0].strip()) == '$':
+            if str(item.text(1).strip()) == '':
                 item.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
             else:
                 item.setBackground(1, QtGui.QBrush(QtGui.QColor(154, 255, 154)))

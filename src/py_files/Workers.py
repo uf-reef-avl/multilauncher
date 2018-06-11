@@ -5,7 +5,7 @@
 # Created:
 #
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 import os
 import paramiko
 import time
@@ -183,7 +183,7 @@ class Launch_Worker(QtCore.QObject):
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
-			elif self.password == None:
+			elif self.password is None:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
 
 		#finish thread
@@ -200,7 +200,7 @@ class Launch_Worker(QtCore.QObject):
 			data = self.channel.recv(1024).decode("utf-8")
 			self.terminalSignal.emit(self.ipIndex, data)
 
-			if '[sudo]' in data and self.password != None:
+			if '[sudo]' in data and self.password is not None:
 				self.channel.send(self.password + '\n')
 				self.waitFinishCommand()
 				break
@@ -254,7 +254,7 @@ class Bashrc_Worker(QtCore.QObject):
 		try:
 			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-			if self.password != None:
+			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey=self.myKey)
@@ -276,7 +276,7 @@ class Bashrc_Worker(QtCore.QObject):
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
-			elif self.password == None:
+			elif self.password is None:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
 
 		#finish thread
