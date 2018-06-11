@@ -18,7 +18,7 @@ executing a series of commands simultaneously on the computers.
 
 
 
-##Installation
+##**Installation**
 <a name="Installation"/>
 
 
@@ -29,7 +29,7 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
-##Important Notes Before Running
+##**Important Notes Before Running**
 <a name="Important Notes Before Running"/>
 
 -Make sure all computers are on the same network.
@@ -41,7 +41,7 @@ executing a series of commands simultaneously on the computers.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
-##Running the Application
+##**Running the Application**
 <a name="Running the Application"/>
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
@@ -256,13 +256,13 @@ executing a series of commands simultaneously on the computers.
               to the user and the file permissions will be set to default.
 
 
-##Developer Tips
+##**Developer Tips**
 <a name="Developer Tips"/>
 
 Just Don't
 
 
-##Built With
+##**Built With**
 <a name="Built With"/>
 
 -PyCharm: IDE used
@@ -270,7 +270,7 @@ Just Don't
 -QtDesigner: Used to create base .ui files
 
 
-##Authors
+##**Authors**
 <a name="Author"/>
 
 -Matthew Hovatter: Co-Author
@@ -278,7 +278,7 @@ Just Don't
 -Paul Buzaud: Co-Author
 
 
-## License
+##**License**
 <a name="License"/>
 
 
