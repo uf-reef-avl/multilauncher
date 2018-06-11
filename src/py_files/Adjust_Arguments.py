@@ -104,7 +104,12 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
                         onlyArgTextColumn = tempArgumentList[indexArg].replace('#', ':')
                         onlyArgText =':'.join(onlyArgTextColumn.split(':')[1:])
                         tempArgument.setText(1,onlyArgText)
-                        tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+
+                        if onlyArgText.strip() == "":
+                            tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+
+                        else:
+                            tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
                         tempIpUserItem.addChild(tempArgument)
 
                     #else just create a new empty argument item

@@ -14,7 +14,7 @@ executing a series of commands simultaneously on the computers.
 4. [Developer Tips](#Developer)
 5. [Built With](#Built)
 6. [Authors](#Author)
-7. [License][#License]
+7. [License](#License)
 
 
 
@@ -282,7 +282,8 @@ Just Don't
 -Paul Buzaud: Co-Author
 
 
+<a name="License"/>
 
-**License**
------------
+## License
+
 
