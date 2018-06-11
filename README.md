@@ -19,7 +19,7 @@ executing a series of commands simultaneously on the computers.
 
 
 
-#Installation
+#Installation <div id='Installation'/>
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -272,6 +272,6 @@ Just Don't
 -Paul Buzaud: Co-Author
 
 
-#License
+#License <div id='License'/>
 
 
