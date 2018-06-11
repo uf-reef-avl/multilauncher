@@ -18,10 +18,10 @@ executing a series of commands simultaneously on the computers.
 
 
 
-**Installation**
-----------------
 <a name="Installation"/>
 
+**Installation**
+----------------
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -30,9 +30,11 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
+<a name="Important Notes Before Running"/>
+
+
 **Important Notes Before Running**
 ----------------------------------
-<a name="Important Notes Before Running"/>
 
 -Make sure all computers are on the same network.
 
@@ -43,9 +45,10 @@ executing a series of commands simultaneously on the computers.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
+<a name="Running the Application"/>
+
 **Running the Application**
 ---------------------------
-<a name="Running the Application"/>
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
@@ -259,33 +262,36 @@ executing a series of commands simultaneously on the computers.
               to the user and the file permissions will be set to default.
 
 
+<a name="Developer Tips"/>
+
+
 **Developer Tips**
 ------------------
-<a name="Developer Tips"/>
 
 Just Don't
 
 
+<a name="Built With"/>
+
 **Built With**
 --------------
-<a name="Built With"/>
 
 -PyCharm: IDE used
 
 -QtDesigner: Used to create base .ui files
 
 
+<a name="Author"/>
+
 **Authors**
 -----------
-<a name="Author"/>
 
 -Matthew Hovatter: Co-Author
 
 -Paul Buzaud: Co-Author
 
 
-**License**
------------
 <a name="License"/>
 
-
+**License**
+-----------
