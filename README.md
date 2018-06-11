@@ -1,13 +1,25 @@
 **MULTILAUNCHER**
------------------
+=================
 
 A utility that facilitates connecting to multiple remote computers/robots,
 downloading remote repositories to those remote computers, and
 executing a series of commands simultaneously on the computers.
 
+**Table of Contents**
+---------------------
 
-**Installation**
-----------------
+1. [Installation](#Installation)
+2. [Important Notes Before Running](#Important Notes Before Running)
+3. [Running the Application](#Running the Application)
+    1.
+4. [Developer Tips](#Developer Tips)
+5. [Built With](#Built With)
+6. [Author](#Author)
+7. [License](#License)
+
+
+
+##Installation
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -16,8 +28,7 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
-**Important notes before running**
-----------------------------------
+##Important Notes Before Running
 
 -Make sure all computers are on the same network.
 
@@ -28,8 +39,7 @@ executing a series of commands simultaneously on the computers.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
-**Running the Application**
---------------------------
+##Running the Application
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
@@ -118,7 +128,7 @@ executing a series of commands simultaneously on the computers.
 
 **Transferring Repositories:**
 
--To prevent reentering data multiple times please follow this sequence of steps.
+-To prevent re-entering data multiple times please follow this sequence of steps.
 
 1. From the MainWindow and after successfully pinging the listed robots, select the number of that need to be pulled
     from remote repositories with the "Select number of Packages" spinbox.  (If you need 3 packages for turtlebots and 
@@ -243,26 +253,25 @@ executing a series of commands simultaneously on the computers.
               to the user and the file permissions will be set to default.
 
 
-**Developer tips**
-------------------
+##Developer Tips
 
 Just Don't
 
 
-**Built With**
---------------
+##Built With
+
 -PyCharm: IDE used
 
 -QtDesigner: Used to create base .ui files
 
 
-**Authors**
------------
+##Author
+
 -Matthew Hovatter: Co-Author
 
 -Paul Buzaud: Co-Author
 
 
-**License**
------------
+##License
+
 
