@@ -9,17 +9,17 @@ executing a series of commands simultaneously on the computers.
 ---------------------
 
 1. [Installation](#Installation)
-2. [Important Notes Before Running](#Important Notes Before Running)
-3. [Running the Application](#Running the Application)
-    1.
-4. [Developer Tips](#Developer Tips)
-5. [Built With](#Built With)
+2. [Important Notes Before Running](#Notes)
+3. [Running the Application](#Running)
+4. [Developer Tips](#Developer)
+5. [Built With](#Built)
 6. [Author](#Author)
 7. [License](#License)
 
 
-
-#Installation <div id='Installation'/>
+##Installation
+**Installation**
+----------------
 
 1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
 
@@ -28,7 +28,9 @@ executing a series of commands simultaneously on the computers.
 3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
 
 
-#Important Notes Before Running
+##Notes
+**Important Notes Before Running**
+----------------------------------
 
 -Make sure all computers are on the same network.
 
@@ -38,8 +40,9 @@ executing a series of commands simultaneously on the computers.
 	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
-
-##Running the Application
+##Running
+**Running the Application**
+--------------------------
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
@@ -253,12 +256,16 @@ executing a series of commands simultaneously on the computers.
               to the user and the file permissions will be set to default.
 
 
-##Developer Tips
+##Developer
+**Developer Tips**
+------------------
 
 Just Don't
 
 
-##Built With
+##Built
+**Built With**
+--------------
 
 -PyCharm: IDE used
 
@@ -266,12 +273,15 @@ Just Don't
 
 
 ##Author
+**Authors**
+-----------
 
 -Matthew Hovatter: Co-Author
 
 -Paul Buzaud: Co-Author
 
 
-#License <div id='License'/>
-
+##License
+**License**
+-----------
 
