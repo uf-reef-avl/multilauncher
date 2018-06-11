@@ -12,9 +12,10 @@ executing a series of commands simultaneously on the computers.
 2. [Important Notes Before Running](#Notes)
 3. [Running the Application](#Running)
 4. [Developer Tips](#Developer)
-5. [Built With](#Built With)
-6. [Author](#Author)
-7. [License](#License)
+5. [Built With](#Built)
+6. [Authors](#Author)
+7. [License][#License]
+
 
 
 ##Installation
@@ -263,16 +264,18 @@ executing a series of commands simultaneously on the computers.
 Just Don't
 
 
-##Built With
-
+##Built
+**Built With**
+--------------
 
 -PyCharm: IDE used
 
 -QtDesigner: Used to create base .ui files
 
 
-###Author
-
+##Author
+**Authors**
+-----------
 
 -Matthew Hovatter: Co-Author
 
@@ -280,6 +283,6 @@ Just Don't
 
 
 
-###License
-
+**License**
+-----------
 
