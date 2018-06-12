@@ -89,6 +89,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.argumentlist.sizePolicy().hasHeightForWidth())
         self.argumentlist.setSizePolicy(sizePolicy)
         self.argumentlist.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.argumentlist.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.argumentlist.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
         self.argumentlist.setReadOnly(True)
         self.argumentlist.setObjectName("argumentlist")
         self.gridLayout.addWidget(self.argumentlist, 4, 4, 1, 1)

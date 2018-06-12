@@ -47,6 +47,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.loadcommandsbutton.clicked.connect(self.loadCurrentCommand)
         self.argumentbutton.clicked.connect(self.adjustArgsWindow)
         self.editlistsbutton.clicked.connect(self.editRobots)
+        self.findRSAButton.clicked.connect(self.findRSA)
 
         #Backend data structures used for processing user input throughout the application
         self.IPS = []
@@ -554,7 +555,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             return False
 
 
-    # Checks to see if there is robot data to save or ping
+    #Checks to see if there is robot data to save or ping
     def saveCommandCheck(self):
         text = self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())].toPlainText()
 
@@ -753,10 +754,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             argumentsString = self.DICT_TYPES[self.TYPES[index]][2][ipIndexInDict]
                             argumentsList = argumentsString.split("|")
                             if argumentsList[0] != "No Args Selected":
+                                newReplacedLine = line
                                 for arguments in argumentsList:
                                     tempArgument = arguments.replace('#', ':')
-                                    commandLinesArgsList.append(line.replace(tempArgument.split(':')[0],
-                                                                                ':'.join(tempArgument.split(':')[1:])))
+                                    newReplacedLine = newReplacedLine.replace(tempArgument.split(':')[0],
+                                                                              ':'.join(tempArgument.split(':')[1:]))
+                                commandLinesArgsList.append(newReplacedLine)
                             else:
                                 commandLinesArgsList.append(line)
                                 
@@ -914,14 +917,22 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.updateFields()
 
 
-    #Checks to see if there is a valid default RSA key set, returns True or False
+    #Checks to see if there is a valid RSA key set, returns True or False
     def rsaCheck(self):
+
+        print(self.rsaPath.text())
+
+        #RSA Key made through the application
         if os.path.exists(os.path.expanduser('~/.ssh/multikey')):
+            print("b")
             privateKeyFile = os.path.expanduser('~/.ssh/multikey')
             self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
             self.rsaPath.setText('~/.ssh/multikey')
             return True
+
+        #No RSA key found in command file or in default location
         else:
+            print("c")
             return False
 
 
@@ -931,6 +942,18 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.RSA = value
         privateKeyFile = os.path.expanduser('~/.ssh/multikey')
         self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+
+
+    #
+    def findRSA(self):
+
+        #RSA key that the User pointed to manually or through a command file
+        if os.path.exists(os.path.expanduser(str(self.rsaPath.text()))):
+            print("a")
+            privateKeyFile = os.path.expanduser(str(self.rsaPath.text()))
+            self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+            self.rsaPath.setText(str(self.rsaPath.text()))
+            return True
 
 
     #Interrupts any currently running threads
