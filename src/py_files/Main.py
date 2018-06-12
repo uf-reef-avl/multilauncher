@@ -33,7 +33,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #modify the ui to add the tab widget
         del self.commands
         self.tabCommands = QtWidgets.QTabWidget()
-        self.gridLayout_4.addWidget(self.tabCommands, 1, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.tabCommands, 3, 0, 1, 3)
 
         #Paring buttons to functions
         self.filesearchbutton.clicked.connect(self.browseForFile)
@@ -312,6 +312,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.lineUsername.setEnabled(available)
         self.linePasswordn.setEnabled(available)
         self.masteruriline.setEnabled(available)
+        self.findRSAButton.setEnabled(available)
+        self.rsaPath.setEnabled(available)
         self.childLaunchWindow.lineDebugCommand.setEnabled(True)
 
 
@@ -747,8 +749,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         for line in commandLinesList:
                             for ipIndex, IP_Type in enumerate(self.DICT_TYPES[self.TYPES[index]][0]):
                                 if IP_Type == self.IPS[index]:
-                                    ipindexInDict = ipIndex
-                            argumentsString = self.DICT_TYPES[self.TYPES[index]][2][ipindexInDict]
+                                    ipIndexInDict = ipIndex
+                            argumentsString = self.DICT_TYPES[self.TYPES[index]][2][ipIndexInDict]
                             argumentsList = argumentsString.split("|")
                             if argumentsList[0] != "No Args Selected":
                                 for arguments in argumentsList:
@@ -912,11 +914,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.updateFields()
 
 
-    #Checks to see if there is a valid RSA key set, returns True or False
+    #Checks to see if there is a valid default RSA key set, returns True or False
     def rsaCheck(self):
         if os.path.exists(os.path.expanduser('~/.ssh/multikey')):
             privateKeyFile = os.path.expanduser('~/.ssh/multikey')
             self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+            self.rsaPath.setText('~/.ssh/multikey')
             return True
         else:
             return False

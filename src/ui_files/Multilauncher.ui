@@ -15,24 +15,96 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_6">
-    <item row="0" column="0">
+    <item row="2" column="0">
+     <spacer name="horizontalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="0">
      <layout class="QGridLayout" name="gridLayout_5">
       <property name="horizontalSpacing">
        <number>0</number>
       </property>
       <item row="2" column="2">
-       <layout class="QGridLayout" name="gridLayout_4">
+       <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,1,1">
         <property name="horizontalSpacing">
          <number>1</number>
         </property>
-        <item row="2" column="0">
-         <widget class="QPushButton" name="loadcommandsbutton">
+        <item row="4" column="0">
+         <widget class="QPushButton" name="findRSAButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="text">
-           <string>Load Commands File</string>
+           <string>Find RSA Key</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="3">
+        <item row="4" column="1" alignment="Qt::AlignHCenter">
+         <widget class="QCheckBox" name="rsacheckbox">
+          <property name="text">
+           <string>Use RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QPushButton" name="launchbutton">
+          <property name="text">
+           <string>Launch All</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0" alignment="Qt::AlignRight">
+         <widget class="QLabel" name="rsaLabel">
+          <property name="text">
+           <string>Current RSA Key Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="rsaPath">
+          <property name="text">
+           <string>No RSA Key Found</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="3">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="0" colspan="3" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="commandeditorlabel">
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Command Editor</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="3">
          <widget class="QTextEdit" name="commands">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -48,46 +120,24 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="savecommandsbutton">
-          <property name="text">
-           <string>Save Current Commands</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="2">
-         <widget class="QCheckBox" name="rsacheckbox">
-          <property name="text">
-           <string>Use RSA Key</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="2">
-         <widget class="QPushButton" name="launchbutton">
-          <property name="text">
-           <string>Launch All</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="2" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="commandeditorlabel">
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Command Editor</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
+        <item row="1" column="0">
          <widget class="QLabel" name="commandFileLable">
           <property name="text">
            <string>Current File:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="loadcommandsbutton">
+          <property name="text">
+           <string>Load Commands File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="savecommandsbutton">
+          <property name="text">
+           <string>Save Current Commands</string>
           </property>
          </widget>
         </item>
@@ -110,10 +160,10 @@
         <property name="verticalSpacing">
          <number>6</number>
         </property>
-        <item row="3" column="1" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="robotaddress">
+        <item row="5" column="1">
+         <widget class="QPushButton" name="editlistsbutton">
           <property name="text">
-           <string>Robot's IP Address</string>
+           <string>Add/Edit/Remove Robots</string>
           </property>
          </widget>
         </item>
@@ -133,27 +183,6 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="5" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="connectionstatus">
-          <property name="text">
-           <string>Connection Status</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
-         <widget class="QPushButton" name="editlistsbutton">
-          <property name="text">
-           <string>Add/Edit/Remove Robots</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="5">
-         <widget class="QPushButton" name="pingrobotsbutton">
-          <property name="text">
-           <string>Ping Robots</string>
-          </property>
-         </widget>
-        </item>
         <item row="1" column="4">
          <widget class="QPushButton" name="filesearchbutton">
           <property name="text">
@@ -165,6 +194,13 @@
          <widget class="QLabel" name="argumentlabel">
           <property name="text">
            <string>Arguments</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="5" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="connectionstatus">
+          <property name="text">
+           <string>Connection Status</string>
           </property>
          </widget>
         </item>
@@ -182,58 +218,10 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="5">
-         <widget class="QPlainTextEdit" name="connectionstatuslist">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="3">
-         <widget class="QPlainTextEdit" name="robottypelist">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="selectedfilename">
+        <item row="5" column="5">
+         <widget class="QPushButton" name="pingrobotsbutton">
           <property name="text">
-           <string>Current File: </string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="2">
-         <widget class="QPlainTextEdit" name="robotnamelist">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="verticalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
-          </property>
-          <property name="readOnly">
-           <bool>true</bool>
+           <string>Ping Robots</string>
           </property>
          </widget>
         </item>
@@ -260,45 +248,67 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="2" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="robotname">
+        <item row="3" column="1" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="robotaddress">
           <property name="text">
-           <string>Robot's Name/User</string>
+           <string>Robot's IP Address</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="filebrowsinglabel">
-          <property name="font">
-           <font>
-            <pointsize>18</pointsize>
-            <weight>75</weight>
-            <italic>false</italic>
-            <bold>true</bold>
-            <underline>false</underline>
-            <kerning>true</kerning>
-           </font>
+        <item row="4" column="3">
+         <widget class="QPlainTextEdit" name="robottypelist">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <property name="text">
-           <string>File Browsing</string>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="2" column="1" colspan="3">
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+        <item row="1" column="3">
+         <widget class="QLabel" name="selectedfilename">
+          <property name="text">
+           <string>Current File: </string>
           </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::Ignored</enum>
+         </widget>
+        </item>
+        <item row="4" column="5">
+         <widget class="QPlainTextEdit" name="connectionstatuslist">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
-         </spacer>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="2">
+         <widget class="QPlainTextEdit" name="robotnamelist">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item row="4" column="0">
          <widget class="QScrollBar" name="verticalScrollBar">
@@ -342,6 +352,46 @@
            <bool>false</bool>
           </property>
          </widget>
+        </item>
+        <item row="3" column="2" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="robotname">
+          <property name="text">
+           <string>Robot's Name/User</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="filebrowsinglabel">
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+            <weight>75</weight>
+            <italic>false</italic>
+            <bold>true</bold>
+            <underline>false</underline>
+            <kerning>true</kerning>
+           </font>
+          </property>
+          <property name="text">
+           <string>File Browsing</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="3">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Ignored</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
@@ -453,7 +503,14 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0" rowspan="3" alignment="Qt::AlignHCenter">
+          <item row="1" column="2" alignment="Qt::AlignRight">
+           <widget class="QLabel" name="remotegituserlabel">
+            <property name="text">
+             <string>Remote Git Username</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" rowspan="3">
            <widget class="QLabel" name="fileTransferLabel">
             <property name="font">
              <font>
@@ -464,13 +521,6 @@
             </property>
             <property name="text">
              <string>File Transfer</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" alignment="Qt::AlignRight">
-           <widget class="QLabel" name="remotegituserlabel">
-            <property name="text">
-             <string>Remote Git Username</string>
             </property>
            </widget>
           </item>
@@ -520,7 +570,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>688</width>
+             <width>638</width>
              <height>73</height>
             </rect>
            </property>
@@ -579,8 +629,23 @@
       </item>
      </layout>
     </item>
+    <item row="0" column="0">
+     <spacer name="horizontalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
    </layout>
    <zorder></zorder>
+   <zorder>horizontalSpacer_4</zorder>
+   <zorder>horizontalSpacer_5</zorder>
   </widget>
  </widget>
  <tabstops>
@@ -602,10 +667,7 @@
   <tabstop>masteruriline</tabstop>
   <tabstop>bashrcbutton</tabstop>
   <tabstop>commands</tabstop>
-  <tabstop>loadcommandsbutton</tabstop>
-  <tabstop>savecommandsbutton</tabstop>
   <tabstop>launchbutton</tabstop>
-  <tabstop>rsacheckbox</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -14,15 +14,6 @@ class Ui_Dialog(object):
         Dialog.resize(886, 604)
         self.gridLayout = QtWidgets.QGridLayout(Dialog)
         self.gridLayout.setObjectName("gridLayout")
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.debugLabel = QtWidgets.QLabel(Dialog)
-        self.debugLabel.setObjectName("debugLabel")
-        self.horizontalLayout.addWidget(self.debugLabel)
-        self.lineDebugCommand = QtWidgets.QLineEdit(Dialog)
-        self.lineDebugCommand.setObjectName("lineDebugCommand")
-        self.horizontalLayout.addWidget(self.lineDebugCommand)
-        self.gridLayout.addLayout(self.horizontalLayout, 2, 1, 1, 1)
         self.buttonStopThread = QtWidgets.QPushButton(Dialog)
         self.buttonStopThread.setFocusPolicy(QtCore.Qt.NoFocus)
         self.buttonStopThread.setObjectName("buttonStopThread")
@@ -42,6 +33,15 @@ class Ui_Dialog(object):
         self.tab_Launch.addTab(self.tab_2, "")
         self.verticalLaunch.addWidget(self.tab_Launch)
         self.gridLayout.addLayout(self.verticalLaunch, 0, 1, 1, 1)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.debugLabel = QtWidgets.QLabel(Dialog)
+        self.debugLabel.setObjectName("debugLabel")
+        self.horizontalLayout.addWidget(self.debugLabel)
+        self.lineDebugCommand = QtWidgets.QLineEdit(Dialog)
+        self.lineDebugCommand.setObjectName("lineDebugCommand")
+        self.horizontalLayout.addWidget(self.lineDebugCommand)
+        self.gridLayout.addLayout(self.horizontalLayout, 2, 1, 1, 1)
 
         self.retranslateUi(Dialog)
         self.tab_Launch.setCurrentIndex(0)
@@ -49,9 +49,9 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.debugLabel.setText(_translate("Dialog", "Command Line:"))
+        Dialog.setWindowTitle(_translate("Dialog", "LaunchWindow"))
         self.buttonStopThread.setText(_translate("Dialog", "Stop All Unfinished Threads"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab), _translate("Dialog", "Tab 1"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab_2), _translate("Dialog", "Tab 2"))
+        self.debugLabel.setText(_translate("Dialog", "Command Line:"))
 
