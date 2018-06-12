@@ -29,8 +29,10 @@ class Ui_Dialog(object):
         self.scrollareaRobotType.setWidget(self.scrollAreaWidgetContents)
         self.gridLayout.addWidget(self.scrollareaRobotType, 0, 0, 1, 1)
         self.treeRobotType = QtWidgets.QTreeWidget(Dialog)
+        self.treeRobotType.setColumnCount(3)
         self.treeRobotType.setObjectName("treeRobotType")
         self.treeRobotType.headerItem().setTextAlignment(1, QtCore.Qt.AlignCenter)
+        self.treeRobotType.headerItem().setTextAlignment(2, QtCore.Qt.AlignCenter)
         self.gridLayout.addWidget(self.treeRobotType, 1, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -52,6 +54,7 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.treeRobotType.headerItem().setText(0, _translate("Dialog", "Type Column"))
         self.treeRobotType.headerItem().setText(1, _translate("Dialog", "Argument Column"))
+        self.treeRobotType.headerItem().setText(2, _translate("Dialog", "Argument Column"))
         self.buttonCancel.setText(_translate("Dialog", "Cancel"))
         self.buttonSave.setText(_translate("Dialog", "Save"))
 

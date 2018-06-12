@@ -31,7 +31,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         self.labelTypeDict = {}
 
         #connect every button to his correct slot
-        self.treeRobotType.itemDoubleClicked.connect(self.editItem)
+        self.treeRobotType.itemClicked.connect(self.editItem)
         self.treeRobotType.itemChanged.connect(self.changeArgumentColor)
         self.buttonSave.clicked.connect(self.saveArguments)
         self.buttonCancel.clicked.connect(self.cancel_arguments)

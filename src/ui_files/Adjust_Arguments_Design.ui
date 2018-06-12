@@ -50,6 +50,9 @@
    </item>
    <item row="1" column="0">
     <widget class="QTreeWidget" name="treeRobotType">
+     <property name="columnCount">
+      <number>3</number>
+     </property>
      <column>
       <property name="text">
        <string>Type Column</string>
@@ -65,7 +68,10 @@
      </column>
      <column>
       <property name="text">
-       <string/>
+       <string>Argument Column</string>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
       </property>
      </column>
     </widget>

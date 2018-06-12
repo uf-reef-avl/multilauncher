@@ -539,7 +539,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             rFile.close()
         except:
             e = sys.exc_info()[0]
-            print("Save to File Error: %s" % e)
+            print("Load Command Error: %s" % e)
 
 
     #Checks to see if there is robot data to save or ping
@@ -947,13 +947,25 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #
     def findRSA(self):
 
-        #RSA key that the User pointed to manually or through a command file
-        if os.path.exists(os.path.expanduser(str(self.rsaPath.text()))):
-            print("a")
-            privateKeyFile = os.path.expanduser(str(self.rsaPath.text()))
-            self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
-            self.rsaPath.setText(str(self.rsaPath.text()))
-            return True
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your RSA Key")
+        try:
+
+            # Test to see if the user selected a valid path or canceled
+            self.STRINGOFPATH = filePath[0]
+
+            if self.STRINGOFPATH:
+
+                #RSA key that the User pointed to manually or through a command file
+                if os.path.exists(os.path.expanduser(self.STRINGOFPATH)):
+                    print("a")
+                    privateKeyFile = os.path.expanduser(self.STRINGOFPATH)
+                    self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+                    self.rsaPath.setText(self.STRINGOFPATH)
+                    self.RSA = True
+
+        except:
+            e = sys.exc_info()[0]
+            print("Find RSA Error: %s" % e)
 
 
     #Interrupts any currently running threads
