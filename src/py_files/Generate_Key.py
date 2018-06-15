@@ -62,7 +62,7 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
             # create the paramiko client to ssh in the user device and generate the public keys for others devices
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect("127.0.0.1", 22, username=str(self.lineEditUsername.text().strip()), password=str(self.lineEditPassword.text().strip()), allow_agent=False, look_for_keys=False)
+            #self.ssh.connect("127.0.0.1", 22, username=str(self.lineEditUsername.text().strip()), password=str(self.lineEditPassword.text().strip()), allow_agent=False, look_for_keys=False)
 
             # update the progress bar
             self.rsaProgressBar.show()

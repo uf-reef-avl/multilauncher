@@ -53,8 +53,8 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.treeRobotType.headerItem().setText(0, _translate("Dialog", "Type Column"))
-        self.treeRobotType.headerItem().setText(1, _translate("Dialog", "Argument Column"))
-        self.treeRobotType.headerItem().setText(2, _translate("Dialog", "Argument Column"))
+        self.treeRobotType.headerItem().setText(1, _translate("Dialog", "Argument Name"))
+        self.treeRobotType.headerItem().setText(2, _translate("Dialog", "Argument Value"))
         self.buttonCancel.setText(_translate("Dialog", "Cancel"))
         self.buttonSave.setText(_translate("Dialog", "Save"))
 

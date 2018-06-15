@@ -60,7 +60,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Argument Column</string>
+       <string>Argument Name</string>
       </property>
       <property name="textAlignment">
        <set>AlignCenter</set>
@@ -68,7 +68,7 @@
      </column>
      <column>
       <property name="text">
-       <string>Argument Column</string>
+       <string>Argument Value</string>
       </property>
       <property name="textAlignment">
        <set>AlignCenter</set>

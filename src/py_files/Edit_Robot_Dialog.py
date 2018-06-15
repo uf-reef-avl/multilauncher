@@ -15,7 +15,7 @@ import Edit_Robot_Design
 class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog):
 
     #Sets up to receive the data when closing the Dialog box
-	save = QtCore.pyqtSignal(list, list, list)
+	save = QtCore.pyqtSignal(list, list, list, list)
 
 	#Initializes and defines the Robot Editing Dialog box
 	def __init__(self, parent = None):
@@ -43,7 +43,7 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 
 		#If there is only one robot in the list
 		elif rows == 1:
-			text = self.robotTable.item(0, 0).text()
+			text = self.robotTable.item(0, 1).text()
 			text2 = self.ipEdit.text().strip()
 			if text2 == text:
 				return False
@@ -54,7 +54,7 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 		else:
 			text2 = self.ipEdit.text().strip()
 			for x in range(self.robotTable.rowCount()):
-				text = self.robotTable.item(x,0).text()
+				text = self.robotTable.item(x,1).text()
 				if text2 == text:
 					return False
 		return True
@@ -70,9 +70,10 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 			if self.ipEdit.text().strip() != "" and self.nameEdit.text().strip() != "" and self.typeEdit.text().strip() != "":
 				x = self.robotTable.rowCount()
 				self.robotTable.insertRow(x)
-				self.robotTable.setItem(x, 0, QtWidgets.QTableWidgetItem(self.ipEdit.text().strip()))
-				self.robotTable.setItem(x, 1, QtWidgets.QTableWidgetItem(self.nameEdit.text().strip()))
-				self.robotTable.setItem(x, 2, QtWidgets.QTableWidgetItem(self.typeEdit.text().strip()))
+				self.robotTable.setItem(x, 0, QtWidgets.QTableWidgetItem("True"))
+				self.robotTable.setItem(x, 1, QtWidgets.QTableWidgetItem(self.ipEdit.text().strip()))
+				self.robotTable.setItem(x, 2, QtWidgets.QTableWidgetItem(self.nameEdit.text().strip()))
+				self.robotTable.setItem(x, 3, QtWidgets.QTableWidgetItem(self.typeEdit.text().strip()))
 				self.resultLabel.setText("Result: Successfully added new robot")
 			else:
 				self.resultLabel.setText("Result: Error in adding new robot, one or more fields are left blank")
@@ -88,24 +89,27 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 	#Loads the currently selected robot's IP Address, Name, and Type into the three text fields
 	def loadEditor(self):
 		x = self.robotTable.currentRow()
-		self.ipEdit.setText(self.robotTable.item(x,0).text())
-		self.nameEdit.setText(self.robotTable.item(x,1).text())
-		self.typeEdit.setText(self.robotTable.item(x,2).text())
+		self.ipEdit.setText(self.robotTable.item(x,1).text())
+		self.nameEdit.setText(self.robotTable.item(x,2).text())
+		self.typeEdit.setText(self.robotTable.item(x,3).text())
 
 
 	#Saves the current robot table to underlying data-structures that are passed back to the main.py for processing
 	def closeWindow(self):
 
+		enableText = []
 		ipText = []
 		nameText = []
 		typeText = []
 
 		for x in range(self.robotTable.rowCount()):
-			ipText.append(self.robotTable.item(x,0).text())
-			nameText.append(self.robotTable.item(x,1).text())
-			typeText.append(self.robotTable.item(x,2).text())
+
+			enableText.append(self.robotTable.item(x,0).text())
+			ipText.append(self.robotTable.item(x,1).text())
+			nameText.append(self.robotTable.item(x,2).text())
+			typeText.append(self.robotTable.item(x,3).text())
 
 		#Sends the data out to main.py
-		self.save.emit(ipText,nameText,typeText)
+		self.save.emit(enableText,ipText,nameText,typeText)
 		self.close()
 		self.deleteLater()

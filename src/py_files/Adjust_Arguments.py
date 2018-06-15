@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 #This window is used to set the arguments which will be replaced in the commands lines
 class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
-    save_args = QtCore.pyqtSignal(str)
+    save_args = QtCore.pyqtSignal(list)
 
 
     #Definition of the Adjust_Arguments terminal
@@ -22,19 +22,19 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         super(self.__class__, self).__init__(parent)
         self.setupUi(self)
         self.setModal(True)
-
         #initialise the useful values of the current case
         self.dictTypes = dictTypes
         self.ipList = ipList
         self. argumentResume = ''
         self.spinTypeDict = {}
         self.labelTypeDict = {}
+        self.argumentList = []
 
         #connect every button to his correct slot
         self.treeRobotType.itemClicked.connect(self.editItem)
-        self.treeRobotType.itemChanged.connect(self.changeArgumentColor)
+        self.treeRobotType.itemChanged.connect(self.changeArgument)
         self.buttonSave.clicked.connect(self.saveArguments)
-        self.buttonCancel.clicked.connect(self.cancel_arguments)
+        self.buttonCancel.clicked.connect(self.cancelArguments)
 
         #initialise the area where the user can change the number of argument for each robot type
         self.area = QtWidgets.QWidget()
@@ -90,34 +90,40 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
 
                     #if there is no argument already setup just create the right number of argument defined by the spinbox for this IP
                     if self.dictTypes[type][2][0] == "No Args Selected":
-                        tempArgument.setText(0, "$"+str(indexArg)+":")
+                        tempArgument.setText(0, "$"+str(indexArg))
                         tempArgument.setText(1, '')
+                        tempArgument.setText(2, '')
                         tempArgument.setExpanded(True)
-                        tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                        tempArgument.setBackground(2, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
                         tempIpUserItem.addChild(tempArgument)
 
                     #if there is argument already setup just check if the new item can be created with these already setup arguments
                     elif len(self.dictTypes[type][2][index].split('|'))-1 >= indexArg:
-                        tempArgument.setText(0,"$"+str(indexArg)+":")
+
                         argumentLine = self.dictTypes[type][2][index]
                         tempArgumentList = argumentLine.split("|")
                         onlyArgTextColumn = tempArgumentList[indexArg].replace('#', ':')
                         onlyArgText =':'.join(onlyArgTextColumn.split(':')[1:])
-                        tempArgument.setText(1,onlyArgText)
-
+                        onlyVariableText = onlyArgTextColumn.split(':')[0]
+                        onlyVariableList = onlyVariableText.split('/')
+                        if len(onlyVariableList ) == 2:
+                            tempArgument.setText(1, onlyVariableList[1])
+                        tempArgument.setText(0,onlyVariableList[0])
+                        tempArgument.setText(2, onlyArgText)
                         if onlyArgText.strip() == "":
-                            tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                            tempArgument.setBackground(2, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
 
                         else:
-                            tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+                            tempArgument.setBackground(2, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
                         tempIpUserItem.addChild(tempArgument)
 
                     #else just create a new empty argument item
                     else:
-                        tempArgument.setText(0, "$" + str(indexArg)+":")
+                        tempArgument.setText(0, "$" + str(indexArg))
                         tempArgument.setText(1, '')
+                        tempArgument.setText(2, '')
                         tempArgument.setExpanded(True)
-                        tempArgument.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                        tempArgument.setBackground(2, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
                         tempIpUserItem.addChild(tempArgument)
 
                 tempTypeItem.addChild(tempIpUserItem)
@@ -132,12 +138,14 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
     #This function let the user modify the arguments slot in column 1 by double clicking on it
     def editItem(self, item, column):
         item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
-        if column != 1 or str(item.text(0))[0] != "$":
+        if (column != 1 and column != 2) or str(item.text(0))[0] != "$":
             item.setFlags(item.flags()  & ~QtCore.Qt.ItemIsEditable)
 
 
     #Create the text of arguments which will populate the QPlainText in MainWindow
     def createArgumentResume(self):
+        self.argumentList[:] = []
+
 
         #loop on the Ip global MainWindow
         for index, IP in enumerate(self.ipList):
@@ -152,28 +160,50 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
 
                     #compare the IPItem with IP of the global MainWindow list in order to find the IP key (index)
                     if IP == itemIp.text(0):
+                        self.argumentResume = ""
                         if itemIp.childCount() != 0:
-
                             #register all the argument for the current IP and add it to the resume
                             for itemArgIndex in range(itemIp.childCount()):
                                 itemArg = itemIp.child(itemArgIndex)
                                 if itemArgIndex != itemIp.childCount()-1:
-                                    self.argumentResume = self.argumentResume + str(itemArg.text(0))+ str(itemArg.text(1).strip())+'|'
+                                    if itemArg.text(1).strip() == "":
+                                        self.argumentResume = self.argumentResume + str(itemArg.text(0))+":"+ str(itemArg.text(2).strip())+'|'
+                                    else:
+                                        self.argumentResume = self.argumentResume + str(itemArg.text(0))+"/"+  itemArg.text(1).strip() + ":" + str(itemArg.text(2).strip()) + '|'
                                 else:
-                                    self.argumentResume = self.argumentResume + str(itemArg.text(0)) + str(itemArg.text(1).strip())
+                                    if itemArg.text(1).strip() == "":
+                                        self.argumentResume = self.argumentResume + str(itemArg.text(0)) +":"+ str(itemArg.text(2).strip())
+                                    else:
+                                        self.argumentResume = self.argumentResume + str(itemArg.text(0)) + "/" + itemArg.text(1).strip() + ":" + str(itemArg.text(2).strip())
+
+                            self.dictTypes[topItemType.text(0)][2][itemIpIndex] = self.argumentResume
+
                         else:
-                            self.argumentResume = self.argumentResume +"No Args Selected"
-                        self.argumentResume = self.argumentResume + "\n"
+                            self.argumentResume = "No Args Selected"
+                        self.argumentList.append(self.argumentResume)
+
 
 
     #Updates the the argument lines in the Argument terminal to red if there is an argument missing
-    # or green if the argument is found
-    def changeArgumentColor(self, item):
+    # or green if the argument is found. It also updates the temporary dictionary and the variable name for every argumen of the same type
+    def changeArgument(self, item, column):
+
         if str(item.text(0)[0].strip()) == '$':
-            if str(item.text(1).strip()) == '':
-                item.setBackground(1, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+            if column == 1:
+                rowArgument = item.parent().indexOfChild(item)
+                parentItemType = item
+                while(parentItemType.parent() != None ):
+                    parentItemType = parentItemType.parent()
+                for ipItemIndex in range(parentItemType.childCount()):
+                    ipItem = parentItemType.child(ipItemIndex)
+                    if(item != ipItem):
+                        ipItem.child(rowArgument).setText(1,item.text(column))
+
+            if str(item.text(2).strip()) == '':
+                item.setBackground(2, QtGui.QBrush(QtGui.QColor(204, 51, 51)))
             else:
-                item.setBackground(1, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+                item.setBackground(2, QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+        self.createArgumentResume()
 
 
     #Check if there is still a new argument which is empty. Return "" if there is no error otherwise return IP and argument name with the string:"still empty"
@@ -186,7 +216,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
                 if itemIp.childCount() != 0:
                     for itemArgIndex in range(itemIp.childCount()):
                         itemArg = itemIp.child(itemArgIndex)
-                        if str(itemArg.text(1)) == "":
+                        if str(itemArg.text(2)) == "":
                             errorString = errorString +str(topItemType.text(0))+" "+ str(itemIp.text(0)) +" "+ str(itemArg.text(0))+" still empty \n"
 
         return errorString
@@ -197,7 +227,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         argumentsWellformed = self.checkArguments()
         if argumentsWellformed == "":
             self.createArgumentResume()
-            self.save_args.emit(self.argumentResume)
+            self.save_args.emit(self.argumentList)
             self.close()
             self.deleteLater()
         else:
@@ -205,6 +235,6 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
 
 
     #Close and kill the window
-    def cancel_arguments(self):
+    def cancelArguments(self):
         self.close()
         self.deleteLater()

@@ -19,7 +19,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
     key = QtCore.pyqtSignal(bool)
 
     #Definition of the Password Window
-    def __init__(self,ipList, userList,commandType, parent = None):
+    def __init__(self, ipList, userList, commandType, parent = None):
         super(self.__class__, self).__init__(parent)
         self.setupUi(self)
         self.setModal(True)
@@ -56,7 +56,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
             self.gridPasswords.addWidget(tempLabelIP, index, 0)
             self.gridPasswords.addWidget(tempLabelUser, index, 1)
             self.gridPasswords.addWidget(tempLinePassword, index, 2)
-
+            #self.gridPasswords.
 
     #Saves the list of passwords for the robots and returns True if successful, False if one or more passwords are missing
     def saveData(self):

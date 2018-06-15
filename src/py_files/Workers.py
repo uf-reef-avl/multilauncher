@@ -64,6 +64,9 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 					break
 
 				directory = self.parentPackageDirList[i].split('/')[-2]
+				print self.parentPackageDirList[i]
+				print directory
+
 
 				#If the selected destination directory is not a src directory
 				if directory != "src":
@@ -167,7 +170,7 @@ class Launch_Worker(QtCore.QObject):
 		try:
 			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-			if self.password != None:
+			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)

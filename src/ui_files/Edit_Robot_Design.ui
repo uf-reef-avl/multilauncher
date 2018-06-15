@@ -6,14 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>341</height>
+    <width>999</width>
+    <height>423</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <widget class="QLabel" name="selectedLabel">
+     <property name="text">
+      <string>Selected:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="4">
+    <widget class="QPushButton" name="deleteRobotButton">
+     <property name="text">
+      <string>Delete Robot</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="1" colspan="3">
     <widget class="QTableWidget" name="robotTable">
      <property name="sizePolicy">
@@ -34,6 +51,14 @@
      <attribute name="horizontalHeaderStretchLastSection">
       <bool>true</bool>
      </attribute>
+     <column>
+      <property name="text">
+       <string>Enabled</string>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
      <column>
       <property name="text">
        <string>Robot's Ip Address</string>
@@ -60,31 +85,24 @@
      </column>
     </widget>
    </item>
-   <item row="0" column="4">
-    <widget class="QPushButton" name="deleteRobotButton">
+   <item row="1" column="3">
+    <widget class="QLineEdit" name="typeEdit"/>
+   </item>
+   <item row="1" column="2">
+    <widget class="QLineEdit" name="nameEdit"/>
+   </item>
+   <item row="3" column="4">
+    <widget class="QPushButton" name="saveAndExitButton">
      <property name="text">
-      <string>Delete Robot</string>
+      <string>Save and Exit</string>
      </property>
      <property name="autoDefault">
       <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="selectedLabel">
-     <property name="text">
-      <string>Selected:</string>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QLineEdit" name="ipEdit"/>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="nameEdit"/>
-   </item>
-   <item row="1" column="3">
-    <widget class="QLineEdit" name="typeEdit"/>
    </item>
    <item row="2" column="1">
     <widget class="QPushButton" name="addRobotButton">
@@ -96,7 +114,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2" rowspan="2" colspan="2">
+   <item row="3" column="1" rowspan="2" colspan="3">
     <widget class="QLabel" name="resultLabel">
      <property name="text">
       <string>Result:</string>
@@ -106,10 +124,10 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="4">
-    <widget class="QPushButton" name="saveAndExitButton">
+   <item row="1" column="4">
+    <widget class="QPushButton" name="modifyRobotButton">
      <property name="text">
-      <string>Save and Exit</string>
+      <string>Modify Robot</string>
      </property>
      <property name="autoDefault">
       <bool>false</bool>

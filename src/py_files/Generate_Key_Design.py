@@ -27,6 +27,7 @@ class Ui_Dialog(object):
         self.labelPassword.setObjectName("labelPassword")
         self.gridSpecifyUserPassword.addWidget(self.labelPassword, 1, 0, 1, 1)
         self.lineEditPassword = QtWidgets.QLineEdit(Dialog)
+        self.lineEditPassword.setEchoMode(QtWidgets.QLineEdit.PasswordEchoOnEdit)
         self.lineEditPassword.setObjectName("lineEditPassword")
         self.gridSpecifyUserPassword.addWidget(self.lineEditPassword, 1, 1, 1, 1)
         self.lineEditUsername = QtWidgets.QLineEdit(Dialog)

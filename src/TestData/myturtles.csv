@@ -1,3 +1,3 @@
-192.168.1.61,cassowary,device,$0:robot_name:=pturtle
-192.168.1.63,penguin,device,$0:robot_name:=mturtle
-192.168.1.64,titicaca,device,$0:robot_name:=kturtle
+True,192.168.1.61,cassowary,device,$0/robot_name:pturtle
+True,192.168.1.63,penguin,device,$0/robot_name:mturtle
+True,192.168.1.64,titicaca,device,$0/robot_name:kturtle
