@@ -46,6 +46,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.argumentbutton.clicked.connect(self.adjustArgsWindow)
         self.editlistsbutton.clicked.connect(self.editRobots)
         self.findRSAButton.clicked.connect(self.findRSA)
+        self.launchTypeButton.clicked.connect(self.launchThisType)
 
         #Backend data structures used for processing user input throughout the application
         self.IPS = []
@@ -63,6 +64,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow = Launch_Window()
         self.childLaunchWindow.buttonStopThread.clicked.connect(self.interruptRemainingThreads)
         self.childLaunchWindow.lineDebugCommand.returnPressed.connect(self.sendDebugCommand)
+        self.childLaunchWindow.stopCurrentThread.clicked.connect(self.terminateCurrentThread)
 
         #Data structures for the dynamic launch window
         self.checkboxList = []
@@ -203,7 +205,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     #Keep adding arguments for this type until it matches the standard for its type
                     for argumentIndex in range(numberOfArgument):
                         argString = self.DICT_TYPES[self.TYPES[previousIndex]][2][0].split("|")[argumentIndex].split("#")[0]
-                        print argString
                         if argumentIndex != numberOfArgument -1:
                             if len(argString.split("/")) ==2:
                                 argumentString += "$"+str(argumentIndex)+"/"+argString.split("/")[1]+":|"
@@ -410,6 +411,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.findRSAButton.setEnabled(available)
         self.rsaPath.setEnabled(available)
         self.childLaunchWindow.lineDebugCommand.setEnabled(True)
+        self.launchTypeButton.setEnabled(available)
 
 
     #Flushes the tabbed command terminal in the Main Window
@@ -692,6 +694,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         for i in range(self.spinpackage.value()):
             tempPackageWidget = QtWidgets.QLineEdit()
             tempGitRepoWidget = QtWidgets.QLineEdit()
+            tempGitRepoWidget.setPlaceholderText("Use http:// here")
             tempRobotTypeWidget = QtWidgets.QComboBox()
             tempMakeWidget = QtWidgets.QComboBox()
             tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
@@ -752,6 +755,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def launchCommands(self):
         self.checkPasswordLaunchThread("commands")
 
+    #Handler function to launch one or more threads that perform launch commands on a single type
+    def launchThisType(self):
+        self.checkPasswordLaunchThread("type")
 
     #Handler function to launch one or more threads that perform ping commands
     def pingTest(self):
@@ -766,12 +772,18 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.checkPasswordLaunchThread("bashrc")
 
 
+    def currentTabCheck(self, string, index):
+        correctType = True
+        if string == "type":
+            correctType = False
+            currentType = self.tabCommands.tabText(self.tabCommands.currentIndex())
+            if self.TYPES[index] == currentType:
+                correctType = True
+        return correctType
+
     #Sets flags bases on the type of thread to be run and if the RSA checkbox is selected
     def checkPasswordLaunchThread(self, commandType):
         self.updateLists()
-
-
-
 
         #If the ping button was pushed
         if commandType == "ping" :
@@ -795,7 +807,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             enableUSERS = []
 
             for index, ip, user in zip(range(len(self.IPS)),self.IPS,self.USERS):
-                if self.ENABLE[index] == "True":
+
+                if self.ENABLE[index] == "True" and self.currentTabCheck(commandType,index):
                     enableIPS.append(ip)
                     enableUSERS.append(user)
 
@@ -818,7 +831,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.updateLists()
         self.ERRORTEXT = ""
         try:
-            
+
             #If there are no currently running threads
             if self.threadStillRunning == 'no':
                 self.refreshLaunchWindow(threadType)
@@ -860,9 +873,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     self.threadStillRunning = 'Git repository synchronisation still running'
                 
                 #If the user is launching commands
-                elif threadType == "commands":
+                elif threadType == "commands" or threadType == "type":
+                    currentType = ""
                     for index in range(len(self.IPS)):
-                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
+
+                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and self.currentTabCheck(threadType,index):
                             tempThread = QtCore.QThread()
                             tempThread.start()
 
@@ -975,6 +990,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
         for index, IP in enumerate(self.IPS):
+
             if self.ENABLE[index] == "True" and commands == "ping":
                 tempLayout = QtWidgets.QVBoxLayout()
                 tempWidget = QtWidgets.QWidget()
@@ -986,7 +1002,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.layoutTerminalList[index] = tempLayout
                 self.terminalList[index] = temp_terminal
                 self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
-            if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found" and commands != "ping":
+
+            if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found" and commands != "ping" and self.currentTabCheck(commands,index):
+
                 tempLayout = QtWidgets.QVBoxLayout()
                 tempWidget = QtWidgets.QWidget()
                 temp_terminal = QtWidgets.QPlainTextEdit()
@@ -998,6 +1016,19 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.terminalList[index] = temp_terminal
                 self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
 
+
+    #Terminates the currently selected tab/thread
+    def terminateCurrentThread(self):
+        IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
+        if "Finished" not in IP_text:
+            workerKey = self.IPS.index(IP_text)
+            self.workerList[workerKey].stopSignal = True
+            if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
+                try:
+                    self.workerList[workerKey].channel.send("\x03\n")
+                    self.workerList[workerKey].channel.close()
+                except:
+                    pass
 
 
     #Allows the user to send commands to the remote robots for unexpected requests of authorization and y/n checks

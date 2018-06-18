@@ -10,6 +10,7 @@ import os
 import paramiko
 import time
 import logging
+import sys
 
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
 
@@ -108,6 +109,10 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
 			elif self.password is None:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		except:
+			e = sys.exc_info()[0]
+			print("GitRepo Error: %s" % e)
 
 		#finish thread
 		ssh.close()
@@ -318,11 +323,13 @@ class Ping_Worker(QtCore.QObject):
 		self.IP = IP
 		self.start.connect(self.run)
 		self.stopSignal = False
-
+		self.responseString = ""
+		self.errorString = ""
 
 	#This function pings the robot
 	@QtCore.pyqtSlot()
 	def run(self):
+
 
 		#Ping until you reach the set maximum number of pings
 		for x in range(PING_TIMEOUT):
@@ -336,18 +343,27 @@ class Ping_Worker(QtCore.QObject):
 
 			#If the robot was pinged successfully and found
 			if response == 0:
-				response_string = "Found IP: "+self.IP
+				self.responseString = "Found IP: "+self.IP
 
 				#Display the status to the tab terminal
-				self.pingSignal.emit(self.ipIndex, response_string, response)
+				self.pingSignal.emit(self.ipIndex, self.responseString, response)
+				break
+
+			elif response == 512:
+				self.responseString = "Unknown host: "+self.IP
+				self.errorString = "Unknown host: "+self.IP
+
+				# Display the status to the tab terminal
+				self.pingSignal.emit(self.ipIndex, self.responseString, response)
 				break
 
 			#If the robot has yet to be found
 			else:
-				response_string = "--- "+self.IP +" ping statistics --- \n 1 packets transmitted, 0 received, 100% packet loss, time 0ms"
+				self.responseString = "--- "+self.IP +" ping statistics --- \n 1 packets transmitted, 0 received, 100% packet loss, time 0ms"
 
 				#Display the status to the tab terminal
-				self.pingSignal.emit(self.ipIndex, response_string,response)
+				self.pingSignal.emit(self.ipIndex, self.responseString,response)
+
 
 		#Close the thread
-		self.finishThread.emit(self.ipIndex, "")
+		self.finishThread.emit(self.ipIndex, self.errorString)
