@@ -53,7 +53,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.TYPES = []
         self.DICT_TYPES = {}
         self.CONNECTION_STATUS = []
-        self.PASSWORDS = []
+        self.PASSWORDS = {}
         self.ARGS = []
         self.ENABLE = []
         self.STRINGOFPATH = ""
@@ -65,9 +65,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow.lineDebugCommand.returnPressed.connect(self.sendDebugCommand)
 
         #Data structures for the dynamic launch window
-        self.layoutTerminalList = []
-        self.widgetTerminalList = []
-        self.terminalList = []
+        self.checkboxList = []
+        self.layoutTerminalList = {}
+        self.widgetTerminalList = {}
+        self.terminalList = {}
         self.terminalRefreshSeconds = 0.1
         self.threadList = {}
         self.workerList = {}
@@ -113,14 +114,16 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         tempList = []
         try:
             if listName == "enablelist":
+
                 # Append all data in the column
                 for y in range(self.robotTable.rowCount()):
-                    if self.robotTable.item(y,0).checkState() == 2:
+                    if self.robotTable.cellWidget(y,0).checkState() == 2:
                         tempList.append("True")
                     else:
                         tempList.append("False")
 
             elif listName == "argumentlist":
+
                 # Append all data in the column
                 for y in range(self.robotTable.rowCount()):
                     text = ""
@@ -131,6 +134,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             text += self.robotTable.cellWidget(y, 4).itemText(index)
                     tempList.append(text)
             else:
+
                 # Find the correct column
                 for x in range(self.robotTable.columnCount()):
                     if listName == self.robotTable.horizontalHeaderItem(x).text():
@@ -139,6 +143,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         for y in range(self.robotTable.rowCount()):
                             tempList.append(self.robotTable.item(y,x).text())
                         break
+
             return tempList
         except:
             e = sys.exc_info()[0]
@@ -197,10 +202,18 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     
                     #Keep adding arguments for this type until it matches the standard for its type
                     for argumentIndex in range(numberOfArgument):
+                        argString = self.DICT_TYPES[self.TYPES[previousIndex]][2][0].split("|")[argumentIndex].split("#")[0]
+                        print argString
                         if argumentIndex != numberOfArgument -1:
-                            argumentString += "$"+str(argumentIndex)+":|"
+                            if len(argString.split("/")) ==2:
+                                argumentString += "$"+str(argumentIndex)+"/"+argString.split("/")[1]+":|"
+                            else:
+                                argumentString += "$" + str(argumentIndex) + ":|"
                         else:
-                            argumentString += "$" +str(argumentIndex) + ":"
+                            if len(argString.split("/")) == 2:
+                                argumentString += "$" +str(argumentIndex) +"/"+argString.split("/")[1]+":"
+                            else:
+                                argumentString += "$" + str(argumentIndex) + ":"
                 
                 #this robot already exist and has some arguments
                 if ipText[index] == self.IPS[previousIndex] and nameText[index] == self.USERS[previousIndex] and typeText[index] == self.TYPES[previousIndex]:
@@ -213,15 +226,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             #Add the completed robot to the text fields in the Main Window
             self.robotTable.insertRow(index)
 
-            tempCheckBox = QtWidgets.QTableWidgetItem()
-            tempCheckBox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
-            tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
+            tempCheckBox = QtWidgets.QCheckBox()
+
             if enableText[index] == "True":
                 tempCheckBox.setCheckState(QtCore.Qt.Checked)
             else:
                 tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
-
-            self.robotTable.setItem(index, 0, QtWidgets.QTableWidgetItem(tempCheckBox))
+            tempCheckBox.stateChanged.connect(self.enableWidgetFromCheckbox)
+            self.robotTable.setCellWidget(index, 0, tempCheckBox)
             self.robotTable.setItem(index, 1, QtWidgets.QTableWidgetItem(ipText[index]))
             self.robotTable.setItem(index, 2, QtWidgets.QTableWidgetItem(nameText[index]))
             self.robotTable.setItem(index, 3, QtWidgets.QTableWidgetItem(typeText[index]))
@@ -237,6 +249,28 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         # Checks to see if the current number of listed robots exceeds the set maximum
         self.checkMaxSSH(len(self.IPS))
+
+
+    #Colors the rows in the robot-table based on robot status and if the robot is enabled
+    def enableWidgetFromCheckbox(self):
+        self.ENABLE = self.makeListFromTable("enablelist")
+        self.setLaunchEnable(self.checkConnectionAvailable())
+        for index,statusEnable, statusFound in zip(range(len(self.ENABLE)),self.ENABLE, self.CONNECTION_STATUS):
+            if statusEnable == "True" and statusFound == "Found":
+                self.robotTable.item(index, 1).setBackground(QtGui.QColor(154, 255, 154))
+                self.robotTable.item(index, 2).setBackground(QtGui.QColor(154, 255, 154))
+                self.robotTable.item(index, 3).setBackground(QtGui.QColor(154, 255, 154))
+                self.robotTable.item(index, 5).setBackground(QtGui.QColor(154, 255, 154))
+            elif statusEnable == "False":
+                self.robotTable.item(index, 1).setBackground(QtGui.QColor(204, 51, 51))
+                self.robotTable.item(index, 2).setBackground(QtGui.QColor(204, 51, 51))
+                self.robotTable.item(index, 3).setBackground(QtGui.QColor(204, 51, 51))
+                self.robotTable.item(index, 5).setBackground(QtGui.QColor(204, 51, 51))
+            else:
+                self.robotTable.item(index, 1).setBackground(QtGui.QColor(255, 255, 0))
+                self.robotTable.item(index, 2).setBackground(QtGui.QColor(255, 255, 0))
+                self.robotTable.item(index, 3).setBackground(QtGui.QColor(255, 255, 0))
+                self.robotTable.item(index, 5).setBackground(QtGui.QColor(255, 255, 0))
 
 
     #Opens an Adjust Argument Window for the user to load into the listed robots
@@ -308,7 +342,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     combo.setCurrentIndex(index)
 
             #Checks to see if the application should allow the other functions to be active or not
-            self.setLaunchEnable(self.checkConnectionAvailable())
+            self.enableWidgetFromCheckbox()
 
         except:
             e = sys.exc_info()[0]
@@ -344,11 +378,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Checks to see if all listed robots have been found by the user's computer
     def checkConnectionAvailable(self):
         connection_available = True
+        numberDisable = 0
         if self.robotTable.rowCount() == 0:
             connection_available = False
-        for status in self.CONNECTION_STATUS:
-            if status != "Found":
+        for statusEnable,statusFound in zip(self.ENABLE,self.CONNECTION_STATUS):
+            if statusEnable == "True" and statusFound != "Found":
                 connection_available = False
+            if statusEnable == "False":
+                numberDisable += 1
+
+        if numberDisable == len(self.ENABLE):
+            connection_available = False
 
         return connection_available
 
@@ -431,13 +471,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             #Add the basic robot data
                             self.robotTable.insertRow(index)
 
-                            tempCheckBox = QtWidgets.QTableWidgetItem()
-                            tempCheckBox.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+                            tempCheckBox = QtWidgets.QCheckBox()
                             tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
                             if line[0] == "True":
                                 tempCheckBox.setCheckState(QtCore.Qt.Checked)
-
-                            self.robotTable.setItem(index, 0, QtWidgets.QTableWidgetItem(tempCheckBox))
+                            tempCheckBox.stateChanged.connect(self.enableWidgetFromCheckbox)
+                            self.robotTable.setCellWidget(index, 0, tempCheckBox)
                             self.robotTable.setItem(index, 1, QtWidgets.QTableWidgetItem(line[1]))
                             self.robotTable.setItem(index, 2, QtWidgets.QTableWidgetItem(line[2]))
 
@@ -597,8 +636,16 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Checks to see if there is robot data to save or ping
     def saveFileAndPingCheck(self):
 
+        allDisabled = False
+        numberDisable = 0
+        for statusEnable in self.ENABLE:
+            if statusEnable == "False":
+                numberDisable += 1
+        if numberDisable == len(self.ENABLE):
+            allDisabled = True
+
         #If there is data
-        if self.robotTable.rowCount() != 0:
+        if self.robotTable.rowCount() != 0 and allDisabled == False:
             return True
 
         #If there is no data
@@ -677,19 +724,21 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def specifyPackagePath(self, n):
         tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the Package Directory")
 
-        print tempDirectoryPath
         self.STRINGOFPATH = tempDirectoryPath[0]
 
         if self.STRINGOFPATH:
-            lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
-            directoryPath = "~/"
+            tempDirTest = tempDirectoryPath.split('/')
 
-            print directoryPath
+            if tempDirTest[1] == "home":
+                directoryPath = "~/"
+                lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
+
+            else:
+                directoryPath = "/"
+                lastPartDirectoryPath = tempDirectoryPath.split('/')[1:]
 
             for i in range(len(lastPartDirectoryPath)):
                 directoryPath = directoryPath + lastPartDirectoryPath[i] + "/"
-
-                print directoryPath
 
             self.linePathParentPackage[n].setText(directoryPath)
 
@@ -721,8 +770,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def checkPasswordLaunchThread(self, commandType):
         self.updateLists()
 
+
+
+
         #If the ping button was pushed
-        if commandType == "ping":
+        if commandType == "ping" :
                 self.launchThread(commandType,"rsa")
 
         #If the rsacheckbox is selected
@@ -739,17 +791,25 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #If the command is to be executed via password logins
         else:
-            self.passwordWindow = Password_Window(self.IPS,self.USERS,commandType)
+            enableIPS = []
+            enableUSERS = []
+
+            for index, ip, user in zip(range(len(self.IPS)),self.IPS,self.USERS):
+                if self.ENABLE[index] == "True":
+                    enableIPS.append(ip)
+                    enableUSERS.append(user)
+
+            self.passwordWindow = Password_Window(enableIPS,enableUSERS,commandType)
             self.passwordWindow.savePasswords.connect(self.update_password)
             self.passwordWindow.show()
             self.passwordWindow.key.connect(self.rsaConfirm)
 
 
     #Saves the entered passwords from the password window to the backend data structure
-    @QtCore.pyqtSlot(list,str)
+    @QtCore.pyqtSlot(dict,str)
     def update_password(self, passwordList, commandType):
-        self.PASSWORDS = []
-        self.PASSWORDS = passwordList[:]
+        self.PASSWORDS = {}
+        self.PASSWORDS = passwordList.copy()
         self.launchThread(commandType, "password")
 
 
@@ -761,124 +821,131 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             
             #If there are no currently running threads
             if self.threadStillRunning == 'no':
-                self.refreshLaunchWindow()
+                self.refreshLaunchWindow(threadType)
                 
                 #If the user is transferring files to multiple robots
                 if threadType == "git":
                     for index in range(len(self.IPS)):
-                        threadGitRepoList = []
-                        threadPackageList = []
-                        threadMakeOptionList = []
-                        for i in range(self.spinpackage.value()):
-                            if self.TYPES[index] == str(self.comboRobotTypeList[i].currentText()):
-                                threadGitRepoList.append(str(self.linePathGitRepoList[i].text()))
-                                threadPackageList.append(str(self.linePathParentPackage[i].text()))
-                                threadMakeOptionList.append(self.comboMakeList[i].currentIndex())
+                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
+                            threadGitRepoList = []
+                            threadPackageList = []
+                            threadMakeOptionList = []
+                            for i in range(self.spinpackage.value()):
+                                if self.TYPES[index] == str(self.comboRobotTypeList[i].currentText()):
+                                    threadGitRepoList.append(str(self.linePathGitRepoList[i].text()))
+                                    threadPackageList.append(str(self.linePathParentPackage[i].text()))
+                                    threadMakeOptionList.append(self.comboMakeList[i].currentIndex())
 
-                        tempThread = QtCore.QThread()
-                        tempThread.start()
+                            tempThread = QtCore.QThread()
+                            tempThread.start()
 
-                        #RSA checkbox test 
-                        if passwordType == "password":
-                            worker = SSH_Transfer_File_Worker(index,self.IPS[index], self.USERS[index], threadPackageList, threadGitRepoList,
-                                                           str(self.lineUsername.text()), str(self.linePasswordn.text()),
-                                                           threadMakeOptionList,self.PASSWORDS[index], self.myKey)
-                        elif passwordType == "rsa":
-                            worker = SSH_Transfer_File_Worker(index, self.IPS[index], self.USERS[index],
-                                                           threadPackageList, threadGitRepoList,
-                                                           str(self.lineUsername.text()), str(self.linePasswordn.text()),
-                                                           threadMakeOptionList, None, self.myKey)
-                        
-                        #Create the worker
-                        worker.terminalSignal.connect(self.writeInOwnedTerminal)
-                        worker.finishThread.connect(self.killthread)
-                        worker.moveToThread(tempThread)
-                        worker.start.emit()
-                        self.workerList[index] = worker
-                        self.threadList[index] = tempThread
+                            #RSA checkbox test
+                            if passwordType == "password":
+                                worker = SSH_Transfer_File_Worker(index,self.IPS[index], self.USERS[index], threadPackageList, threadGitRepoList,
+                                                               str(self.lineUsername.text()), str(self.linePasswordn.text()),
+                                                               threadMakeOptionList,self.PASSWORDS[self.IPS[index]], self.myKey)
+                            elif passwordType == "rsa":
+                                worker = SSH_Transfer_File_Worker(index, self.IPS[index], self.USERS[index],
+                                                               threadPackageList, threadGitRepoList,
+                                                               str(self.lineUsername.text()), str(self.linePasswordn.text()),
+                                                               threadMakeOptionList, None, self.myKey)
+
+                            #Create the worker
+                            worker.terminalSignal.connect(self.writeInOwnedTerminal)
+                            worker.finishThread.connect(self.killthread)
+                            worker.moveToThread(tempThread)
+                            worker.start.emit()
+                            self.workerList[index] = worker
+                            self.threadList[index] = tempThread
                     self.threadStillRunning = 'Git repository synchronisation still running'
                 
                 #If the user is launching commands
                 elif threadType == "commands":
                     for index in range(len(self.IPS)):
+                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
+                            tempThread = QtCore.QThread()
+                            tempThread.start()
 
-                        tempThread = QtCore.QThread()
-                        tempThread.start()
+                            commandLinesList = str(self.plaintextCommandDict[self.TYPES[index]].toPlainText()).split("\n")
+                            commandLinesList.append("\n")
 
-                        commandLinesList = str(self.plaintextCommandDict[self.TYPES[index]].toPlainText()).split("\n")
-                        commandLinesList.append("\n")
+                            #replacing the arguments in command lines
+                            commandLinesArgsList = []
+                            for line in commandLinesList:
+                                for ipIndex, IP_Type in enumerate(self.DICT_TYPES[self.TYPES[index]][0]):
+                                    if IP_Type == self.IPS[index]:
+                                        ipIndexInDict = ipIndex
+                                argumentsString = self.DICT_TYPES[self.TYPES[index]][2][ipIndexInDict]
+                                argumentsList = argumentsString.split("|")
+                                if argumentsList[0] != "No Args Selected":
+                                    newReplacedLine = line
+                                    for arguments in reversed(argumentsList):
+                                        tempArgument = arguments.replace('#', ':')
+                                        #replace the $variable in  the string
+                                        newReplacedLine = newReplacedLine.replace(tempArgument.split(':')[0].split("/")[0],
+                                                                                  ':'.join(tempArgument.split(':')[1:]))
+                                        #replace the $argument name in the string if there is one
+                                        if len(tempArgument.split(':')[0].split("/")) == 2:
+                                            newReplacedLine = newReplacedLine.replace("$"+tempArgument.split(':')[0].split("/")[1],':'.join(tempArgument.split(':')[1:]))
+                                    commandLinesArgsList.append(newReplacedLine)
+                                else:
+                                    commandLinesArgsList.append(line)
 
-                        #replacing the arguments in command lines
-                        commandLinesArgsList = []
-                        for line in commandLinesList:
-                            for ipIndex, IP_Type in enumerate(self.DICT_TYPES[self.TYPES[index]][0]):
-                                if IP_Type == self.IPS[index]:
-                                    ipIndexInDict = ipIndex
-                            argumentsString = self.DICT_TYPES[self.TYPES[index]][2][ipIndexInDict]
-                            argumentsList = argumentsString.split("|")
-                            if argumentsList[0] != "No Args Selected":
-                                newReplacedLine = line
-                                for arguments in reversed(argumentsList):
-                                    tempArgument = arguments.replace('#', ':')
-                                    newReplacedLine = newReplacedLine.replace(tempArgument.split(':')[0],
-                                                                              ':'.join(tempArgument.split(':')[1:]))
-                                commandLinesArgsList.append(newReplacedLine)
-                            else:
-                                commandLinesArgsList.append(line)
-                                
-                        #RSA checkbox test 
-                        if passwordType == "password":
-                            worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
-                                                   self.PASSWORDS[index], self.myKey)
-                        elif passwordType == "rsa":
-                            worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
-                                                   None, self.myKey)
+                            #RSA checkbox test
+                            if passwordType == "password":
+                                worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
+                                                       self.PASSWORDS[self.IPS[index]], self.myKey)
+                            elif passwordType == "rsa":
+                                worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
+                                                       None, self.myKey)
 
-                        #Create the worker
-                        worker.terminalSignal.connect(self.writeInOwnedTerminal)
-                        worker.finishThread.connect(self.killthread)
-                        worker.moveToThread(tempThread)
-                        worker.start.emit()
-                        self.workerList[index] = worker
-                        self.threadList[index] = tempThread
+                            #Create the worker
+                            worker.terminalSignal.connect(self.writeInOwnedTerminal)
+                            worker.finishThread.connect(self.killthread)
+                            worker.moveToThread(tempThread)
+                            worker.start.emit()
+                            self.workerList[index] = worker
+                            self.threadList[index] = tempThread
                     self.threadStillRunning = 'Launch files still running'
 
                 #If the user is pinging the listed robots
                 elif threadType == "ping":
                     self.childLaunchWindow.lineDebugCommand.setEnabled(False)
                     for index in range(len(self.IPS)):
-                        tempThread = QtCore.QThread()
-                        tempThread.start()
-                        
-                        #Create the worker
-                        worker = Ping_Worker(index, self.IPS[index])
-                        worker.pingSignal.connect(self.pingWriteInOwnedTerminal)
-                        worker.finishThread.connect(self.killthread)
-                        worker.moveToThread(tempThread)
-                        worker.start.emit()
-                        self.workerList[index] = worker
-                        self.threadList[index] = tempThread
+                        if self.ENABLE[index] == "True":
+                            tempThread = QtCore.QThread()
+                            tempThread.start()
+
+                            #Create the worker
+                            worker = Ping_Worker(index, self.IPS[index])
+                            worker.pingSignal.connect(self.pingWriteInOwnedTerminal)
+                            worker.finishThread.connect(self.killthread)
+                            worker.moveToThread(tempThread)
+                            worker.start.emit()
+                            self.workerList[index] = worker
+                            self.threadList[index] = tempThread
                     self.threadStillRunning = 'Pings still running'
 
                 #If the user is updating the .bashrc files of the listed robots
                 elif threadType == "bashrc":
                     for index in range(len(self.IPS)):
-                        tempThread = QtCore.QThread()
-                        tempThread.start()
-                        
-                        #RSA checkbox test 
-                        if passwordType == "password":
-                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()),self.PASSWORDS[index], self.myKey)
-                        elif passwordType == "rsa":
-                            worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()), None, self.myKey)
+                        if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found":
+                            tempThread = QtCore.QThread()
+                            tempThread.start()
 
-                        #Create the worker
-                        worker.finishThread.connect(self.killthread)
-                        worker.terminalSignal.connect(self.writeInOwnedTerminal)
-                        worker.moveToThread(tempThread)
-                        worker.start.emit()
-                        self.workerList[index] = worker
-                        self.threadList[index] = tempThread
+                            #RSA checkbox test
+                            if passwordType == "password":
+                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()),self.PASSWORDS[self.IPS[index]], self.myKey)
+                            elif passwordType == "rsa":
+                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()), None, self.myKey)
+
+                            #Create the worker
+                            worker.finishThread.connect(self.killthread)
+                            worker.terminalSignal.connect(self.writeInOwnedTerminal)
+                            worker.moveToThread(tempThread)
+                            worker.start.emit()
+                            self.workerList[index] = worker
+                            self.threadList[index] = tempThread
                     self.threadStillRunning = 'Bashrc still running'
 
             #If a previous set of threads have not finished running
@@ -893,30 +960,44 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
     #Cleans the Launch Window of previous data and prepares new tabs for the new list of robots
-    def refreshLaunchWindow(self):
+    def refreshLaunchWindow(self,commands):
         while self.childLaunchWindow.tab_Launch.count() != 0:
-            self.childLaunchWindow.tab_Launch.removeTab(0)
             try:
-                obj = self.terminalList.pop(0)
+                obj = self.terminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
                 obj.deleteLater()
-                obj = self.layoutTerminalList.pop(0)
+                obj = self.layoutTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
                 obj.deleteLater()
-                obj = self.widgetTerminalList.pop(0)
+                obj = self.widgetTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
                 obj.deleteLater()
             except:
                 pass
+            self.childLaunchWindow.tab_Launch.removeTab(0)
+
 
         for index, IP in enumerate(self.IPS):
-            tempLayout = QtWidgets.QVBoxLayout()
-            tempWidget = QtWidgets.QWidget()
-            temp_terminal = QtWidgets.QPlainTextEdit()
-            temp_terminal.setReadOnly(True)
-            tempLayout.addWidget(temp_terminal, 0)
-            tempWidget.setLayout(tempLayout)
-            self.widgetTerminalList.append(tempWidget)
-            self.layoutTerminalList.append(tempLayout)
-            self.terminalList.append(temp_terminal)
-            self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+            if self.ENABLE[index] == "True" and commands == "ping":
+                tempLayout = QtWidgets.QVBoxLayout()
+                tempWidget = QtWidgets.QWidget()
+                temp_terminal = QtWidgets.QPlainTextEdit()
+                temp_terminal.setReadOnly(True)
+                tempLayout.addWidget(temp_terminal, 0)
+                tempWidget.setLayout(tempLayout)
+                self.widgetTerminalList[index] = tempWidget
+                self.layoutTerminalList[index] = tempLayout
+                self.terminalList[index] = temp_terminal
+                self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+            if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found" and commands != "ping":
+                tempLayout = QtWidgets.QVBoxLayout()
+                tempWidget = QtWidgets.QWidget()
+                temp_terminal = QtWidgets.QPlainTextEdit()
+                temp_terminal.setReadOnly(True)
+                tempLayout.addWidget(temp_terminal, 0)
+                tempWidget.setLayout(tempLayout)
+                self.widgetTerminalList[index] = tempWidget
+                self.layoutTerminalList[index] = tempLayout
+                self.terminalList[index] = temp_terminal
+                self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+
 
 
     #Allows the user to send commands to the remote robots for unexpected requests of authorization and y/n checks
@@ -962,7 +1043,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.threadList[ipIndex].quit()
         self.threadList[ipIndex].wait()
         del self.threadList[ipIndex]
-        self.childLaunchWindow.tab_Launch.setTabText(ipIndex, self.IPS[ipIndex]+" (Finished)")
+
+        for index in range(self.childLaunchWindow.tab_Launch.count()):
+            if self.childLaunchWindow.tab_Launch.tabText(index) == self.IPS[ipIndex]:
+                self.childLaunchWindow.tab_Launch.setTabText(index, self.IPS[ipIndex]+" (Finished)")
         
         #Display the finish message box based on the threads that were running
         if self.workerList == {} and self.threadList == {}:
@@ -1007,7 +1091,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def findRSA(self):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your RSA Key")
         try:
-            print(filePath)
+
             # Test to see if the user selected a valid path or canceled
             self.STRINGOFPATH = filePath[0]
 

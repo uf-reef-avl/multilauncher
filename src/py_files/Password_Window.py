@@ -15,7 +15,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
 
     #Variables for emitting a signal containing the list of passwords and if a RSA Key has been generated
-    savePasswords = QtCore.pyqtSignal(list,str)
+    savePasswords = QtCore.pyqtSignal(dict,str)
     key = QtCore.pyqtSignal(bool)
 
     #Definition of the Password Window
@@ -29,7 +29,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
         self.linePasswords = []
         self.labelIPS = []
         self.labelUSERS = []
-        self.PASSWORDS = []
+        self.PASSWORDS = {}
         self.terminalRefreshSeconds = 0.5
 
         #Sets up the dynamic list of robots and corresponding text fields for entering passwords
@@ -62,7 +62,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
     def saveData(self):
         save = True
         error = ""
-        self.PASSWORDS = []
+        self.PASSWORDS = {}
         for index,linePassword in enumerate(self.linePasswords):
            if str(linePassword.text().strip()) == "":
                eMessage = "The password of " + str(self.labelUSERS[index].text()) +" has not be set"
@@ -70,7 +70,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
                #temp = QtWidgets.QMessageBox.warning(self, "Warning", "the password of " + str(self.labelIPS[index].text()) +" has not be set")
                save = False
                #break
-           self.PASSWORDS.append(str(linePassword.text().strip()))
+           self.PASSWORDS[str(self.labelIPS[index].text().strip())] = str(linePassword.text().strip())
 
         #If all robots have passwords entered
         if save is True:
