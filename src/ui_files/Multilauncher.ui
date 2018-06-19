@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1324</width>
-    <height>787</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -98,7 +98,7 @@
           </property>
          </widget>
         </item>
-        <item row="5" column="0" alignment="Qt::AlignRight">
+        <item row="5" column="0" alignment="Qt::AlignHCenter">
          <widget class="QLabel" name="rsaLabel">
           <property name="text">
            <string>Current RSA Key Path:</string>
@@ -298,32 +298,7 @@
          </layout>
         </item>
         <item row="4" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item alignment="Qt::AlignRight">
-           <widget class="QLabel" name="masterurilable">
-            <property name="text">
-             <string>ROS MASTER URI IP ADDRESS:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="masteruriline">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="bashrcbutton">
-            <property name="text">
-             <string>Update .bashrc</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout"/>
         </item>
         <item row="2" column="0">
          <widget class="QScrollArea" name="scrollareapackage">
@@ -386,7 +361,7 @@
        </layout>
       </item>
       <item row="0" column="0" colspan="3">
-       <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,1,1,1,1">
+       <layout class="QGridLayout" name="gridLayout" columnstretch="1,1,1,1,1,1,1">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
@@ -402,6 +377,20 @@
         <property name="verticalSpacing">
          <number>6</number>
         </property>
+        <item row="1" column="6">
+         <widget class="QPushButton" name="robotlistsavebutton">
+          <property name="text">
+           <string>Save Current Data to File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="5">
+         <widget class="QPushButton" name="filesearchbutton">
+          <property name="text">
+           <string>Find Robotlist file</string>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="1" colspan="3">
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
@@ -422,13 +411,6 @@
          <widget class="QLabel" name="robotaddress">
           <property name="text">
            <string>Robot's IP Address</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="4">
-         <widget class="QPushButton" name="argumentbutton">
-          <property name="text">
-           <string>Adjust Arguments</string>
           </property>
          </widget>
         </item>
@@ -470,27 +452,6 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="4">
-         <widget class="QPushButton" name="filesearchbutton">
-          <property name="text">
-           <string>Find Robotlist file</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="5">
-         <widget class="QPushButton" name="robotlistsavebutton">
-          <property name="text">
-           <string>Save Current Data to File</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QLabel" name="selectedfilename">
-          <property name="text">
-           <string>Current File: </string>
-          </property>
-         </widget>
-        </item>
         <item row="5" column="5">
          <widget class="QPushButton" name="pingrobotsbutton">
           <property name="text">
@@ -512,7 +473,21 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0" colspan="6">
+        <item row="5" column="0">
+         <widget class="QPushButton" name="editlistsbutton">
+          <property name="text">
+           <string>Add/Edit/Remove Robots</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="6" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="rosmasterLabel">
+          <property name="text">
+           <string>ROSMASTER Settings</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="7">
          <widget class="QTableWidget" name="robotTable">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -574,12 +549,31 @@
             <string>connectionstatuslist</string>
            </property>
           </column>
+          <column>
+           <property name="text">
+            <string>masterlist</string>
+           </property>
+          </column>
          </widget>
         </item>
-        <item row="5" column="0">
-         <widget class="QPushButton" name="editlistsbutton">
+        <item row="1" column="4">
+         <widget class="QLabel" name="selectedfilename">
           <property name="text">
-           <string>Add/Edit/Remove Robots</string>
+           <string>Current File: </string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="6">
+         <widget class="QPushButton" name="bashrcbutton">
+          <property name="text">
+           <string>Update .bashrc</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="4">
+         <widget class="QPushButton" name="argumentbutton">
+          <property name="text">
+           <string>Adjust Arguments</string>
           </property>
          </widget>
         </item>
@@ -606,17 +600,12 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>filesearchbutton</tabstop>
-  <tabstop>robotlistsavebutton</tabstop>
-  <tabstop>argumentbutton</tabstop>
   <tabstop>pingrobotsbutton</tabstop>
   <tabstop>spinpackage</tabstop>
   <tabstop>lineUsername</tabstop>
   <tabstop>linePasswordn</tabstop>
   <tabstop>scrollareapackage</tabstop>
   <tabstop>buttontransfer</tabstop>
-  <tabstop>masteruriline</tabstop>
-  <tabstop>bashrcbutton</tabstop>
   <tabstop>commands</tabstop>
  </tabstops>
  <resources/>

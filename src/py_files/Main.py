@@ -16,6 +16,7 @@ from Edit_Robot_Dialog import Edit_Robot_Dialog
 import os
 import paramiko
 import sys
+import time
 
 #This class creates the main window of the application
 class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
@@ -52,6 +53,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.IPS = []
         self.USERS = []
         self.TYPES = []
+        self.MASTER_TYPE = []
         self.DICT_TYPES = {}
         self.CONNECTION_STATUS = []
         self.PASSWORDS = {}
@@ -66,8 +68,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow.lineDebugCommand.returnPressed.connect(self.sendDebugCommand)
         self.childLaunchWindow.stopCurrentThread.clicked.connect(self.terminateCurrentThread)
 
+        self.childRoscoreWindow = Launch_Window()
+        self.childRoscoreWindow.buttonStopThread.clicked.connect(self.interruptRemainingThreads)
+        self.childRoscoreWindow.lineDebugCommand.hide()
+        self.childRoscoreWindow.stopCurrentThread.clicked.connect(self.terminateCurrentThread)
+
         #Data structures for the dynamic launch window
         self.checkboxList = []
+        self.comboboxMasterList = []
         self.layoutTerminalList = {}
         self.widgetTerminalList = {}
         self.terminalList = {}
@@ -103,12 +111,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Corrects the column header sizes
     def setTableSize(self):
         print self.width()
-        self.robotTable.setColumnWidth(0, self.width()/6)
-        self.robotTable.setColumnWidth(1, self.width()/6)
-        self.robotTable.setColumnWidth(2, self.width()/6)
-        self.robotTable.setColumnWidth(3, self.width()/6)
-        self.robotTable.setColumnWidth(4, self.width()/6)
-        self.robotTable.setColumnWidth(5, self.width()/6)
+        self.robotTable.setColumnWidth(0, self.width()/7)
+        self.robotTable.setColumnWidth(1, self.width()/7)
+        self.robotTable.setColumnWidth(2, self.width()/7)
+        self.robotTable.setColumnWidth(3, self.width()/7)
+        self.robotTable.setColumnWidth(4, self.width()/7)
+        self.robotTable.setColumnWidth(5, self.width()/7)
 
 
     #Creates lists based on the column requested
@@ -124,17 +132,32 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     else:
                         tempList.append("False")
 
+            elif listName == "masterlist":
+
+                # Append all data in the column
+                for y in range(self.robotTable.rowCount()):
+                    text = ""
+                    tempText = self.robotTable.cellWidget(y,6).currentText()
+                    if len(tempText.split(":")) == 2 :
+                        text = tempText.split(":")[1]
+                    elif tempText == "Master" or tempText == "Master and Launch":
+                        text = tempText
+                    else:
+                        text = "No ROS settings"
+                    tempList.append(text)
+
             elif listName == "argumentlist":
 
                 # Append all data in the column
                 for y in range(self.robotTable.rowCount()):
                     text = ""
-                    for index in range(self.robotTable.cellWidget(y,4).count()):
-                        if index != self.robotTable.cellWidget(y,4).count()-1:
-                            text += self.robotTable.cellWidget(y,4).itemText(index)+"|"
+                    for index in range(self.robotTable.cellWidget(y, 4).count()):
+                        if index != self.robotTable.cellWidget(y, 4).count() - 1:
+                            text += self.robotTable.cellWidget(y, 4).itemText(index) + "|"
                         else:
                             text += self.robotTable.cellWidget(y, 4).itemText(index)
                     tempList.append(text)
+
             else:
 
                 # Find the correct column
@@ -244,34 +267,78 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.robotTable.setCellWidget(index, 4, tempCombo)
             self.robotTable.setItem(index, 5, QtWidgets.QTableWidgetItem("Unknown"))
 
+
+
+        self.IPS = []
+        self.IPS = self.makeListFromTable("robotaddresslist")
+        self.updateMasterCombobox()
+
         #Update the dictionary
         self.updateLists()
         self.flushCommand()
+
+        print str(self.MASTER_TYPE)
+        for index, string in enumerate(self.MASTER_TYPE):
+            if string in self.IPS:
+                string = "Roscore at:" + string
+            self.comboboxMasterList[index].setCurrentIndex(self.comboboxMasterList[index].findText(string))
 
         # Checks to see if the current number of listed robots exceeds the set maximum
         self.checkMaxSSH(len(self.IPS))
 
 
-    #Colors the rows in the robot-table based on robot status and if the robot is enabled
+    #Remakes the list of enabled robots every time a checkbox is changed
     def enableWidgetFromCheckbox(self):
         self.ENABLE = self.makeListFromTable("enablelist")
         self.setLaunchEnable(self.checkConnectionAvailable())
-        for index,statusEnable, statusFound in zip(range(len(self.ENABLE)),self.ENABLE, self.CONNECTION_STATUS):
-            if statusEnable == "True" and statusFound == "Found":
-                self.robotTable.item(index, 1).setBackground(QtGui.QColor(154, 255, 154))
-                self.robotTable.item(index, 2).setBackground(QtGui.QColor(154, 255, 154))
-                self.robotTable.item(index, 3).setBackground(QtGui.QColor(154, 255, 154))
-                self.robotTable.item(index, 5).setBackground(QtGui.QColor(154, 255, 154))
-            elif statusEnable == "False":
-                self.robotTable.item(index, 1).setBackground(QtGui.QColor(204, 51, 51))
-                self.robotTable.item(index, 2).setBackground(QtGui.QColor(204, 51, 51))
-                self.robotTable.item(index, 3).setBackground(QtGui.QColor(204, 51, 51))
-                self.robotTable.item(index, 5).setBackground(QtGui.QColor(204, 51, 51))
+        self.colorsTableRows()
+
+
+    #Colors the rows in the robot-table based on robot status and if the robot is enabled
+    def colorsTableRows(self):
+        for i,statusEnable, statusFound, master in zip(range(len(self.ENABLE)),self.ENABLE, self.CONNECTION_STATUS, self.MASTER_TYPE):
+            if master != "No ROS settings" and master != "Master" and master != "Master and Launch":
+                indexMasterIP = self.IPS.index(master)
             else:
-                self.robotTable.item(index, 1).setBackground(QtGui.QColor(255, 255, 0))
-                self.robotTable.item(index, 2).setBackground(QtGui.QColor(255, 255, 0))
-                self.robotTable.item(index, 3).setBackground(QtGui.QColor(255, 255, 0))
-                self.robotTable.item(index, 5).setBackground(QtGui.QColor(255, 255, 0))
+                indexMasterIP = i
+            if statusEnable == "True" and statusFound == "Found" and (master == "" or master == "Master" or master == "Master and Launch" or (self.ENABLE[indexMasterIP] == "True" and self.CONNECTION_STATUS[indexMasterIP] == "Found")):
+                self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+                self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+                self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+                self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(154, 255, 154)))
+
+                if master == "Master":
+                    self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(138, 43, 226)))
+                    self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(138, 43, 226)))
+                    self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(138, 43, 226)))
+                    self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(138, 43, 226)))
+
+                elif master == "Master and Launch":
+                    gradient = QtGui.QLinearGradient(QtCore.QPointF(0, 0), QtCore.QPointF(200, 200))
+                    gradient.setColorAt(0, QtGui.QColor(154, 255, 154))
+                    gradient.setColorAt(1, QtGui.QColor(138, 43, 226))
+
+                    self.robotTable.item(i, 1).setBackground(QtGui.QBrush(gradient))
+                    self.robotTable.item(i, 2).setBackground(QtGui.QBrush(gradient))
+                    self.robotTable.item(i, 3).setBackground(QtGui.QBrush(gradient))
+                    self.robotTable.item(i, 5).setBackground(QtGui.QBrush(gradient))
+
+                elif self.IPS[i] in self.MASTER_TYPE:
+                    self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                    self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                    self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                    self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+
+            elif statusEnable == "False":
+                self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+                self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(204, 51, 51)))
+            else:
+                self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
+                self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
 
 
     #Opens an Adjust Argument Window for the user to load into the listed robots
@@ -298,8 +365,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Takes the data from the text fields in the Main Window and loads them into the backend data structures for processing
     def updateLists(self):
 
+        # Corrects the column header sizes
+        self.setTableSize()
+
         try:
-            #Clearing backend data structures
+             #Clearing backend data structures
             self.IPS = []
             self.USERS = []
             self.TYPES = []
@@ -307,6 +377,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.CONNECTION_STATUS = []
             self.ARGS = []
             self.ENABLE = []
+            self.MASTER_TYPE = []
 
             #Populate backend lists
             self.IPS = self.makeListFromTable("robotaddresslist")
@@ -315,6 +386,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.CONNECTION_STATUS = self.makeListFromTable("connectionstatuslist")
             self.ARGS = self.makeListFromTable("argumentlist")
             self.ENABLE = self.makeListFromTable("enablelist")
+            self.MASTER_TYPE = self.makeListFromTable("masterlist")
+
+            # Checks to see if the application should allow the other functions to be active or not
+            self.enableWidgetFromCheckbox()
 
             #Load the data
             for x in range(len(self.IPS)):
@@ -324,7 +399,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     self.DICT_TYPES[self.TYPES[x]][0].append(self.IPS[x])
                     self.DICT_TYPES[self.TYPES[x]][1].append(self.USERS[x])
                     self.DICT_TYPES[self.TYPES[x]][2].append(self.ARGS[x].replace(":","#"))
-                
+
                 #If the robot's type does not already exist in the dictionary
                 else:
                     self.DICT_TYPES[self.TYPES[x]] = [[],[],[]]
@@ -342,12 +417,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     index = combo.findText(text)
                     combo.setCurrentIndex(index)
 
-            #Checks to see if the application should allow the other functions to be active or not
-            self.enableWidgetFromCheckbox()
 
         except:
-            e = sys.exc_info()[0]
-            print( "UpdateLists Error: %s" % e )
+             e = sys.exc_info()[0]
+             print( "UpdateLists Error: %s" % e )
 
 
     #Sets the maximum number of concurrent SSH sessions based on the user's MaxSessions variable in sshd_config
@@ -382,8 +455,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         numberDisable = 0
         if self.robotTable.rowCount() == 0:
             connection_available = False
-        for statusEnable,statusFound in zip(self.ENABLE,self.CONNECTION_STATUS):
-            if statusEnable == "True" and statusFound != "Found":
+        for i, statusEnable,statusFound, master in zip(range(len(self.IPS)),self.ENABLE,self.CONNECTION_STATUS, self.MASTER_TYPE):
+            if master != "No ROS settings" and master != "Master" and master != "Master and Launch":
+                indexMasterIP = self.IPS.index(master)
+            else:
+                indexMasterIP = i
+            if (statusEnable == "True" and statusFound != "Found")  or ((master != "No ROS settings" and master != "Master" and master != "Master and Launch")
+                                                                        and (self.ENABLE[indexMasterIP] != "True" or self.CONNECTION_STATUS[indexMasterIP] != "Found"
+                                                                             or (self.MASTER_TYPE[indexMasterIP] != "Master" and self.MASTER_TYPE[indexMasterIP] != "Master and Launch"))):
                 connection_available = False
             if statusEnable == "False":
                 numberDisable += 1
@@ -407,7 +486,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.spinpackage.setEnabled(available)
         self.lineUsername.setEnabled(available)
         self.linePasswordn.setEnabled(available)
-        self.masteruriline.setEnabled(available)
         self.findRSAButton.setEnabled(available)
         self.rsaPath.setEnabled(available)
         self.childLaunchWindow.lineDebugCommand.setEnabled(True)
@@ -439,38 +517,65 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.tabCommands.addTab(tempWidget, rType)
 
 
+    #Updates the master comboboxes when new robots are added or removed
+    def updateMasterCombobox(self):
+        while self.comboboxMasterList != []:
+            obj = self.comboboxMasterList.pop(0)
+            obj.deleteLater()
+
+        for currentIndex, currentIp in enumerate(self.IPS):
+            tempCombo = QtWidgets.QComboBox()
+            tempCombo.addItem("No ROS settings")
+            tempCombo.addItem("Master")
+            tempCombo.addItem("Master and Launch")
+            for index, ip in enumerate(self.IPS):
+                if currentIp != ip:
+                    tempCombo.addItem("Roscore at:"+ ip)
+
+            tempCombo.currentIndexChanged.connect(self.checkMasterDependencies)
+            self.robotTable.setCellWidget(currentIndex, 6, tempCombo)
+            self.comboboxMasterList.append(tempCombo)
+
+
+    #Remakes the list of rosmasters every time a "ROSMASTER Settings" combobox is changed
+    def checkMasterDependencies(self):
+        self.MASTER_TYPE = self.makeListFromTable("masterlist")
+        self.setLaunchEnable(self.checkConnectionAvailable())
+        self.colorsTableRows()
+
+
     #Load data from a .csv or .txt file separated by commas (,)
     def browseForFile(self):
         if self.threadStillRunning == 'no':
+            tempMasterList = []
 
-            #Open a dialog box where the user can select an existing file
-            filePath = QtWidgets.QFileDialog.getOpenFileName(self,"Find your Robotlist file", filter = "csv (*.csv *.)")
+            # Open a dialog box where the user can select an existing file
+            filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your Robotlist file", filter="csv (*.csv *.)")
 
-            #Test to see if the user selected a valid path or canceled
+            # Test to see if the user selected a valid path or canceled
             self.STRINGOFPATH = filePath[0]
             if self.STRINGOFPATH:
                 partsOfPath = self.STRINGOFPATH.split("/")
                 actualFileName = partsOfPath[-1]
 
-                #Clear the text fields
+                # Clear the text fields
                 self.robotTable.setRowCount(0)
 
-                #Open the file and display the file name in the "selectedfilename" label
-                self.selectedfilename.setText("Current File: "+actualFileName)
+                # Open the file and display the file name in the "selectedfilename" label
+                self.selectedfilename.setText("Current File: " + actualFileName)
                 robots = open(self.STRINGOFPATH, "rU")
 
                 try:
 
-                    #Get the first line
+                    # Get the first line
                     line = robots.readline().split(",")
-
-                    #Until a blank line or EOF is encountered
+                    # Until a blank line or EOF is encountered
                     index = 0
                     while line[0] != '':
 
-                        if line[0] !="\n":
+                        if line[0] != "\n":
 
-                            #Add the basic robot data
+                            # Add the basic robot data
                             self.robotTable.insertRow(index)
 
                             tempCheckBox = QtWidgets.QCheckBox()
@@ -481,42 +586,52 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             self.robotTable.setCellWidget(index, 0, tempCheckBox)
                             self.robotTable.setItem(index, 1, QtWidgets.QTableWidgetItem(line[1]))
                             self.robotTable.setItem(index, 2, QtWidgets.QTableWidgetItem(line[2]))
+                            self.robotTable.setItem(index, 3, QtWidgets.QTableWidgetItem(line[3]))
 
                             tempCombo = QtWidgets.QComboBox()
 
-                            #If arguments were not saved with this robot
-                            if len(line) == 4:
-                                self.robotTable.setItem(index, 3, QtWidgets.QTableWidgetItem(line[3].strip()))
+                            # If arguments were not saved with this robot
+                            if len(line) == 5:
+                                tempMasterList.append(line[4].strip())
                                 tempCombo.addItem("No Args Selected")
                                 self.robotTable.setCellWidget(index, 4, tempCombo)
 
-                            #If arguments were saved with this robot
+                            # If arguments were saved with this robot
                             else:
-                                self.robotTable.setItem(index, 3, QtWidgets.QTableWidgetItem(line[3]))
-
-                                argLines = line[4].strip().split("|")
+                                tempMasterList.append(line[4])
+                                argLines = line[5].strip().split("|")
                                 tempCombo.addItems(argLines)
-
                                 self.robotTable.setCellWidget(index, 4, tempCombo)
 
                             self.robotTable.setItem(index, 5, QtWidgets.QTableWidgetItem("Unknown"))
 
-                            #Get the next line
+                            # Get the next line
                             line = robots.readline().split(",")
 
                         else:
 
-                            #Get the next line
+                            # Get the next line
                             line = robots.readline().split(",")
                         index += 1
 
                 except:
                     e = sys.exc_info()[0]
-                    print( "Browsing File Error: %s" % e )
+                    print("Browsing File Error: %s" % e)
+
                 robots.close()
+
+            self.IPS = []
+            self.IPS = self.makeListFromTable("robotaddresslist")
+            self.updateMasterCombobox()
+
+            for index, string in enumerate(tempMasterList):
+                if string in self.IPS:
+                    string = "Roscore at:"+string
+                self.comboboxMasterList[index].setCurrentIndex(self.comboboxMasterList[index].findText(string))
 
             self.updateLists()
             self.flushCommand()
+
         else:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning)
 
@@ -554,12 +669,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                         #If the robot has arguments to be saved with
                         if self.ARGS[x] != "No Args Selected":
-                            rFile.write(self.ENABLE[x]+","+self.IPS[x]+","+self.USERS[x]+","+self.TYPES[x]+","+self.ARGS[x] +"\n")
+                            rFile.write(self.ENABLE[x]+","+self.IPS[x]+","+self.USERS[x]+","+self.TYPES[x]+","+self.MASTER_TYPE[x]+","+self.ARGS[x] +"\n")
 
                         #If the robot does not have arguments to be saved with
                         else:
-                            rFile.write(self.ENABLE[x]+","+self.IPS[x] + "," + self.USERS[x] + "," + self.TYPES[x]+"\n")
-                rFile.close()
+                            rFile.write(self.ENABLE[x]+","+self.IPS[x] + "," + self.USERS[x] + "," + self.MASTER_TYPE[x] + "," + self.TYPES[x]+"\n")
+                    rFile.close()
 
             except:
                 e = sys.exc_info()[0]
@@ -589,9 +704,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     else:
                         rFile = open(self.STRINGOFPATH + ".txt", "w")
 
-                    plaintext = self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())]
-                    rFile.write(str(plaintext.toPlainText()))
-                rFile.close()
+                    plainText = ""
+                    if self.rsaPath.text() != "No RSA Key Found":
+                        plainText += self.rsaPath.text()
+
+                    plainText += "#####\n"
+                    plainText += self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())].toPlainText()
+                    rFile.write(plainText)
+                    rFile.close()
             except:
                 e = sys.exc_info()[0]
                 print("Save Command to File Error: %s" % e)
@@ -616,20 +736,26 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
                 rFile = open(self.STRINGOFPATH, "rU")
-                listOfLines = rFile.readlines()
+                data = rFile.readlines()
                 plaintext = self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())]
 
                 #Load the commands into the tab
-                lines = ''
+                lines = ""
+                firstLine = data.pop(0)
+
+                if firstLine == "#####\n":
+                    listOfLines = data
+
+                else:
+                    listOfLines = data[1:]
+                    self.rsaPath.setText(firstLine)
+                    self.rsaCheck()
+
                 for line in listOfLines:
-                    if "RSA" in line:
-                        path = line[4:]
-                        print(path)
-                        #self.findRSA(path)
-                    else:
-                        lines += line
+
+                    lines += line
                 plaintext.appendPlainText(lines)
-            rFile.close()
+                rFile.close()
         except:
             e = sys.exc_info()[0]
             print("Load Command Error: %s" % e)
@@ -772,6 +898,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.checkPasswordLaunchThread("bashrc")
 
 
+    #Returns a boolean value if the application is running in type only mode
     def currentTabCheck(self, string, index):
         correctType = True
         if string == "type":
@@ -780,6 +907,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             if self.TYPES[index] == currentType:
                 correctType = True
         return correctType
+
 
     #Sets flags bases on the type of thread to be run and if the RSA checkbox is selected
     def checkPasswordLaunchThread(self, commandType):
@@ -944,15 +1072,20 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 #If the user is updating the .bashrc files of the listed robots
                 elif threadType == "bashrc":
                     for index in range(len(self.IPS)):
-                        if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found":
+                        if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found" and self.MASTER_TYPE[index] != "":
                             tempThread = QtCore.QThread()
                             tempThread.start()
 
+                            tempMasterString = self.MASTER_TYPE[index]
+
+                            if tempMasterString == "Master" or tempMasterString == "Master and Launch":
+                                tempMasterString = self.IPS[index]
+
                             #RSA checkbox test
                             if passwordType == "password":
-                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()),self.PASSWORDS[self.IPS[index]], self.myKey)
+                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], tempMasterString,self.PASSWORDS[self.IPS[index]], self.myKey)
                             elif passwordType == "rsa":
-                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], str(self.masteruriline.text().strip()), None, self.myKey)
+                                worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], tempMasterString, None, self.myKey)
 
                             #Create the worker
                             worker.finishThread.connect(self.killthread)
@@ -1098,8 +1231,16 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Checks to see if there is a valid RSA key set, returns True or False
     def rsaCheck(self):
 
-        #RSA Key made through the application
-        if os.path.exists(os.path.expanduser('~/.ssh/multikey')):
+        path = self.rsaPath.text().strip()
+        #RSA key that the User pointed to through a command file
+        if os.path.exists(os.path.expanduser(path)):
+            privateKeyFile = os.path.expanduser(path)
+            self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+            self.RSA = True
+            return True
+
+        # RSA Key made through the application
+        elif os.path.exists(os.path.expanduser('~/.ssh/multikey')):
             privateKeyFile = os.path.expanduser('~/.ssh/multikey')
             self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
             self.rsaPath.setText('~/.ssh/multikey')
@@ -1107,6 +1248,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #No RSA key found in command file or in default location
         else:
+            self.rsaPath.setText("No RSA Key Found")
             return False
 
 
@@ -1118,7 +1260,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
 
 
-    #Opens a dialog to allow the user to specify their perfered RSA Key
+    #Opens a dialog to allow the user to specify their preferred RSA Key
     def findRSA(self):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your RSA Key")
         try:

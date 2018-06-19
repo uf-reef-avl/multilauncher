@@ -269,11 +269,11 @@ class Bashrc_Worker(QtCore.QObject):
 
 			#Start sending the commands to update the remote robot's .bashrc
 			self.channel = ssh.invoke_shell()
-			self.channel.send('sed -i -E "s,export ROS_MASTER_URI=http://[A-Za-z0-9.]+:11311, ,g" ~/.bashrc\n')
+			self.channel.send('sed -i -E "/export ROS_MASTER_URI=http:\/\/[A-Za-z0-9.]+:11311/d" ~/.bashrc\n')
 			self.waitFinishCommand()
-			self.channel.send('sed -i -E "s/export ROS_HOSTNAME=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/ /g" ~/.bashrc\n')
+			self.channel.send('sed -i -E "/export ROS_HOSTNAME=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/d" ~/.bashrc\n')
 			self.waitFinishCommand()
-			self.channel.send('sed -i "s/export ROS_HOSTNAME=localhost/ /g" ~/.bashrc\n')
+			self.channel.send('sed -i "/export ROS_HOSTNAME=localhost/d" ~/.bashrc\n')
 			self.waitFinishCommand()
 			self.channel.send(' echo export ROS_MASTER_URI=http://'+self.masterIP+':11311 >> ~/.bashrc\n')
 			self.waitFinishCommand()
