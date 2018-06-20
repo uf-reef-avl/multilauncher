@@ -130,7 +130,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.linePasswordn.sizePolicy().hasHeightForWidth())
         self.linePasswordn.setSizePolicy(sizePolicy)
-        self.linePasswordn.setEchoMode(QtWidgets.QLineEdit.PasswordEchoOnEdit)
+        self.linePasswordn.setEchoMode(QtWidgets.QLineEdit.Password)
         self.linePasswordn.setObjectName("linePasswordn")
         self.gridLayout_8.addWidget(self.linePasswordn, 2, 3, 1, 1)
         self.spinpackage = QtWidgets.QSpinBox(self.centralwidget)

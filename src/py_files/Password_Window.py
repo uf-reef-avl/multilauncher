@@ -50,7 +50,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
             tempLabelUser = QtWidgets.QLabel(self)
             tempLabelUser.setText(USER)
             tempLinePassword = QtWidgets.QLineEdit(self)
-            tempLinePassword.setEchoMode(QtWidgets.QLineEdit.PasswordEchoOnEdit)
+            tempLinePassword.setEchoMode(QtWidgets.QLineEdit.Password)
             self.linePasswords.append(tempLinePassword)
             self.labelIPS.append(tempLabelIP)
             self.labelUSERS.append(tempLabelUser)

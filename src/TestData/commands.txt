@@ -1,0 +1,6 @@
+/home/matthewh/Junk/multikey
+#####
+cd catkin_ws
+source devel/setup.bash
+cd src/Multi_spin_demo/launch
+roslaunch turtlebot_server.launch $0

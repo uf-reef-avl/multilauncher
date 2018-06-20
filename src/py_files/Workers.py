@@ -5,7 +5,7 @@
 # Created:
 #
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 import os
 import paramiko
 import time
@@ -64,44 +64,67 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 				if self.stopSignal:
 					break
 
-				directory = self.parentPackageDirList[i].split('/')[-2]
-				print self.parentPackageDirList[i]
-				print directory
+				self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
+				self.waitFinishCommand()
+				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+				self.waitFinishCommand()
 
+				packageName = self.gitRepoList[i].split('/')[-1]
+				if ".git" in packageName:
+					packageName = packageName[:-4]
 
-				#If the selected destination directory is not a src directory
-				if directory != "src":
-					self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + 'src\n')
-					self.waitFinishCommand()
-					self.channel.send('cd ' + self.parentPackageDirList[i] + 'src\n')
+				self.channel.send('cd ' + packageName + '\n')
+				flag = self.waitFinishCommand()
+				print "\nflag: "+flag+"\n"
+				if flag == "no file":
+					self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
 					self.waitFinishCommand()
 
-				#If the selected destination directory is a src directory
-				else:
-					self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
-					self.waitFinishCommand()
 					self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
 					self.waitFinishCommand()
 
-				package_name = self.gitRepoList[i].split('/')[-1]
-				self.channel.send('rm -rf ' + package_name + '\n')
-				self.waitFinishCommand()
-				self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
-				self.waitFinishCommand()
+				else:
+					self.channel.send('git stash\n')
+					flag = self.waitFinishCommand()
+					print "\nflag: " + flag + "\n"
+					if flag != "No local changes to save":
+
+						self.channel.send('git checkout master\n')
+						self.waitFinishCommand()
+
+						self.channel.send('git pull\n')
+						self.waitFinishCommand()
+
+						self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+						self.waitFinishCommand()
+
+
+				directory = self.parentPackageDirList[i].split('/')[-2]
+				tempList = self.parentPackageDirList[i].split('/')
+				print tempList
+				print directory
 
 				#catkin make option
-				if self.makeOption[i] == 1:
-					self.channel.send('cd ..\n')
-					self.waitFinishCommand()
-					self.channel.send('catkin_make\n')
-					self.waitFinishCommand()
-
-				#catkin build option
-				elif self.makeOption[i] == 2:
-					self.channel.send('cd ..\n')
-					self.waitFinishCommand()
-					self.channel.send('catkin build\n')
-					self.waitFinishCommand()
+				# if self.makeOption[i] == 1:
+				# 	x = -2
+				# 	while :
+				# 		if flag == "catkin found":
+				# 			break
+				# 		self.channel.send('cd ..\n')
+				# 		self.waitFinishCommand()
+				# 		self.channel.send('ls -la\n')
+				# 		flag = self.waitFinishCommand()
+				# 		x-=1
+                #
+				# 	#self.channel.send('catkin_make\n')
+				# 	#self.waitFinishCommand()
+                #
+				# #catkin build option
+				# elif self.makeOption[i] == 2:
+				# 	self.channel.send('cd ..\n')
+				# 	self.waitFinishCommand()
+				# 	self.channel.send('catkin build\n')
+				# 	self.waitFinishCommand()
 
 
 		except paramiko.ssh_exception.SSHException:
@@ -124,24 +147,40 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		while True:
 			if self.stopSignal:
 				break
+
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
+			print str(data)
 			self.terminalSignal.emit(self.ipIndex, data)
+
 			if 'Username for ' in data:
-					self.channel.send(self.gitUsername + '\n')
-					self.waitFinishCommand()
-					break
+				self.channel.send(self.gitUsername + '\n')
+				self.waitFinishCommand()
+				break
+
 			if 'Password for ' in data:
-					self.channel.send(self.gitPassword + '\n')
-					self.waitFinishCommand()
-					break
+				self.channel.send(self.gitPassword + '\n')
+				self.waitFinishCommand()
+				break
 
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
-				self.wait_finish_command()
+				self.waitFinishCommand()
+
+			if "No such file or directory" in data:
+				return "no file"
+
+			elif "No local changes to save" in data:
+				return "No local changes to save"
+
+			elif "src" in data:
+				return "src"
+
+			elif ".catkin_workspace" in data:
+				return "catkin found"
+
 			if self.user + "@" in data:
 				break
-
 
 #Creates and runs the Launch_Worker class and its methods
 class Launch_Worker(QtCore.QObject):
@@ -225,7 +264,7 @@ class Launch_Worker(QtCore.QObject):
 
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
-				self.wait_finish_command()
+				self.waitFinishCommand()
 			if self.user + "@" in data:
 				break
 
@@ -302,7 +341,7 @@ class Bashrc_Worker(QtCore.QObject):
 			self.terminalSignal.emit(self.ipIndex, data)
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
-				self.wait_finish_command()
+				self.waitFinishCommand()
 			if self.user + "@" in data:
 				break
 

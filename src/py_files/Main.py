@@ -110,7 +110,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Corrects the column header sizes
     def setTableSize(self):
-        print self.width()
         self.robotTable.setColumnWidth(0, self.width()/7)
         self.robotTable.setColumnWidth(1, self.width()/7)
         self.robotTable.setColumnWidth(2, self.width()/7)
@@ -673,7 +672,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                         #If the robot does not have arguments to be saved with
                         else:
-                            rFile.write(self.ENABLE[x]+","+self.IPS[x] + "," + self.USERS[x] + "," + self.MASTER_TYPE[x] + "," + self.TYPES[x]+"\n")
+                            rFile.write(self.ENABLE[x]+","+self.IPS[x] + "," + self.USERS[x] + "," + self.TYPES[x] + "," + self.MASTER_TYPE[x] +"\n")
                     rFile.close()
 
             except:
@@ -874,6 +873,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Handler function to launch one or more threads that perform git commands
     def gitCopyRepo(self):
+        temp = QtWidgets.QMessageBox.warning(self, "Warning", "Uncommited changes will be saved using \"git stash\"")
+
         self.checkPasswordLaunchThread("git")
 
 
@@ -926,8 +927,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #The user does not have a correct RSA created on their machine
             else:
-                temp = QtWidgets.QMessageBox.warning(self, "Warning",
-                                                     "RSA Key not found")
+                temp = QtWidgets.QMessageBox.warning(self, "Warning","RSA Key not found")
 
         #If the command is to be executed via password logins
         else:
