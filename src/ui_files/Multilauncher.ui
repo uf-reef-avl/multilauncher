@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1324</width>
-    <height>668</height>
+    <height>799</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -317,7 +317,7 @@
              <x>0</x>
              <y>0</y>
              <width>627</width>
-             <height>73</height>
+             <height>85</height>
             </rect>
            </property>
            <widget class="QWidget" name="gridLayoutWidget_2">
@@ -496,7 +496,7 @@
            </sizepolicy>
           </property>
           <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
+           <enum>Qt::ScrollBarAsNeeded</enum>
           </property>
           <property name="sizeAdjustPolicy">
            <enum>QAbstractScrollArea::AdjustIgnored</enum>
@@ -578,6 +578,13 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="launchMasterButton">
+        <property name="text">
+         <string>Launch Masters</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>

@@ -6,32 +6,68 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>999</width>
-    <height>423</height>
+    <width>988</width>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0">
-    <widget class="QLabel" name="selectedLabel">
+   <item row="1" column="0" alignment="Qt::AlignHCenter">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Selected:</string>
+      <string>New/Selected: IP Address</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="4">
-    <widget class="QPushButton" name="deleteRobotButton">
+   <item row="1" column="2" alignment="Qt::AlignHCenter">
+    <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Delete Robot</string>
+      <string>New/Selected: Robot Type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QLineEdit" name="typeEdit"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>New/Selected: Robot Name</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="nameEdit"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLineEdit" name="ipEdit"/>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="modifyRobotButton">
+     <property name="text">
+      <string>Modify Robot</string>
      </property>
      <property name="autoDefault">
       <bool>false</bool>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="3">
+   <item row="3" column="0">
+    <widget class="QPushButton" name="addRobotButton">
+     <property name="text">
+      <string>Add Robot</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="3">
     <widget class="QTableWidget" name="robotTable">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -41,6 +77,9 @@
      </property>
      <property name="lineWidth">
       <number>1</number>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
@@ -83,38 +122,17 @@
        <set>AlignCenter</set>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>ROS Settings</string>
+      </property>
+      <property name="textAlignment">
+       <set>AlignCenter</set>
+      </property>
+     </column>
     </widget>
    </item>
-   <item row="1" column="3">
-    <widget class="QLineEdit" name="typeEdit"/>
-   </item>
-   <item row="1" column="2">
-    <widget class="QLineEdit" name="nameEdit"/>
-   </item>
-   <item row="3" column="4">
-    <widget class="QPushButton" name="saveAndExitButton">
-     <property name="text">
-      <string>Save and Exit</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="ipEdit"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="addRobotButton">
-     <property name="text">
-      <string>Add Robot</string>
-     </property>
-     <property name="autoDefault">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1" rowspan="2" colspan="3">
+   <item row="5" column="0" rowspan="2" colspan="3">
     <widget class="QLabel" name="resultLabel">
      <property name="text">
       <string>Result:</string>
@@ -124,10 +142,20 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="4">
-    <widget class="QPushButton" name="modifyRobotButton">
+   <item row="3" column="2">
+    <widget class="QPushButton" name="deleteRobotButton">
      <property name="text">
-      <string>Modify Robot</string>
+      <string>Delete Robot</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QPushButton" name="saveAndExitButton">
+     <property name="text">
+      <string>Save and Exit</string>
      </property>
      <property name="autoDefault">
       <bool>false</bool>

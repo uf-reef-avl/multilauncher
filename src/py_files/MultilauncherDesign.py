@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1324, 668)
+        MainWindow.resize(1324, 799)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.centralwidget)
@@ -166,7 +166,7 @@ class Ui_MainWindow(object):
         self.scrollareapackage.setWidgetResizable(True)
         self.scrollareapackage.setObjectName("scrollareapackage")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 627, 73))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 627, 85))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayoutWidget_2 = QtWidgets.QWidget(self.scrollAreaWidgetContents)
         self.gridLayoutWidget_2.setGeometry(QtCore.QRect(0, 20, 351, 141))
@@ -241,7 +241,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.robotTable.sizePolicy().hasHeightForWidth())
         self.robotTable.setSizePolicy(sizePolicy)
-        self.robotTable.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.robotTable.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.robotTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.robotTable.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.robotTable.setWordWrap(False)
@@ -284,6 +284,9 @@ class Ui_MainWindow(object):
         self.gridLayout.setColumnStretch(5, 1)
         self.gridLayout.setColumnStretch(6, 1)
         self.gridLayout_5.addLayout(self.gridLayout, 0, 0, 1, 3)
+        self.launchMasterButton = QtWidgets.QPushButton(self.centralwidget)
+        self.launchMasterButton.setObjectName("launchMasterButton")
+        self.gridLayout_5.addWidget(self.launchMasterButton, 1, 2, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_5, 1, 0, 1, 1)
         spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_6.addItem(spacerItem5, 2, 0, 1, 1)
@@ -349,4 +352,5 @@ class Ui_MainWindow(object):
         self.selectedfilename.setText(_translate("MainWindow", "Current File: "))
         self.bashrcbutton.setText(_translate("MainWindow", "Update .bashrc"))
         self.argumentbutton.setText(_translate("MainWindow", "Adjust Arguments"))
+        self.launchMasterButton.setText(_translate("MainWindow", "Launch Masters"))
 

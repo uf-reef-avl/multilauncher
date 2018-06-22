@@ -1,3 +1,5 @@
-True,192.168.1.63,penguin,device,Master,$0/temp:yo
-False,192.168.1.64,titicaca,device,No ROS settings,$0/temp:hello
-False,192.168.1.60,moa-nalo,device,192.168.1.63,$0/temp:goodbye
+#####
+False,192.168.1.63,penguin,device,$0/temp:yo,No ROS Settings
+True,192.168.1.64,titicaca,device,$0/temp:hello,No ROS Settings
+True,192.168.1.60,moa-nalo,device,$0/temp:goodbye,No ROS Settings
+False,testa,testb,testc,No Args,No ROS Settings
