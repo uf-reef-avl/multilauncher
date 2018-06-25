@@ -1,6 +1,6 @@
-RSA,~/catkin_ws/multikey
+RSA,/home/matthewh/Junk/multikey
+GITUSER,matthew.hovatter
 #####
-False,192.168.1.63,penguin,device,$0/temp:yo,No ROS Settings
-True,192.168.1.64,titicaca,device,$0/temp:hello,No ROS Settings
-True,192.168.1.60,moa-nalo,device,$0/temp:goodbye,No ROS Settings
-False,testa,testb,testc,No Args,No ROS Settings
+True,penguin,penguin,device,$0/temp:yo,Master and Launch
+False,titicaca,titicaca,device,$0/temp:hello,penguin
+False,192.168.1.60,moa-nalo,device,$0/temp:goodbye,No ROS Settings

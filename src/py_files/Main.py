@@ -68,6 +68,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow.lineDebugCommand.returnPressed.connect(self.sendDebugCommand)
         self.childLaunchWindow.stopCurrentThread.clicked.connect(self.terminateCurrentThread)
 
+
         self.childRoscoreWindow = Launch_Window()
         self.childRoscoreWindow.buttonStopThread.clicked.connect(self.interruptRemainingThreads)
         self.childRoscoreWindow.lineDebugCommand.hide()
@@ -200,7 +201,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.robotEditDialog.robotTable.setItem(x,2,QtWidgets.QTableWidgetItem(self.USERS[x]))
                 self.robotEditDialog.robotTable.setItem(x,3,QtWidgets.QTableWidgetItem(self.TYPES[x]))
                 self.robotEditDialog.robotTable.setItem(x,4,QtWidgets.QTableWidgetItem(self.MASTER_TYPE[x]))
-            self.robotEditDialog.IPS = self.IPS
+                self.robotEditDialog.IPS.append(self.IPS[x])
 
 
     #Loads the text fields in the Main Window from the Edit Robot Dialog's table
@@ -220,31 +221,34 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         for index in range(len(ipText)):
             argumentString = "No Args Selected"
             correspond = False
-            
+
             for previousIndex in range(len(self.IPS)):
                 
                 #the type of the robot already exist and has some arguments
-                if typeText[index] == self.TYPES[previousIndex] and self.DICT_TYPES[self.TYPES[previousIndex]][2][0] != "No Args Selected" and not correspond:
-                    argumentStringExample = self.DICT_TYPES[self.TYPES[previousIndex]][2][0]
-                    numberOfArgument = len(argumentStringExample.split("|"))
-                    argumentString = ''
-                    
-                    #Keep adding arguments for this type until it matches the standard for its type
-                    for argumentIndex in range(numberOfArgument):
-                        argString = self.DICT_TYPES[self.TYPES[previousIndex]][2][0].split("|")[argumentIndex].split("#")[0]
-                        if argumentIndex != numberOfArgument -1:
-                            if len(argString.split("/")) ==2:
-                                argumentString += "$"+str(argumentIndex)+"/"+argString.split("/")[1]+":|"
+                if typeText[index] == self.TYPES[previousIndex]:
+
+                    if self.DICT_TYPES[self.TYPES[previousIndex]][2][0] != "No Args Selected" and not correspond:
+                        argumentStringExample = self.DICT_TYPES[self.TYPES[previousIndex]][2][0]
+                        numberOfArgument = len(argumentStringExample.split("|"))
+                        argumentString = ''
+
+                        #Keep adding arguments for this type until it matches the standard for its type
+                        for argumentIndex in range(numberOfArgument):
+                            argString = self.DICT_TYPES[self.TYPES[previousIndex]][2][0].split("|")[argumentIndex].split("#")[0]
+                            if argumentIndex != numberOfArgument -1:
+                                if len(argString.split("/")) ==2:
+                                    argumentString += "$"+str(argumentIndex)+"/"+argString.split("/")[1]+":|"
+                                else:
+                                    argumentString += "$" + str(argumentIndex) + ":|"
                             else:
-                                argumentString += "$" + str(argumentIndex) + ":|"
-                        else:
-                            if len(argString.split("/")) == 2:
-                                argumentString += "$" +str(argumentIndex) +"/"+argString.split("/")[1]+":"
-                            else:
-                                argumentString += "$" + str(argumentIndex) + ":"
-                
+                                if len(argString.split("/")) == 2:
+                                    argumentString += "$" +str(argumentIndex) +"/"+argString.split("/")[1]+":"
+                                else:
+                                    argumentString += "$" + str(argumentIndex) + ":"
+
                 #this robot already exist and has some arguments
-                if ipText[index] == self.IPS[previousIndex] and nameText[index] == self.USERS[previousIndex] and typeText[index] == self.TYPES[previousIndex]:
+                if ipText[index] == self.IPS[previousIndex] and typeText[index] == self.TYPES[previousIndex]:
+
                     for indexIPFromDict, IP in enumerate(self.DICT_TYPES[self.TYPES[previousIndex]][0]):
                         if ipText[index] == IP:
                             indexInDict = indexIPFromDict
@@ -278,7 +282,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Update the dictionary
         self.updateLists()
         self.flushCommand()
-
         self.updateMasterCombobox()
 
         for index, string in enumerate(tempMasterList):
@@ -403,7 +406,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Takes the data from the text fields in the Main Window and loads them into the backend data structures for processing
     def updateLists(self):
-
+        self.setTableSize()
         try:
              #Clearing backend data structures
             self.IPS = []
@@ -918,7 +921,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Handler function to launch one or more threads that perform git commands
     def gitCopyRepo(self):
-        temp = QtWidgets.QMessageBox.warning(self, "Warning", "Uncommited changes will be saved using \"git stash\"")
+        eMessage = "Uncommited changes will be saved using \"git stash\""
+
+        temp = QtWidgets.QMessageBox.warning(self, "Warning", eMessage)
 
         self.checkPasswordLaunchThread("git")
 

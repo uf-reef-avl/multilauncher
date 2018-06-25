@@ -44,7 +44,6 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 		self.robotTable.setColumnWidth(4, self.width()/5)
 
 
-
 	#Checks to see if there is a robot that already exists with the same IP Address,
 	#statements that return True mean that the user is adding a valid new robot,
 	#statements that return False mean that the user has tried to add a robot whose IP Address already exists as another robot's IP Address
@@ -148,6 +147,7 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 			nameText.append(self.robotTable.item(x,2).text())
 			typeText.append(self.robotTable.item(x,3).text())
 			masterText.append(self.robotTable.item(x,4).text())
+
 
 		#Sends the data out to main.py
 		self.save.emit(enableText,ipText,nameText,typeText, masterText)

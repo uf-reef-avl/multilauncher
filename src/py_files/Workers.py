@@ -1,11 +1,11 @@
 #
 # File: Workers.py
-# Author: Paul Buzaud
+# Author: Paul Buzaud and Matthew Hovatter
 #
 # Created:
 #
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 import os
 import paramiko
 import time
@@ -13,7 +13,6 @@ import logging
 import sys
 
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
-
 
 PING_TIMEOUT = 100
 
@@ -43,15 +42,16 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
-
+		self.skip = False
 
 	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
 	@QtCore.pyqtSlot()
 	def run(self):
 
+		ssh = paramiko.SSHClient()
+
 		#Creating a password or rsa key based ssh connection
 		try:
-			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
@@ -64,68 +64,30 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 				if self.stopSignal:
 					break
 
+				self.prepPath(i)
 				self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
 				self.waitFinishCommand()
 				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
 				self.waitFinishCommand()
 
-				packageName = self.gitRepoList[i].split('/')[-1]
-				if ".git" in packageName:
-					packageName = packageName[:-4]
+				self.prepRepo(i)
 
-				self.channel.send('cd ' + packageName + '\n')
-				flag = self.waitFinishCommand()
-				print "\nflag: "+flag+"\n"
-				if flag == "no file":
-					self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
-					self.waitFinishCommand()
+				#If there wasn't a problem with the retrieving data from the remote git repository
+				if not self.skip:
 
-					self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
-					self.waitFinishCommand()
+					#catkin make option
+					if self.makeOption[i] == 1:
 
-				else:
-					self.channel.send('git stash\n')
-					flag = self.waitFinishCommand()
-					print "\nflag: " + flag + "\n"
-					if flag != "No local changes to save":
-
-						self.channel.send('git checkout master\n')
+						self.prepCatkin(i)
+						self.channel.send('catkin_make\n')
 						self.waitFinishCommand()
 
-						self.channel.send('git pull\n')
+					#catkin build option
+					elif self.makeOption[i] == 2:
+
+						self.prepCatkin(i)
+						self.channel.send('catkin build\n')
 						self.waitFinishCommand()
-
-						self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
-						self.waitFinishCommand()
-
-
-				directory = self.parentPackageDirList[i].split('/')[-2]
-				tempList = self.parentPackageDirList[i].split('/')
-				print tempList
-				print directory
-
-				#catkin make option
-				# if self.makeOption[i] == 1:
-				# 	x = -2
-				# 	while :
-				# 		if flag == "catkin found":
-				# 			break
-				# 		self.channel.send('cd ..\n')
-				# 		self.waitFinishCommand()
-				# 		self.channel.send('ls -la\n')
-				# 		flag = self.waitFinishCommand()
-				# 		x-=1
-                #
-				# 	#self.channel.send('catkin_make\n')
-				# 	#self.waitFinishCommand()
-                #
-				# #catkin build option
-				# elif self.makeOption[i] == 2:
-				# 	self.channel.send('cd ..\n')
-				# 	self.waitFinishCommand()
-				# 	self.channel.send('catkin build\n')
-				# 	self.waitFinishCommand()
-
 
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
@@ -142,6 +104,72 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.finishThread.emit(self.ipIndex, self.finishMessage)
 
 
+	#Corrects some incorrect user input and/or appends a src directory to hold the local repository
+	def prepPath(self, i):
+
+		tempList = self.parentPackageDirList[i].split('/')
+		if tempList[-1] != '':
+			self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "/")
+
+		#If a catkin option was selected for this repo
+		if self.makeOption[i] != 0:
+			if "src" not in tempList:
+				self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "src/")
+
+
+	#Sets up a new local repo or overrides the local existing repo with the remote one
+	def prepRepo(self,i):
+
+		packageName = self.gitRepoList[i].split('/')[-1]
+		if ".git" in packageName:
+			packageName = packageName[:-4]
+
+		self.channel.send('cd ' + packageName + '\n')
+		flag = self.waitFinishCommand()
+
+		# New local repo
+		if flag == "no file":
+			self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
+			flag = self.waitFinishCommand()
+
+			# Successful git clone
+			if flag == "done":
+				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+				self.waitFinishCommand()
+			else:
+				self.skip = True
+
+		# Existing local repo
+		else:
+			self.channel.send('git stash\n')
+			flag = self.waitFinishCommand()
+
+			#If the local repository has been changed
+			if flag != "No local changes to save":
+				self.channel.send('git checkout master\n')
+				self.waitFinishCommand()
+
+				self.channel.send('git pull\n')
+				self.waitFinishCommand()
+
+				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+				self.waitFinishCommand()
+
+
+	#Sets up for catkin make or build
+	def prepCatkin(self, i):
+
+		tempList = self.parentPackageDirList[i].split('/')
+		index = tempList.index("src")
+		toSrc = tempList[:index]
+		path = ""
+		for string in toSrc:
+			path += (string + "/")
+
+		self.channel.send('cd ' + path + '\n')
+		self.waitFinishCommand()
+
+
 	#Loops indefinitely until the current set of commands has been fully executed or if the user has interrupted the threads
 	def waitFinishCommand(self):
 		while True:
@@ -150,18 +178,13 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
-			print str(data)
 			self.terminalSignal.emit(self.ipIndex, data)
 
 			if 'Username for ' in data:
 				self.channel.send(self.gitUsername + '\n')
-				self.waitFinishCommand()
-				break
 
 			if 'Password for ' in data:
 				self.channel.send(self.gitPassword + '\n')
-				self.waitFinishCommand()
-				break
 
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
@@ -173,11 +196,8 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			elif "No local changes to save" in data:
 				return "No local changes to save"
 
-			elif "src" in data:
-				return "src"
-
-			elif ".catkin_workspace" in data:
-				return "catkin found"
+			elif "Checking connectivity... done" in data:
+				return "done"
 
 			if self.user + "@" in data:
 				break
@@ -210,9 +230,10 @@ class Launch_Worker(QtCore.QObject):
 	@QtCore.pyqtSlot()
 	def run(self):
 
+		ssh = paramiko.SSHClient()
+
 		#Creating a password or rsa key based ssh connection
 		try:
-			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
@@ -297,9 +318,10 @@ class Bashrc_Worker(QtCore.QObject):
 	@QtCore.pyqtSlot()
 	def run(self):
 
+		ssh = paramiko.SSHClient()
+
 		#Creating a password or rsa key based ssh connection
 		try:
-			ssh = paramiko.SSHClient()
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
@@ -318,7 +340,6 @@ class Bashrc_Worker(QtCore.QObject):
 			self.waitFinishCommand()
 			self.channel.send(' echo export ROS_HOSTNAME='+self.IP+' >> ~/.bashrc\n')
 			self.waitFinishCommand()
-
 
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
@@ -369,7 +390,6 @@ class Ping_Worker(QtCore.QObject):
 	@QtCore.pyqtSlot()
 	def run(self):
 
-
 		#Ping until you reach the set maximum number of pings
 		for x in range(PING_TIMEOUT):
 
@@ -402,7 +422,6 @@ class Ping_Worker(QtCore.QObject):
 
 				#Display the status to the tab terminal
 				self.pingSignal.emit(self.ipIndex, self.responseString,response)
-
 
 		#Close the thread
 		self.finishThread.emit(self.ipIndex, self.errorString)

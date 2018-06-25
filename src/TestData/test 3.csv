@@ -1,7 +1,7 @@
 RSA,/home/matthewh/Junk/multikey
 GITUSER,matthew.hovatter
 #####
-True,192.168.1.63,penguin,device,$0/temp:yo,Master
-False,192.168.1.64,titicaca,device,$0/temp:hello,No ROS Settings
-False,192.168.1.60,moa-nalo,device,$0/temp:goodbye,192.168.1.63
-True,192.168.1.118,testb,testc,No Args,No ROS Settings
+False,192.168.1.63,penguin,device,$0/temp:yo,No ROS Settings
+False,192.168.1.64,titicaca,device,$0/temp:hello,192.168.1.60
+True,192.168.1.60,moa-nalo,device,$0/temp:goodbye,Master and Launch
+False,192.168.1.118,testb,testc,No Args,192.168.1.64
