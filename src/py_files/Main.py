@@ -900,9 +900,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def specifyPackagePath(self, n):
         tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the Package Directory")
 
-        self.STRINGOFPATH = tempDirectoryPath[0]
-
-        if self.STRINGOFPATH:
+        if tempDirectoryPath:
             tempDirTest = tempDirectoryPath.split('/')
 
             if tempDirTest[1] == "home":
