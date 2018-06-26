@@ -316,7 +316,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
             if statusEnable == "True" and statusFound == "Found" and ((master == "No ROS Settings" or master == "Master" or master == "Master and Launch") \
-                or (self.MASTER_TYPE[indexMasterIP] == "Master" or self.MASTER_TYPE[indexMasterIP] == "Master and Launch")):
+                or ((self.MASTER_TYPE[indexMasterIP] == "Master" or self.MASTER_TYPE[indexMasterIP] == "Master and Launch")
+                    and (self.ENABLE[indexMasterIP] == "True" and self.CONNECTION_STATUS[indexMasterIP] == "Found"))):
 
                 #Green
                 self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(154, 255, 154)))
@@ -505,13 +506,18 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             else:
                 indexMasterIP = i
 
-            #If the computer is enabled and (is not found or bound to another master)
-            #and ((the master is not enable or found) or (the master is not set correctly))
-            #-> return false
-            if statusEnable == "True" and ((statusFound != "Found") or (master != "No ROS Settings" and master != "Master" and master != "Master and Launch")) \
-                    and ((self.ENABLE[indexMasterIP] != "True" or self.CONNECTION_STATUS[indexMasterIP] != "Found")
-                         or (self.MASTER_TYPE[indexMasterIP] != "Master" and self.MASTER_TYPE[indexMasterIP] != "Master and Launch")):
-                connectionAvailable = False
+            #If the computer is enabled
+            if statusEnable == "True":
+
+                    #If the computer is not found
+                    if statusFound != "Found":
+                        connectionAvailable = False
+
+                    #If the computer is bound to a master that is not enabled, found, or set to have valid ROS Settings
+                    elif (master != "No ROS Settings" and master != "Master" and master != "Master and Launch") \
+                            and ((self.ENABLE[indexMasterIP] != "True" or self.CONNECTION_STATUS[indexMasterIP] != "Found")
+                            or (self.MASTER_TYPE[indexMasterIP] != "Master" and self.MASTER_TYPE[indexMasterIP] != "Master and Launch")):
+                        connectionAvailable = False
 
             #If computer is set to disabled increase the count of disabled computers
             if statusEnable == "False":
@@ -541,6 +547,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.rsaPath.setEnabled(available)
         self.childLaunchWindow.lineDebugCommand.setEnabled(True)
         self.launchTypeButton.setEnabled(available)
+        self.launchMasterButton.setEnabled(available)
 
 
     #Flushes the tabbed command terminal in the Main Window
@@ -930,9 +937,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def launchCommands(self):
         self.checkPasswordLaunchThread("commands")
 
+
     #Handler function to launch one or more threads that perform launch commands on a single type
     def launchThisType(self):
         self.checkPasswordLaunchThread("type")
+
 
     #Handler function to launch one or more threads that perform ping commands
     def pingTest(self):

@@ -44,6 +44,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.finishMessage = ""
 		self.skip = False
 
+
 	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
 	@QtCore.pyqtSlot()
 	def run(self):
@@ -201,6 +202,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			if self.user + "@" in data:
 				break
+
 
 #Creates and runs the Launch_Worker class and its methods
 class Launch_Worker(QtCore.QObject):
