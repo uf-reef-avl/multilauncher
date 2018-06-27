@@ -1,6 +1,0 @@
-RSA,/home/matthewh/Junk/multikey
-GITUSER,matthew.hovatter
-#####
-True,penguin,penguin,device,$0/temp:yo,Master and Launch
-False,titicaca,titicaca,device,$0/temp:hello,penguin
-False,192.168.1.60,moa-nalo,device,$0/temp:goodbye,No ROS Settings

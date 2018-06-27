@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 #This window is used to set the arguments which will be replaced in the commands lines
 class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
-    save_args = QtCore.pyqtSignal(list)
+    saveArgs = QtCore.pyqtSignal(list)
 
 
     #Definition of the Adjust_Arguments terminal
@@ -227,7 +227,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         argumentsWellformed = self.checkArguments()
         if argumentsWellformed == "":
             self.createArgumentResume()
-            self.save_args.emit(self.argumentList)
+            self.saveArgs.emit(self.argumentList)
             self.close()
             self.deleteLater()
         else:

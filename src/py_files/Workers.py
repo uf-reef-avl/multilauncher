@@ -250,6 +250,13 @@ class Launch_Worker(QtCore.QObject):
 				self.channel.send(str(i)+ '\n')
 				self.waitFinishCommand()
 
+			while True:
+				if self.stopSignal:
+					break
+				self.waitFinishCommand()
+
+
+
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
@@ -288,6 +295,96 @@ class Launch_Worker(QtCore.QObject):
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
+
+			if self.user + "@" in data:
+				break
+
+
+#Creates and runs the ROSMASTER_Worker class and its methods
+class ROSMASTER_Worker(QtCore.QObject):
+	# Variables for emitting starting, displaying status, and closing signals
+	start = QtCore.pyqtSignal()
+	terminalSignal = QtCore.pyqtSignal(int, str)
+	finishThread = QtCore.pyqtSignal(int, str)
+
+	# Definition of a Launch_Worker
+	def __init__(self, ipIndex, IP, user, commandList, password, key):
+		super(ROSMASTER_Worker, self).__init__()
+		self.ipIndex = ipIndex
+		self.IP = IP
+		self.user = user
+		self.password = password
+		self.terminalRefreshSeconds = 0.75
+		self.stopSignal = False
+		self.start.connect(self.run)
+		self.myKey = key
+		self.finishMessage = ""
+
+	# This function connects to the remote robot and executes the user's list of commands
+	@QtCore.pyqtSlot()
+	def run(self):
+
+		ssh = paramiko.SSHClient()
+
+		#Creating a password or rsa key based ssh connection
+		try:
+			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+			if self.password is not None:
+				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,
+							look_for_keys=False)
+			else:
+				ssh.connect(self.IP, 22, username=self.user, pkey=self.myKey)
+
+			#Execute the roscore command
+			self.channel = ssh.invoke_shell()
+			self.channel.send('roscore\n')
+			self.waitFinishCommand()
+
+			while True:
+				if self.stopSignal:
+					break
+				self.waitFinishCommand()
+
+
+		except paramiko.ssh_exception.SSHException:
+			if self.password:
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
+			elif self.password is None:
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		#finish thread
+		ssh.close()
+		self.finishThread.emit(self.ipIndex, self.finishMessage)
+
+
+	#Loops indefinitely until the current set of commands has been fully executed or if the user has interrupted the threads
+	def waitFinishCommand(self):
+		while True:
+			if self.stopSignal:
+				break
+			time.sleep(self.terminalRefreshSeconds)
+			data = self.channel.recv(1024).decode("utf-8")
+			self.terminalSignal.emit(self.ipIndex, data)
+
+			if '[sudo]' in data and self.password is not None:
+				self.channel.send(self.password + '\n')
+				self.waitFinishCommand()
+				break
+
+			if '[Y/n]' in data:
+				self.channel.send('Y\n')
+				self.waitFinishCommand()
+				break
+
+			if '[y/N]' in data:
+				self.channel.send('y\n')
+				self.waitFinishCommand()
+				break
+
+			if "continue connecting (yes/no)" in data:
+				self.channel.send("yes\n")
+				self.waitFinishCommand()
+
 			if self.user + "@" in data:
 				break
 
@@ -387,6 +484,7 @@ class Ping_Worker(QtCore.QObject):
 		self.stopSignal = False
 		self.responseString = ""
 		self.errorString = ""
+
 
 	#This function pings the robot
 	@QtCore.pyqtSlot()
