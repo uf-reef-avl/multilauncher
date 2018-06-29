@@ -302,13 +302,14 @@ class Launch_Worker(QtCore.QObject):
 
 #Creates and runs the ROSMASTER_Worker class and its methods
 class ROSMASTER_Worker(QtCore.QObject):
+
 	# Variables for emitting starting, displaying status, and closing signals
 	start = QtCore.pyqtSignal()
 	terminalSignal = QtCore.pyqtSignal(int, str)
 	finishThread = QtCore.pyqtSignal(int, str)
 
 	# Definition of a Launch_Worker
-	def __init__(self, ipIndex, IP, user, commandList, password, key):
+	def __init__(self, ipIndex, IP, user, password, key):
 		super(ROSMASTER_Worker, self).__init__()
 		self.ipIndex = ipIndex
 		self.IP = IP
@@ -319,6 +320,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
+
 
 	# This function connects to the remote robot and executes the user's list of commands
 	@QtCore.pyqtSlot()

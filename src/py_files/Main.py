@@ -11,7 +11,7 @@ from Adjust_Arguments import Adjust_Arguments
 from Password_Window import Password_Window
 import MultilauncherDesign
 from Launch_Window import Launch_Window
-from Workers import SSH_Transfer_File_Worker, Bashrc_Worker, Launch_Worker, Ping_Worker
+from Workers import SSH_Transfer_File_Worker, Bashrc_Worker, Launch_Worker, Ping_Worker, ROSMASTER_Worker
 from Edit_Robot_Dialog import Edit_Robot_Dialog
 import os
 import paramiko
@@ -28,6 +28,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.myKey = ""
         self.RSA = self.rsaCheck()
         self.maxSSH = self.setMaxSSH()
+        self.masterSetEnable = False
+        self.maxSSHIgnore = False
 
         #modify the ui to add the tab widget
         del self.commands
@@ -83,12 +85,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Creates the Roscore Window used to manage/observe running roscores
         self.childRoscoreWindow = Launch_Window()
+        self.childRoscoreWindow.setWindowTitle("ROSCORE Window")
         self.childRoscoreWindow.window = "masters"
         self.childRoscoreWindow.setModal(False)
         self.childRoscoreWindow.buttonStopThread.clicked.connect(lambda state, arg = "masters":self.interruptRemainingThreads(arg))
         self.childRoscoreWindow.lineDebugCommand.hide()
         self.childRoscoreWindow.stopCurrentThread.clicked.connect(lambda state, arg = "masters":self.terminateCurrentThread(arg))
-        self.childLaunchWindow.closeThreads.connect(self.termCheck)
+        self.childRoscoreWindow.closeThreads.connect(self.termCheck)
 
         #Data structures for the dynamic master window
         self.masterLayoutTerminalList = {}
@@ -503,7 +506,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     index = combo.findText(text)
                     combo.setCurrentIndex(index)
 
-
         except:
              e = sys.exc_info()[0]
              print( "UpdateLists Error: %s" % e )
@@ -518,7 +520,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         listOfLines = rFile.readlines()
         for line in listOfLines:
             if "MaxSessions" in line:
-                temp = line.split(" ")[1].strip()
+                temp = line.split(" ")[-1].strip()
+
                 return temp
             
         #If the MaxSessions variable was not found return the default number of sessions
@@ -528,13 +531,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Checks to see if the user is trying to connect to more robots than there sshd_config file will allow
     def checkMaxSSH(self, numOfIPS):
 
-        if numOfIPS != 0:
+        if numOfIPS != 0 and self.maxSSHIgnore != True:
             mType = self.calcMasterLaunch()
-
             if (numOfIPS+mType) > int(self.maxSSH):
+                self.maxSSHIgnore = True
                 message = "Your combined number of enabled robots and \"Master and Launch\" ROS Settings has exceeded your maximum number of concurrent SSH connections." \
                           "\nPlease update your ssh configuration file at:\n/etc/ssh/sshd_config\nand add or update" \
-                          " the line: MaxSessions\nto your required number of robots." \
+                          " the line:\nMaxSessions "+str((numOfIPS+mType))+"\n" \
                           "\nCurrent Maximum: "+str(self.maxSSH)+"\nNeeded Maximum: "+str((numOfIPS+mType))
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", message)
 
@@ -629,39 +632,61 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         return connectionAvailable
 
 
-    #Unlocks several functions after all listed robots have been found
+    #Locks and unlocks several functions after all enabled robots have been found and have valid ROS Settings
     def setLaunchEnable(self, available):
-        self.tabCommands.setEnabled(available)
-        self.savecommandsbutton.setEnabled(available)
-        self.loadcommandsbutton.setEnabled(available)
-        self.launchbutton.setEnabled(available)
-        self.buttontransfer.setEnabled(available)
-        self.bashrcbutton.setEnabled(available)
-        self.argumentbutton.setEnabled(available)
-        self.rsacheckbox.setEnabled(available)
-        self.spinpackage.setEnabled(available)
-        self.lineUsername.setEnabled(available)
-        self.linePassword.setEnabled(available)
-        self.findRSAButton.setEnabled(available)
-        self.rsaPath.setEnabled(available)
-        self.childLaunchWindow.lineDebugCommand.setEnabled(True)
-        self.launchTypeButton.setEnabled(available)
-        self.launchMasterButton.setEnabled(available)
+
+        if self.masterSetEnable:
+            self.robotTable.setEnabled(not available)
+            self.editlistsbutton.setEnabled(not available)
+            self.pingrobotsbutton.setEnabled(not available)
+            self.buttontransfer.setEnabled(not available)
+            self.bashrcbutton.setEnabled(not available)
+            self.argumentbutton.setEnabled(not available)
+            self.rsacheckbox.setEnabled(not available)
+            self.spinpackage.setEnabled(not available)
+            self.lineUsername.setEnabled(not available)
+            self.linePassword.setEnabled(not available)
+            self.rsaPath.setEnabled(not available)
+            self.launchMasterButton.setEnabled(not available)
+
+        else:
+            self.editlistsbutton.setEnabled(True)
+            self.pingrobotsbutton.setEnabled(True)
+            self.robotTable.setEnabled(True)
+            self.tabCommands.setEnabled(available)
+            self.savecommandsbutton.setEnabled(available)
+            self.loadcommandsbutton.setEnabled(available)
+            self.launchbutton.setEnabled(available)
+            self.buttontransfer.setEnabled(available)
+            self.bashrcbutton.setEnabled(available)
+            self.argumentbutton.setEnabled(available)
+            self.rsacheckbox.setEnabled(available)
+            self.spinpackage.setEnabled(available)
+            self.lineUsername.setEnabled(available)
+            self.linePassword.setEnabled(available)
+            self.findRSAButton.setEnabled(available)
+            self.rsaPath.setEnabled(available)
+            self.childLaunchWindow.lineDebugCommand.setEnabled(available)
+            self.launchTypeButton.setEnabled(available)
+            self.launchMasterButton.setEnabled(available)
 
 
-    #
+    #Returns True if no ROSMasters are needed or if there are masters running when needed, False otherwise
     def checkMastersRunning(self):
-        x=1
 
+        tempList = []
+        for index in self.masterWorkerList:
+            tempList.append(self.masterWorkerList[index].IP)
 
+        for i, statusEnable, master in zip(range(len(self.IPS)),self.ENABLE, self.MASTER_TYPE):
 
-
-
-
-
-    #
-    def masterSetEnabled(self):
-        x=1
+            #If the computer is enabled and this computer is listening to a master
+            if statusEnable == "True" and master != "No ROS Settings" and master != "Master" and master != "Master and Launch":
+                indexMasterIP = self.IPS.index(master)
+                IP = self.IPS[indexMasterIP]
+                if IP not in tempList:
+                    return False
+        return True
 
 
     #Flushes the tabbed command terminal in the Main Window
@@ -818,7 +843,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def saveToFile(self):
 
         #If there is data to be saved
-        if self.saveFileAndPingCheck():
+        if self.robotTable.rowCount() != 0:
 
             filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", filter = "csv (*.csv *.)")
 
@@ -862,6 +887,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             except:
                 e = sys.exc_info()[0]
                 print("Save to File Error: %s" % e)
+
+        else:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No robot data found to save")
 
 
     #Save the current list of commands from the Command Editor text field to a .txt file
@@ -933,7 +961,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
     #Checks to see if there is robot data to save or ping
-    def saveFileAndPingCheck(self):
+    def pingCheck(self):
 
         allDisabled = False
         numberDisable = 0
@@ -949,7 +977,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #If there is no data
         else:
-            QtWidgets.QMessageBox.warning(self, "Warning", "No robot data found")
+            if self.robotTable.rowCount() == 0:
+                QtWidgets.QMessageBox.warning(self, "Warning", "No robot data found")
+
+            else:
+                QtWidgets.QMessageBox.warning(self, "Warning", "No robot(s) enabled")
+
             return False
 
 
@@ -1043,13 +1076,36 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Handler function to launch one or more threads that perform git commands
     def gitCopyRepo(self):
-        eMessage = "Uncommited changes will be saved using \"git stash\""
+        self.ERRORTEXT = ""
 
-        temp = QtWidgets.QMessageBox.warning(self, "Warning", eMessage)
+        if self.spinpackage.value() == 0:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Zero Repositories set")
 
-        #REDESIGN: check for empty data
+        else:
 
-        self.checkPasswordLaunchThread("git")
+
+            if self.lineUsername.text().strip() == "":
+                self.ERRORTEXT += "\nMissing remote Git Username\n"
+
+            if self.linePassword.text().strip() == "":
+                self.ERRORTEXT += "\nMissing remote Git Username\n"
+
+            index = 0
+            while index < self.spinpackage.value():
+
+                if self.linePathParentPackage[index].text().strip() == "":
+                    self.ERRORTEXT += "\nMissing Destination Directory for repository: "+ str(index+1) +"\n"
+
+                if self.linePathGitRepoList[index].text().strip() == "":
+                    self.ERRORTEXT += "\nMissing Remote Repository URL for repository: " + str(index+1) +"\n"
+                index += 1
+
+            if self.ERRORTEXT == "":
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", "Uncommitted changes will be saved using \"git stash\"")
+                self.checkPasswordLaunchThread("git")
+
+            else:
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", self.ERRORTEXT)
 
 
     #Handler function to launch the rosmasters
@@ -1057,25 +1113,31 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         if (self.calcMaster()+self.calcMasterLaunch()) == 0:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", "No ROS MASTERS have been set/Enabled")
         else:
-            self.masterSetEnabled()
+            self.masterSetEnable = True
             self.checkPasswordLaunchThread("masters")
 
 
     #Handler function to launch one or more threads that perform launch commands
     def launchCommands(self):
-        self.checkPasswordLaunchThread("commands")
+        if self.checkMastersRunning():
+            self.checkPasswordLaunchThread("commands")
+        else:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "One or more ROSMASTERs is not running, please close and relaunch the ROSCORE window")
 
 
     #Handler function to launch one or more threads that perform launch commands on a single type
     def launchThisType(self):
-        self.checkPasswordLaunchThread("type")
+        if self.checkMastersRunning():
+            self.checkPasswordLaunchThread("type")
+        else:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "One or more ROSMASTERs is not running, please close and relaunch the ROSCORE window")
 
 
     #Handler function to launch one or more threads that perform ping commands
     def pingTest(self):
 
         #If there is data to ping
-        if self.saveFileAndPingCheck():
+        if self.pingCheck():
             self.checkPasswordLaunchThread("ping")
 
 
@@ -1108,7 +1170,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #If the proper RSA key is present on the user's machine at: ~/.ssh
             if self.RSA:
-                self.launchThread(commandType,"rsa")
+                if commandType == "masters":
+                    self.masterThread("rsa")
+                else:
+                    self.launchThread(commandType,"rsa")
 
             #The user does not have a correct RSA created on their machine
             else:
@@ -1132,6 +1197,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             self.passwordWindow = Password_Window(enableIPS,enableUSERS,commandType)
             self.passwordWindow.savePasswords.connect(self.updatePassword)
+            self.passwordWindow.exitWindow.connect(self.termCheck)
             self.passwordWindow.show()
             self.passwordWindow.key.connect(self.rsaConfirm)
 
@@ -1141,12 +1207,15 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def updatePassword(self, passwordList, commandType):
         self.PASSWORDS = {}
         self.PASSWORDS = passwordList.copy()
-        self.launchThread(commandType, "password")
+
+        if commandType == "masters":
+            self.masterThread("password")
+        else:
+            self.launchThread(commandType, "password")
 
 
     #Create and launch one or more threads to do different commands
     def launchThread(self, threadType, passwordType):
-        self.updateLists()
         self.ERRORTEXT = ""
         try:
 
@@ -1183,7 +1252,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                             #Create the worker
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
-                            worker.finishThread.connect(self.killthread)
+                            worker.finishThread.connect(self.killThread)
                             worker.moveToThread(tempThread)
                             worker.start.emit()
                             self.workerList[index] = worker
@@ -1236,7 +1305,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                             #Create the worker
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
-                            worker.finishThread.connect(self.killthread)
+                            worker.finishThread.connect(self.killThread)
                             worker.moveToThread(tempThread)
                             worker.start.emit()
                             self.workerList[index] = worker
@@ -1255,7 +1324,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             #Create the worker
                             worker = Ping_Worker(index, self.IPS[index])
                             worker.pingSignal.connect(self.pingWriteInOwnedTerminal)
-                            worker.finishThread.connect(self.killthread)
+                            worker.finishThread.connect(self.killThread)
                             worker.moveToThread(tempThread)
                             worker.start.emit()
                             self.workerList[index] = worker
@@ -1282,7 +1351,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                 worker = Bashrc_Worker(index, self.IPS[index], self.USERS[index], tempMasterString, None, self.myKey)
 
                             #Create the worker
-                            worker.finishThread.connect(self.killthread)
+                            worker.finishThread.connect(self.killThread)
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
                             worker.moveToThread(tempThread)
                             worker.start.emit()
@@ -1300,50 +1369,120 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                          "Failed to connect to robot(s), please check your data and passwords")
 
 
+    #Create and launch one or more threads to run roscore
+    def masterThread(self, passwordType):
+        self.ERRORTEXT = ""
+        try:
+
+            #If there are no currently running threads
+            if self.masterThreadStillRunning == 'no':
+                self.refreshLaunchWindow("masters")
+
+                for index in range(len(self.IPS)):
+                    if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
+                        tempThread = QtCore.QThread()
+                        tempThread.start()
+
+                        # RSA checkbox test
+                        if passwordType == "password":
+                            worker = ROSMASTER_Worker(index, self.IPS[index], self.USERS[index], self.PASSWORDS[self.IPS[index]], self.myKey)
+                        elif passwordType == "rsa":
+                            worker = ROSMASTER_Worker(index, self.IPS[index], self.USERS[index], None, self.myKey)
+
+                        #Create the worker
+                        worker.finishThread.connect(self.masterKillThread)
+                        worker.terminalSignal.connect(self.masterWriteInOwnedTerminal)
+                        worker.moveToThread(tempThread)
+                        worker.start.emit()
+                        self.masterWorkerList[index] = worker
+                        self.masterThreadList[index] = tempThread
+
+                self.masterThreadStillRunning = 'Masters still running'
+                self.childRoscoreWindow.show()
+
+            #If a previous set of threads have not finished running
+            else:
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", self.masterThreadStillRunning)
+
+        except paramiko.AuthenticationException:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                         "Failed to connect to masters(s), please check your data and passwords")
+
+
     #Cleans the Launch Window of previous data and prepares new tabs for the new list of robots
     def refreshLaunchWindow(self,commands):
 
-        while self.childLaunchWindow.tab_Launch.count() != 0:
-            try:
-                obj = self.terminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
-                obj.deleteLater()
-                obj = self.layoutTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
-                obj.deleteLater()
-                obj = self.widgetTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
-                obj.deleteLater()
-            except:
-                pass
-            self.childLaunchWindow.tab_Launch.removeTab(0)
+        if commands == "masters":
+
+            while self.childRoscoreWindow.tab_Launch.count() != 0:
+                try:
+                    obj = self.masterTerminalList.pop(self.IPS.index(str(self.childRoscoreWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                    obj = self.masterLayoutTerminalList.pop(self.IPS.index(str(self.childRoscoreWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                    obj = self.masterWidgetTerminalList.pop(self.IPS.index(str(self.childRoscoreWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                except:
+                    pass
+                self.childRoscoreWindow.tab_Launch.removeTab(0)
+
+        else:
+            while self.childLaunchWindow.tab_Launch.count() != 0:
+                try:
+                    obj = self.terminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                    obj = self.layoutTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                    obj = self.widgetTerminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
+                    obj.deleteLater()
+                except:
+                    pass
+                self.childLaunchWindow.tab_Launch.removeTab(0)
+
 
         for index, IP in enumerate(self.IPS):
 
             if self.ENABLE[index] == "True" and commands == "ping":
                 tempLayout = QtWidgets.QVBoxLayout()
                 tempWidget = QtWidgets.QWidget()
-                temp_terminal = QtWidgets.QPlainTextEdit()
-                temp_terminal.setReadOnly(True)
-                tempLayout.addWidget(temp_terminal, 0)
+                tempTerminal = QtWidgets.QPlainTextEdit()
+                tempTerminal.setReadOnly(True)
+                tempLayout.addWidget(tempTerminal, 0)
                 tempWidget.setLayout(tempLayout)
                 self.widgetTerminalList[index] = tempWidget
                 self.layoutTerminalList[index] = tempLayout
-                self.terminalList[index] = temp_terminal
+                self.terminalList[index] = tempTerminal
                 self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
 
-            if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands != "ping" and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
+            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "masters" \
+                    and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
 
                 tempLayout = QtWidgets.QVBoxLayout()
                 tempWidget = QtWidgets.QWidget()
-                temp_terminal = QtWidgets.QPlainTextEdit()
-                temp_terminal.setReadOnly(True)
-                tempLayout.addWidget(temp_terminal, 0)
+                tempTerminal = QtWidgets.QPlainTextEdit()
+                tempTerminal.setReadOnly(True)
+                tempLayout.addWidget(tempTerminal, 0)
+                tempWidget.setLayout(tempLayout)
+                self.masterWidgetTerminalList[index] = tempWidget
+                self.masterLayoutTerminalList[index] = tempLayout
+                self.masterTerminalList[index] = tempTerminal
+                self.childRoscoreWindow.tab_Launch.addTab(tempWidget, str(IP))
+
+
+            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands != "masters" and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
+                tempLayout = QtWidgets.QVBoxLayout()
+                tempWidget = QtWidgets.QWidget()
+                tempTerminal = QtWidgets.QPlainTextEdit()
+                tempTerminal.setReadOnly(True)
+                tempLayout.addWidget(tempTerminal, 0)
                 tempWidget.setLayout(tempLayout)
                 self.widgetTerminalList[index] = tempWidget
                 self.layoutTerminalList[index] = tempLayout
-                self.terminalList[index] = temp_terminal
+                self.terminalList[index] = tempTerminal
                 self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
 
 
-    #Allows the user to send commands to the remote robots for unexpected requests of authorization and y/n checks
+    #Allows the user to send commands to the remote robots for unexpected terminal requests
     def sendDebugCommand(self):
         debugCommand = self.childLaunchWindow.lineDebugCommand.text().strip()
         self.childLaunchWindow.lineDebugCommand.clear()
@@ -1357,6 +1496,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     @QtCore.pyqtSlot(int, str)
     def writeInOwnedTerminal(self, ipIndex, data):
         self.terminalList[ipIndex].appendPlainText(data)
+
+
+    #Visually updates the ROSCORE Window tabs to display feedback from the ROSMASTERS
+    @QtCore.pyqtSlot(int, str)
+    def masterWriteInOwnedTerminal(self, ipIndex, data):
+        self.masterTerminalList[ipIndex].appendPlainText(data)
 
 
     #Visually updates the Launch Window tabs to display feedback from pinging the robots
@@ -1376,8 +1521,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Terminates the calling thread
     @QtCore.pyqtSlot(int, str)
-    def killthread(self, ipIndex, eMessage):
-        
+    def killThread(self, ipIndex, eMessage):
+        self.ERRORTEXT = ""
+
         #Append a failed terminal's error string to the master error string
         if eMessage != "":
             self.ERRORTEXT += "\n"+eMessage +"\n"
@@ -1394,63 +1540,128 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Display the finish message box based on the threads that were running
         if self.workerList == {} and self.threadList == {}:
             if self.threadStillRunning == 'Bashrc still running':
-                temp = QtWidgets.QMessageBox.information(self, "Information", "Bashrc Update Finished\n"+self.ERRORTEXT)
+                temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
+                                                         "Bashrc Update Finished\n" + self.ERRORTEXT)
             elif self.threadStillRunning == 'Pings still running':
                 self.setLaunchEnable(self.checkConnectionAvailable())
-                temp = QtWidgets.QMessageBox.information(self, "Information", "Ping Test Finished\n"+self.ERRORTEXT)
+                temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information", "Ping Test Finished\n" + self.ERRORTEXT)
             elif self.threadStillRunning == 'Git repository synchronisation still running':
-                temp = QtWidgets.QMessageBox.information(self, "Information", "Git Repo Cloning Finished\n"+self.ERRORTEXT)
+                temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
+                                                         "Git Repo Cloning Finished\n" + self.ERRORTEXT)
             elif self.threadStillRunning == 'Launch files still running':
-                temp = QtWidgets.QMessageBox.information(self, "Information", "Finished Executing Commands\n"+self.ERRORTEXT)
+                temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
+                                                         "Finished Executing Commands\n" + self.ERRORTEXT)
             self.childLaunchWindow.show()
             self.threadStillRunning = 'no'
         self.updateLists()
 
 
+    #Terminates the calling thread
+    @QtCore.pyqtSlot(int, str)
+    def masterKillThread(self, ipIndex, eMessage):
+        self.ERRORTEXT = ""
+
+        # Append a failed terminal's error string to the master error string
+        if eMessage != "":
+            self.ERRORTEXT += "\n" + eMessage + "\n"
+
+        del self.masterWorkerList[ipIndex]
+        self.masterThreadList[ipIndex].quit()
+        self.masterThreadList[ipIndex].wait()
+        del self.masterThreadList[ipIndex]
+
+        for index in range(self.childRoscoreWindow.tab_Launch.count()):
+            if self.childRoscoreWindow.tab_Launch.tabText(index) == self.IPS[ipIndex]:
+                self.childRoscoreWindow.tab_Launch.setTabText(index, self.IPS[ipIndex] + " (Finished)")
+
+        # Display the finish message box based on the threads that were running
+        if self.masterWorkerList == {} and self.masterThreadList == {}:
+            temp = QtWidgets.QMessageBox.information(self.childRoscoreWindow, "Information", "ROSCOREs shutdown\n" + self.ERRORTEXT)
+            self.childRoscoreWindow.show()
+            self.masterThreadStillRunning = 'no'
+        self.updateLists()
+
+
+    #Helper function to interrupt the correct threads
     @QtCore.pyqtSlot(str)
     def termCheck(self, window):
-        print window
+        self.maxSSHIgnore = False
+        if window == "launch":
+            self.interruptRemainingThreads(window)
+
+        elif window == "masters":
+            self.interruptRemainingThreads(window)
+            self.masterSetEnable = False
+            self.setLaunchEnable(True)
+
+        elif window == "pass" and self.masterSetEnable == True:
+            self.masterSetEnable = False
+            self.setLaunchEnable(True)
 
 
     #Terminates the currently selected tab/thread
     def terminateCurrentThread(self, flag):
-        IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
-        if "Finished" not in IP_text:
-            workerKey = self.IPS.index(IP_text)
-            self.workerList[workerKey].stopSignal = True
-            if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
-                try:
-                    self.workerList[workerKey].channel.send("\x03\n")
-                    self.workerList[workerKey].channel.close()
-                except:
-                    pass
+        if flag == "masters":
+            IP_text = str(self.childRoscoreWindow.tab_Launch.tabText(self.childRoscoreWindow.tab_Launch.currentIndex()))
+            if "Finished" not in IP_text:
+                workerKey = self.IPS.index(IP_text)
+                self.masterWorkerList[workerKey].stopSignal = True
+                if self.masterThreadStillRunning == 'Masters still running':
+                    try:
+                        self.masterWorkerList[workerKey].channel.send("\x03\n")
+                        self.masterWorkerList[workerKey].channel.close()
+                    except:
+                        pass
+
+        else:
+            IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
+            if "Finished" not in IP_text:
+                workerKey = self.IPS.index(IP_text)
+                self.workerList[workerKey].stopSignal = True
+                if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
+                    try:
+                        self.workerList[workerKey].channel.send("\x03\n")
+                        self.workerList[workerKey].channel.close()
+                    except:
+                        pass
 
 
     #Interrupts any currently running threads
     def interruptRemainingThreads(self, flag):
-        for workerKey in self.workerList.keys():
+        if flag == "masters":
+            for workerKey in self.masterWorkerList.keys():
+                self.masterWorkerList[workerKey].stopSignal = True
+                if self.masterThreadStillRunning == 'Masters still running':
+                    try:
+                        self.masterWorkerList[workerKey].channel.send("\x03\n")
+                        self.masterWorkerList[workerKey].channel.close()
+                    except:
+                        pass
 
-            self.workerList[workerKey].stopSignal = True
-            if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
-                try:
-                    self.workerList[workerKey].channel.send("\x03\n")
-                    self.workerList[workerKey].channel.close()
+        else:
+            for workerKey in self.workerList.keys():
+                self.workerList[workerKey].stopSignal = True
+                if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
+                    try:
+                        self.workerList[workerKey].channel.send("\x03\n")
+                        self.workerList[workerKey].channel.close()
 
-                except:
-                    pass
+                    except:
+                        pass
 
 
     #Catches all attempts to close the application if there are threads still running
     def closeEvent(self, event):
         self.interruptRemainingThreads("launch")
         self.interruptRemainingThreads("masters")
+
         canExit = False
         if self.workerList == {} and self.threadList == {}:
             canExit = True
         if canExit:
-            event.accept()  # let the window close
+            event.accept()  #let the window close
         else:
-            temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning + "\n the threads are shutting down, just wait a little bit and try one more time!")
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning + "\nThe threads are shutting down, just wait a little bit and try one more time!")
             event.ignore()
 
 

@@ -17,6 +17,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
     #Variables for emitting a signal containing the list of passwords and if a RSA Key has been generated
     savePasswords = QtCore.pyqtSignal(dict,str)
     key = QtCore.pyqtSignal(bool)
+    exitWindow = QtCore.pyqtSignal(str)
 
     #Definition of the Password Window
     def __init__(self, ipList, userList, commandType, parent = None):
@@ -66,7 +67,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
         self.PASSWORDS = {}
         for index,linePassword in enumerate(self.linePasswords):
            if str(linePassword.text().strip()) == "":
-               eMessage = "The password of " + str(self.labelUSERS[index].text()) +" has not be set"
+               eMessage = "The password of " + str(self.labelUSERS[index].text()) +" has not been set"
                error += "\n"+eMessage +"\n"
                #temp = QtWidgets.QMessageBox.warning(self, "Warning", "the password of " + str(self.labelIPS[index].text()) +" has not be set")
                save = False
@@ -83,14 +84,6 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
             return save
 
 
-    #Closes the Password Window and emits the password list back to Main
-    def close_window(self):
-        if self.saveData():
-            self.savePasswords.emit(self.PASSWORDS, self.commandType)
-            self.close()
-            self.deleteLater()
-
-
     #Calls the Generate_Key.py to generate a new rsa key
     def RSA_generation(self):
         if self.saveData():
@@ -103,3 +96,19 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
     @QtCore.pyqtSlot(bool)
     def chainSignal(self, value):
         self.key.emit(value)
+
+
+    #Closes the Password Window and emits the password list back to Main
+    def close_window(self):
+        if self.saveData():
+            self.setResult(1)
+            self.savePasswords.emit(self.PASSWORDS, self.commandType)
+            self.close()
+            self.deleteLater()
+
+
+    # Catches all attempts to close the window
+    def closeEvent(self, event):
+        if self.result() == 0:
+            self.exitWindow.emit("pass")
+        event.accept()

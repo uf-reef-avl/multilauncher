@@ -1,0 +1,14 @@
+RSA,/home/matthewh/Junk/multikey
+GITUSER,matthew.hovatter
+#####
+False,192.168.1.63,penguin,device,$0/temp:yo,Master and Launch
+False,192.168.1.64,titicaca,device,$0/temp:hello,Master and Launch
+False,192.168.1.60,moa-nalo,device,$0/temp:goodbye,Master and Launch
+False,192.168.1.118,testb,testc,No Args,Master and Launch
+False,5,5,5,No Args,Master and Launch
+False,6,6,6,No Args,Master and Launch
+False,7,7,7,No Args,Master and Launch
+False,8,8,8,No Args,Master and Launch
+False,9,9,9,No Args,Master and Launch
+False,10,10,10,No Args,Master and Launch
+False,11,11,11,No Args,Master and Launch

@@ -21,7 +21,7 @@ class Launch_Window(QtWidgets.QDialog, Launch_Window_Design.Ui_Dialog):
 		self.window = ""
 
 
-	#Catches all attempts to close the window if there are threads still running
+	#Catches all attempts to close the window
 	def closeEvent(self, event):
 		self.closeThreads.emit(self.window)
 		event.accept()

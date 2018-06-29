@@ -23,6 +23,7 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 		self.setupUi(self)
 		self.setModal(True)
 		self.IPS = []
+		self.canExit = False
 
 		#Paring buttons to functions
 		self.addRobotButton.clicked.connect(self.addRobot)
@@ -141,7 +142,6 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 		masterText = []
 
 		for x in range(self.robotTable.rowCount()):
-
 			enableText.append(self.robotTable.item(x,0).text())
 			ipText.append(self.robotTable.item(x,1).text())
 			nameText.append(self.robotTable.item(x,2).text())
@@ -151,5 +151,18 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 
 		#Sends the data out to main.py
 		self.save.emit(enableText,ipText,nameText,typeText, masterText)
+		self.canExit = True
 		self.close()
 		self.deleteLater()
+
+
+	#Catches all attempts to close the window
+	def closeEvent(self, event):
+
+		if not self.canExit:
+			reply = QtWidgets.QMessageBox.question(self, 'Message', "Exit Without Saving?", QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+
+			if reply == QtWidgets.QMessageBox.Yes:
+				event.accept()
+			else:
+				event.ignore()
