@@ -184,10 +184,10 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			if 'Username for ' in data:
 				self.channel.send(self.gitUsername + '\n')
 
-			if 'Password for ' in data:
+			elif 'Password for ' in data:
 				self.channel.send(self.gitPassword + '\n')
 
-			if "continue connecting (yes/no)" in data:
+			elif "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
 
@@ -255,8 +255,6 @@ class Launch_Worker(QtCore.QObject):
 					break
 				self.waitFinishCommand()
 
-
-
 		except paramiko.ssh_exception.SSHException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
@@ -282,21 +280,21 @@ class Launch_Worker(QtCore.QObject):
 				self.waitFinishCommand()
 				break
 
-			if '[Y/n]' in data:
+			elif '[Y/n]' in data:
 				self.channel.send('Y\n')
 				self.waitFinishCommand()
 				break
 
-			if '[y/N]' in data:
+			elif '[y/N]' in data:
 				self.channel.send('y\n')
 				self.waitFinishCommand()
 				break
 
-			if "continue connecting (yes/no)" in data:
+			elif "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
 
-			if self.user + "@" in data:
+			elif self.user + "@" in data:
 				break
 
 
@@ -373,21 +371,21 @@ class ROSMASTER_Worker(QtCore.QObject):
 				self.waitFinishCommand()
 				break
 
-			if '[Y/n]' in data:
+			elif '[Y/n]' in data:
 				self.channel.send('Y\n')
 				self.waitFinishCommand()
 				break
 
-			if '[y/N]' in data:
+			elif '[y/N]' in data:
 				self.channel.send('y\n')
 				self.waitFinishCommand()
 				break
 
-			if "continue connecting (yes/no)" in data:
+			elif "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
 
-			if self.user + "@" in data:
+			elif self.user + "@" in data:
 				break
 
 
@@ -464,7 +462,7 @@ class Bashrc_Worker(QtCore.QObject):
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
-			if self.user + "@" in data:
+			elif self.user + "@" in data:
 				break
 
 
@@ -500,7 +498,7 @@ class Ping_Worker(QtCore.QObject):
 				break
 
 			#The actual ping message sent and the response back
-			response = os.system("ping -c1 " + self.IP)
+			response = os.system("ping -c1 " + self.IP + " 2>&1 >/dev/null")
 
 			#If the robot was pinged successfully and found
 			if response == 0:

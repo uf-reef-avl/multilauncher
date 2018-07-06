@@ -1,0 +1,12 @@
+RSA,/home/matthewh/Junk/multikey
+GITUSER,matthew.hovatter
+#####
+False,192.168.1.60,moa-nalo,device,No Args,No ROS Settings
+False,192.168.1.61,cassowary,device,No Args,No ROS Settings
+False,192.168.1.62,dodo,device,No Args,No ROS Settings
+False,192.168.1.63,penguin,device,No Args,No ROS Settings
+False,192.168.1.64,titicaca,device,No Args,No ROS Settings
+False,192.168.1.65,auk,device,No Args,No ROS Settings
+False,192.168.1.66,takahe,device,No Args,No ROS Settings
+True,192.168.1.67,kiwi,device,No Args,No ROS Settings
+False,192.168.1.68,emu,device,No Args,No ROS Settings

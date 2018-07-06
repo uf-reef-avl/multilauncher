@@ -14,80 +14,52 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="1" column="0">
-    <widget class="QProgressBar" name="rsaProgressBar">
-     <property name="value">
-      <number>24</number>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <layout class="QGridLayout" name="gridSpecifyUserPassword">
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelUsername">
-       <property name="text">
-        <string>Enter your admin username</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="labelPassword">
-       <property name="text">
-        <string>Enter your admin password</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEditPassword">
-       <property name="echoMode">
-        <enum>QLineEdit::Password</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEditUsername"/>
-     </item>
-    </layout>
-   </item>
-   <item row="4" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout">
+   <item row="0" column="3">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="1,1,1">
      <item>
-      <widget class="QPushButton" name="buttonCancel">
+      <widget class="QLabel" name="instructionslabel">
        <property name="text">
-        <string>Cancel</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
+        <string>When generating the RSA Key the ownership of the ~/.ssh directory on the 
+ remote machine will be set to the remote user and the file permissions will be set to default</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="buttonGenerateKey">
-       <property name="text">
-        <string>Generate Key</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
+      <widget class="QProgressBar" name="rsaProgressBar">
+       <property name="value">
+        <number>24</number>
        </property>
       </widget>
      </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="buttonCancel">
+         <property name="text">
+          <string>Cancel</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="buttonGenerateKey">
+         <property name="text">
+          <string>Generate Key</string>
+         </property>
+         <property name="autoDefault">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
-   </item>
-   <item row="0" column="0" alignment="Qt::AlignHCenter">
-    <widget class="QLabel" name="instructionslabel">
-     <property name="text">
-      <string>Enter your admin password and username to generate the RSA Key 
-
-(When generating the RSA Key the ownership of the ~/.ssh directory on the 
- remote machine will be set to the user and the file permissions will be set to default)</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>
  <tabstops>
-  <tabstop>lineEditUsername</tabstop>
-  <tabstop>lineEditPassword</tabstop>
   <tabstop>buttonCancel</tabstop>
   <tabstop>buttonGenerateKey</tabstop>
  </tabstops>
