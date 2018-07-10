@@ -16,7 +16,7 @@ from Edit_Robot_Dialog import Edit_Robot_Dialog
 import os
 import paramiko
 import sys
-import dbus
+import subprocess
 
 
 #This class creates the main window of the application
@@ -31,6 +31,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.maxSSH = self.getMaxSSH()
         self.masterSetEnable = False
         self.maxSSHIgnore = False
+        self.saved = True
 
         #modify the ui to add the tab widget
         del self.commands
@@ -367,9 +368,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Sets colors to the robots based on status
         self.colorsTableRows()
-
-        #Checks to see if the current number of enabled robots exceeds the set maximum
-        #self.checkMaxSSH(self.calcEnable())
+        self.saved = False
 
 
     #Colors the rows in the robot-table based on robot status and if the robot is enabled
@@ -458,9 +457,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def adjustArgsWindow(self):
         if self.threadStillRunning == 'no':
             self.updateLists()
-            self.argsdialog = Adjust_Arguments(self.IPS, self.DICT_TYPES)
-            self.argsdialog.saveArgs.connect(self.writeNewArgs)
-            self.argsdialog.show()
+            self.argsDialog = Adjust_Arguments(self.IPS, self.DICT_TYPES)
+            self.argsDialog.saveArgs.connect(self.writeNewArgs)
+            self.argsDialog.show()
         else:
             temp = QtWidgets.QMessageBox.warning(self, "warning", self.threadStillRunning)
 
@@ -468,11 +467,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Appends the list of arguments to the argumentlist text field
     @QtCore.pyqtSlot(list)
     def writeNewArgs(self, argsResumeList):
-
         for index, x in enumerate(argsResumeList):
             self.robotTable.cellWidget(index, 4).clear()
             argLines = x.split("|")
             self.robotTable.cellWidget(index, 4).addItems(argLines)
+        self.saved = False
 
 
     #Takes the data from the text fields in the Main Window and loads them into the backend data structures for processing
@@ -543,52 +542,50 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         for line in listOfLines:
             if "MaxSessions" in line:
                 temp = line.split(" ")[-1].strip()
-
-                return temp
+                rFile.close()
+                return int(temp)
 
         #If the MaxSessions variable was not found return the default number of sessions
+        rFile.close()
         return 10
 
 
     #Checks to see if the user is trying to connect to more robots than there sshd_config file will allow
-    def checkMaxSSH(self, numOfIPS):
-
-        if numOfIPS != 0 and self.maxSSHIgnore != True:
-            mType = self.calcMasterLaunch()
-            if (numOfIPS+mType) > int(self.maxSSH):
+    def checkMaxSSH(self):
+        if not self.maxSSHIgnore:
+            sessions = self.calcEnable() + self.calcMasterLaunch()
+            if sessions > self.maxSSH:
                 self.maxSSHIgnore = True
                 message = "Your combined number of enabled robots and \"Master and Launch\" ROS Settings has exceeded your maximum number of concurrent SSH connections." \
                           "\nPlease update your ssh configuration file at:\n/etc/ssh/sshd_config\nand add or update" \
-                          " the line:\nMaxSessions "+str((numOfIPS+mType))+"\n" \
-                          "\nCurrent Maximum: "+str(self.maxSSH)+"\nNeeded Maximum: "+str((numOfIPS+mType))
+                          " the line:\nMaxSessions "+str(sessions)+"\n" \
+                          "\nCurrent Maximum: "+str(self.maxSSH)+"\nNeeded Maximum: "+str(sessions)
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", message)
 
 
     #Updates the MaxSession variable in sshd_config
     def setMaxSessions(self):
-
-        bus = dbus.SessionBus()
-
+        self.maxSSH = self.getMaxSSH()
+        actualFileName = "/etc/ssh/sshd_config"
         sessions = self.calcEnable()+self.calcMasterLaunch()
+        if sessions > self.maxSSH:
+            result = subprocess.call("grep -q MaxSession " + actualFileName, shell=True)
 
+            if result == 0:
+                command = "pkexec sed -i \'s/MaxSessions [0-9][0-9]*/MaxSessions "+str(sessions)+"/\' "+actualFileName
+                subprocess.call(command, shell=True)
+            elif result == 1:
+                command = "pkexec sed -i \"$ a MaxSessions "+str(sessions)+"\" "+actualFileName
+                subprocess.call(command, shell=True)
+            self.maxSSH = sessions
 
-
-
-
-        # Open the file and search for the MaxSessions variable
-        # actualFileName = "/etc/ssh/sshd_config"
-        # rFile = open(actualFileName, "r+")
-        # listOfLines = rFile.readlines()
-        # for line in listOfLines:
-        #     if "MaxSessions" in line:
-        #         temp = line.split(" ")[-1].strip()
-        #         print temp
-        #         break
+        else:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "The current required number of ssh sessions does not exceed the value of MaxSessions")
 
 
     #Lets the application continue if the MaxSessions variable in sshd_config is greater than or equal to the number of needed ssh sessions
     def continueProgram(self):
-        self.checkMaxSSH(self.calcEnable())
+        self.checkMaxSSH()
         if not self.maxSSHIgnore:
             return True
         else:
@@ -793,9 +790,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.MASTER_TYPE = self.makeListFromTable("masterlist")
         self.setLaunchEnable(self.checkConnectionAvailable())
         self.colorsTableRows()
-
-        #Checks to see if the current number of enabled robots with master types exceeds the set maximum
-        #self.checkMaxSSH(self.calcEnable())
+        self.saved = False
 
 
     #Load data from a .csv file separated by commas (,)
@@ -884,6 +879,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     self.updateLists()
                     self.flushCommand()
+                    self.saved = True
 
                 except:
                     e = sys.exc_info()[0]
@@ -898,8 +894,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #If there is data to be saved
         if self.robotTable.rowCount() != 0:
-
-            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", filter = "csv (*.csv *.)")
+            string = self.selectedfilename.text()
+            name = string [14:]
+            
+            filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", directory = name, filter = "csv (*.csv *.)")
 
             try:
                 #Test to see if the user selected a valid path or canceled
@@ -937,6 +935,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         else:
                             rFile.write(self.ENABLE[x]+","+self.IPS[x] + "," + self.USERS[x] + "," + self.TYPES[x] + ",No Args," + self.MASTER_TYPE[x] + "\n")
                     rFile.close()
+                    self.saved = True
 
             except:
                 e = sys.exc_info()[0]
@@ -1162,7 +1161,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     temp = QtWidgets.QMessageBox.warning(self, "Warning", self.ERRORTEXT)
 
 
-    #Handler function to launch the rosmasters
+    #Handler function to launch the ROSMASTERs
     def launchMaster(self):
         if self.continueProgram():
             if (self.calcMaster()+self.calcMasterLaunch()) == 0:
@@ -1210,6 +1209,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             if flag == 0:
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "No ROS Settings to change")
+
             else:
                 self.checkPasswordLaunchThread("bashrc")
 
@@ -1345,7 +1345,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             tempThread.start()
 
                             commandLinesList = str(self.plaintextCommandDict[self.TYPES[index]].toPlainText()).split("\n")
-                            commandLinesList.append("\n")
 
                             #replacing the arguments in command lines
                             commandLinesArgsList = []
@@ -1421,7 +1420,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             if tempMasterString == "Master" or tempMasterString == "Master and Launch":
                                 tempMasterString = self.IPS[index]
 
-                            print str(self.IPS[index])+": "+str(tempMasterString)
+                            print (str(self.IPS[index])+": "+str(tempMasterString))
 
                             #RSA checkbox test
                             if passwordType == "password":
@@ -1664,7 +1663,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Helper function to interrupt the correct threads
     @QtCore.pyqtSlot(str)
     def termCheck(self, window):
-        self.maxSSHIgnore = False
         if window == "launch":
             self.interruptRemainingThreads(window)
 
@@ -1734,14 +1732,20 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.interruptRemainingThreads("launch")
         self.interruptRemainingThreads("masters")
 
-        canExit = False
-        if self.workerList == {} and self.threadList == {}:
-            canExit = True
-        if canExit:
-            event.accept()  #let the window close
-        else:
+        if self.workerList != {} and self.threadList != {}:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning + "\nThe threads are shutting down, just wait a little bit and try one more time!")
             event.ignore()
+        else:
+            if self.saved:
+                event.accept()  #let the window close
+            else:
+                reply = QtWidgets.QMessageBox.question(self, 'Message', "Exit Without Saving?",
+                                                       QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+
+                if reply == QtWidgets.QMessageBox.Yes:
+                    event.accept()
+                else:
+                    event.ignore()
 
 
 #Creates and runs the Main Window

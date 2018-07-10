@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Multilauncher.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Multilauncher.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -145,14 +145,14 @@ class Ui_MainWindow(object):
         self.remotegituserlabel = QtWidgets.QLabel(self.centralwidget)
         self.remotegituserlabel.setObjectName("remotegituserlabel")
         self.gridLayout_8.addWidget(self.remotegituserlabel, 1, 2, 1, 1, QtCore.Qt.AlignRight)
-        self.fileTransferLabel = QtWidgets.QLabel(self.centralwidget)
+        self.gitRepositoryLabel = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(18)
         font.setBold(True)
         font.setWeight(75)
-        self.fileTransferLabel.setFont(font)
-        self.fileTransferLabel.setObjectName("fileTransferLabel")
-        self.gridLayout_8.addWidget(self.fileTransferLabel, 0, 0, 3, 1)
+        self.gitRepositoryLabel.setFont(font)
+        self.gitRepositoryLabel.setObjectName("gitRepositoryLabel")
+        self.gridLayout_8.addWidget(self.gitRepositoryLabel, 0, 0, 3, 1)
         self.gridLayout_2.addLayout(self.gridLayout_8, 0, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
@@ -328,7 +328,7 @@ class Ui_MainWindow(object):
         self.remotegitpasswordlabel.setText(_translate("MainWindow", "Remote Git Password"))
         self.numofpackageslabel.setText(_translate("MainWindow", "Select Number of Packages"))
         self.remotegituserlabel.setText(_translate("MainWindow", "Remote Git Username"))
-        self.fileTransferLabel.setText(_translate("MainWindow", "File Transfer"))
+        self.gitRepositoryLabel.setText(_translate("MainWindow", "Git Repository"))
         self.buttontransfer.setText(_translate("MainWindow", "Transfer File(s)"))
         self.robotlistsavebutton.setText(_translate("MainWindow", "Save Current Data to File"))
         self.filesearchbutton.setText(_translate("MainWindow", "Find Robotlist file"))
