@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Generate_Key_Design.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Generate_Key_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -45,7 +45,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Generate RSA Key"))
         self.instructionslabel.setText(_translate("Dialog", "When generating the RSA Key the ownership of the ~/.ssh directory on the \n"
 " remote machine will be set to the remote user and the file permissions will be set to default"))
         self.buttonCancel.setText(_translate("Dialog", "Cancel"))

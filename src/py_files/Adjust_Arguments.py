@@ -62,6 +62,18 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         self.updateTree()
 
 
+    # Used to detect when the window size is changed
+    def resizeEvent(self, QResizeEvent):
+        self.setTableSize()
+
+
+    # Corrects the column header sizes
+    def setTableSize(self):
+        self.treeRobotType.setColumnWidth(0, self.width() / 3.2)
+        self.treeRobotType.setColumnWidth(1, self.width() / 3.2)
+        self.treeRobotType.setColumnWidth(2, self.width() / 3.2)
+
+
     #Updates and displays the current list of robots with their assigned arguments
     def updateTree(self):
 

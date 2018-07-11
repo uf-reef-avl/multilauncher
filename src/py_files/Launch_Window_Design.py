@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Launch_Window_Design.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Launch_Window_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -57,7 +57,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "LaunchWindow"))
+        Dialog.setWindowTitle(_translate("Dialog", "Launch Window"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab), _translate("Dialog", "Tab 1"))
         self.tab_Launch.setTabText(self.tab_Launch.indexOf(self.tab_2), _translate("Dialog", "Tab 2"))
         self.stopCurrentThread.setText(_translate("Dialog", "Stop Current Thread"))

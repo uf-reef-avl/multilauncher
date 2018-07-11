@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Password_Window_Design.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Password_Window_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -35,10 +35,6 @@ class Ui_Dialog(object):
         self.gridLayout_2.addLayout(self.verticalLayout, 1, 0, 1, 1)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.button_generate_RSA = QtWidgets.QPushButton(Dialog)
-        self.button_generate_RSA.setAutoDefault(False)
-        self.button_generate_RSA.setObjectName("button_generate_RSA")
-        self.horizontalLayout_2.addWidget(self.button_generate_RSA)
         self.launchButton = QtWidgets.QPushButton(Dialog)
         self.launchButton.setAutoDefault(False)
         self.launchButton.setObjectName("launchButton")
@@ -50,8 +46,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Password Window"))
         self.label_password.setText(_translate("Dialog", "In order to launch the command,  specify the device\'s password or generate a RSA key:"))
-        self.button_generate_RSA.setText(_translate("Dialog", "Generate RSA Key"))
         self.launchButton.setText(_translate("Dialog", "Launch the Command"))
 

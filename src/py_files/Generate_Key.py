@@ -16,6 +16,7 @@ import os
 
 # This class generate the rsa keys for all the connected devices
 class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
+
     # signal that make sure that the rsa key has been created
     rsaKey = QtCore.pyqtSignal(bool)
 

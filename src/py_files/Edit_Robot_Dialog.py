@@ -32,17 +32,19 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 		self.robotTable.cellDoubleClicked.connect(self.loadEditor)
 		self.saveAndExitButton.clicked.connect(self.closeWindow)
 
-		#Corrects the column header sizes
-		self.resizeEvent(self.setTableSize())
+
+	# Used to detect when the window size is changed
+	def resizeEvent(self, QResizeEvent):
+		self.setTableSize()
 
 
 	#Corrects the column header sizes
 	def setTableSize(self):
-		self.robotTable.setColumnWidth(0, self.width()/5)
-		self.robotTable.setColumnWidth(1, self.width()/5)
-		self.robotTable.setColumnWidth(2, self.width()/5)
-		self.robotTable.setColumnWidth(3, self.width()/5)
-		self.robotTable.setColumnWidth(4, self.width()/5)
+		self.robotTable.setColumnWidth(0, self.width()/5.2)
+		self.robotTable.setColumnWidth(1, self.width()/5.2)
+		self.robotTable.setColumnWidth(2, self.width()/5.2)
+		self.robotTable.setColumnWidth(3, self.width()/5.2)
+		self.robotTable.setColumnWidth(4, self.width()/5.2)
 
 
 	#Checks to see if there is a robot that already exists with the same IP Address,

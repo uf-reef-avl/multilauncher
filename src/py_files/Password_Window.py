@@ -7,7 +7,6 @@
 
 
 import Password_Window_Design
-from Generate_Key import Generate_Key
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -42,7 +41,6 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
 
         #Paring buttons to functions
         self.launchButton.clicked.connect(self.close_window)
-        self.button_generate_RSA.clicked.connect(self.RSA_generation)
 
         #Dynamically populate the Password Window based on the number of robots
         for index, IP, USER in zip(range(len(self.ipList)),self.ipList,self.userList):
@@ -82,20 +80,6 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
         else:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", error)
             return save
-
-
-    #Calls the Generate_Key.py to generate a new rsa key
-    def RSA_generation(self):
-        if self.saveData():
-            self.keyWindow = Generate_Key(self.ipList,self.userList,self.PASSWORDS)
-            self.keyWindow.show()
-            self.keyWindow.rsaKey.connect(self.chainSignal)
-
-
-    #Fowards the signal signifying if a new rsa was successfully made
-    @QtCore.pyqtSlot(bool)
-    def chainSignal(self, value):
-        self.key.emit(value)
 
 
     #Closes the Password Window and emits the password list back to Main

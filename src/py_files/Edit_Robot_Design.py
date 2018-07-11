@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Edit_Robot_Design.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Edit_Robot_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_robotEditDialog(object):
     def setupUi(self, robotEditDialog):
         robotEditDialog.setObjectName("robotEditDialog")
-        robotEditDialog.resize(988, 477)
+        robotEditDialog.resize(1189, 477)
         self.gridLayout_2 = QtWidgets.QGridLayout(robotEditDialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label = QtWidgets.QLabel(robotEditDialog)
@@ -89,7 +89,7 @@ class Ui_robotEditDialog(object):
 
     def retranslateUi(self, robotEditDialog):
         _translate = QtCore.QCoreApplication.translate
-        robotEditDialog.setWindowTitle(_translate("robotEditDialog", "Dialog"))
+        robotEditDialog.setWindowTitle(_translate("robotEditDialog", "Edit Robots"))
         self.label.setText(_translate("robotEditDialog", "New/Selected: IP Address"))
         self.label_3.setText(_translate("robotEditDialog", "New/Selected: Robot Type"))
         self.label_2.setText(_translate("robotEditDialog", "New/Selected: Robot Name"))

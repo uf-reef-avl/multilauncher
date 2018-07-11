@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Adjust_Arguments_Design.ui'
+# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Adjust_Arguments_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -31,6 +31,7 @@ class Ui_Dialog(object):
         self.treeRobotType = QtWidgets.QTreeWidget(Dialog)
         self.treeRobotType.setColumnCount(3)
         self.treeRobotType.setObjectName("treeRobotType")
+        self.treeRobotType.headerItem().setTextAlignment(0, QtCore.Qt.AlignCenter)
         self.treeRobotType.headerItem().setTextAlignment(1, QtCore.Qt.AlignCenter)
         self.treeRobotType.headerItem().setTextAlignment(2, QtCore.Qt.AlignCenter)
         self.gridLayout.addWidget(self.treeRobotType, 1, 0, 1, 1)
@@ -51,7 +52,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Adjust Arguments"))
         self.treeRobotType.headerItem().setText(0, _translate("Dialog", "Type Column"))
         self.treeRobotType.headerItem().setText(1, _translate("Dialog", "Argument Name"))
         self.treeRobotType.headerItem().setText(2, _translate("Dialog", "Argument Value"))
