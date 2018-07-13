@@ -295,11 +295,11 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Multilauncher ver 1.9"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Multilauncher ver 2.0"))
         self.bashrcbutton.setText(_translate("MainWindow", "Update .bashrc"))
         self.argumentbutton.setText(_translate("MainWindow", "Adjust Arguments"))
         self.editlistsbutton.setText(_translate("MainWindow", "Add/Edit/Remove Robots"))
-        self.checkAllButton.setText(_translate("MainWindow", "Check/Uncheck All"))
+        self.checkAllButton.setText(_translate("MainWindow", "Enable/Disable All"))
         self.updateMaxSessionButton.setText(_translate("MainWindow", "Update MaxSessions"))
         item = self.robotTable.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "Enabled"))

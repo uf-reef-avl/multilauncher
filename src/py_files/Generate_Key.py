@@ -2,7 +2,7 @@
 # File: Main.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
-# Created:
+# Created: Summer 2018
 #
 
 
@@ -70,7 +70,7 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
                 self.ssh.connect(self.ipList[index], 22, username=self.userList[index],
                              password=self.passwordList[self.ipList[index]], allow_agent=False, look_for_keys=False)
 
-                # create the shell for the current thread index
+                # create the shell for the current index
                 self.channel = self.ssh.invoke_shell()
                 self.channel.settimeout(1.5)
                 # Changes the remote robot's .ssh directory permissions to the user remote user
@@ -150,30 +150,35 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
             self.waitFinishCommandChmod(self.channel, index)
 
 
-    # Loops indefinitely until the Chmod commands have finished executing or if the user has interrupted the threads
+    # Loops indefinitely until the Chmod commands have finished executing or if the user has interrupted the current shell
     def waitFinishCommandChmod(self, channel, index):
         while True:
+
             # wait a little bit
             time.sleep(self.sleepTime)
 
-            # retrieve the data from the thread shell
+            # retrieve the data from the shell
             data = str(channel.recv(1024).decode("utf-8"))
 
             # check the possible different end of commands and adapt the behaviour
             if self.error[index] is True:
                 break
+
             elif '[sudo]' in data:
                 channel.send(self.passwordList[self.ipList[index]] + "\n")
                 self.waitFinishCommandChmod(channel, index)
                 break
+
             elif "continue connecting (yes/no)" in data:
                 channel.send("yes\n")
                 self.waitFinishCommandChmod(channel, index)
                 break
+
             elif "password:" in data:
                 channel.send(self.passwordList[self.ipList[index]] + "\n")
                 self.waitFinishCommandChmod(channel, index)
                 break
+
             # if the password is wrong and the user cannot ssh to the device change the boolean error
             elif "Permission denied" in data:
                 channel.send("\x03\n")
@@ -181,10 +186,12 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
                 self.outPutString = self.outPutString + "X - " + self.ipList[index] + ": Wrong Password \n"
                 self.waitFinishCommandChmod(channel, index)
                 break
+
             elif "passphrase for key" in data:
                 channel.send("\n")
                 self.waitFinishCommandChmod(channel, index)
                 break
+
             elif self.userList[index] + "@" in data:
                 break
 
@@ -211,12 +218,12 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
         self.rsaProgressValue += 10 / len(self.ipList)
         self.rsaProgressBar.setValue(self.rsaProgressValue)
 
-        # if an error occurs in this thread, append the error string to the outputstring
+        # if an error occurs, append the error string to the outputstring
         if self.error[index] is False:
             self.outPutString = self.outPutString + "V - " + self.ipList[index] + ": RSA Public Key set up \n"
 
 
-    # Loops indefinitely until the RSA key has been setup or if the user has interrupted the threads
+    # Loops indefinitely until the RSA key has been setup or if the user has interrupted the shell
     def waitFinishCommandKey(self, channel, index, errorString, endString):
         while True:
             try:
@@ -241,23 +248,28 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
                     channel.send("yes\n")
                     self.waitFinishCommandKey(channel, index, errorString, endString)
                     break
+
                 elif "password:" in data:
                     channel.send(self.passwordList[self.ipList[index]] + "\n")
                     self.waitFinishCommandKey(channel, index, errorString, endString)
                     break
+
                 elif '[sudo]' in data:
                     channel.send(self.passwordList[self.ipList[index]] + "\n")
                     self.waitFinishCommandChmod(channel, index)
                     break
+
                 elif endString in data:
                     break
+
                 elif self.userList[index] + "@" in data:
                     break
+
             except socket.timeout:
                 break
 
 
-    # check if there is at least one error between all the thread
+    # check if there was at least one error during execution
     def checkError(self):
         errorCheck = False
         for error in self.error:

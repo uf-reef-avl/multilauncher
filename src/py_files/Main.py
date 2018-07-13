@@ -3,7 +3,7 @@
 # File: Main.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
-# Created:
+# Created: Summer 2018
 #
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -27,11 +27,21 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
+
+        #Initial RSA Key checking
         self.myKey = ""
         self.RSA = self.rsaCheck()
+
+        #Reading in the MaxSessions variable if it exists
         self.maxSSH = self.getMaxSSH()
-        self.masterSetEnable = False
+
+        #Used to block the execution of certain functions if True
         self.maxSSHIgnore = False
+
+        #Signifies if the ROSMASTER Window is running
+        self.masterIsRunning = False
+
+        #Signifies if there have been changes in the robot table data
         self.saved = True
 
         #modify the ui to add the tab widget
@@ -40,7 +50,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.gridLayout_4.addWidget(self.tabCommands, 3, 0, 1, 3)
 
         #Paring buttons to functions
-        self.filesearchbutton.clicked.connect(self.browseForFile)
+        self.filesearchbutton.clicked.connect(self.loadFile)
         self.pingrobotsbutton.clicked.connect(self.pingTest)
         self.bashrcbutton.clicked.connect(self.updateBashrc)
         self.robotlistsavebutton.clicked.connect(self.saveToFile)
@@ -209,6 +219,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Loads the Edit Robot Dialog's table from the text fields from the Main Window
     def loadTable(self):
         self.updateLists()
+
+        #If there is data to be loaded into the editing table
         if len(self.IPS) != 0:
             for x in range(len(self.IPS)):
                 self.robotEditDialog.robotTable.insertRow(x)
@@ -267,7 +279,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     if listName == self.robotTable.horizontalHeaderItem(x).text():
 
                         #Append all data in the column
-
                         for y in range(self.robotTable.rowCount()):
                             tempList.append(self.robotTable.item(y,x).text())
                         break
@@ -339,6 +350,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             else:
                 tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
             tempCheckBox.stateChanged.connect(self.enableWidgetFromCheckbox)
+
+            # tempWidget = QtWidgets.QWidget()
+            # tempLayout = QtWidgets.QHBoxLayout(tempWidget)
+            # tempLayout.addWidget(tempCheckBox)
+            # tempLayout.setAlignment(QtCore.Qt.AlignHCenter)
+            # tempWidget.setLayout(tempLayout)
+
             self.robotTable.setCellWidget(index, 0, tempCheckBox)
             self.robotTable.setItem(index, 1, QtWidgets.QTableWidgetItem(ipText[index]))
             self.robotTable.setItem(index, 2, QtWidgets.QTableWidgetItem(nameText[index]))
@@ -360,6 +378,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         for index, string in enumerate(tempMasterList):
 
+            #If a match has been found
             if string in self.IPS:
                 string = "Roscore at:" + string
             self.comboboxMasterList[index].setCurrentIndex(self.comboboxMasterList[index].findText(string))
@@ -370,9 +389,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.ENABLE = self.makeListFromTable("Enabled")
         self.setLaunchEnable(self.checkConnectionAvailable())
 
-        #Sets colors to the robots based on status
+        #Sets colors to the robots based on their status
         self.colorsTableRows()
-        self.saved = False
 
 
     #Colors the rows in the robot-table based on robot status and if the robot is enabled
@@ -387,16 +405,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             else:
                 indexMasterIP = i
 
-
+            #If the remote machine is enabled, found, and (is not dependent on another machine in its ROS Settings)
+            # or (the machine it needs to talk to is set properly and (that other machine is enabled and found))
             if statusEnable == "True" and statusFound == "Found" and ((master == "No ROS Settings" or master == "Master" or master == "Master and Launch") \
                 or ((self.MASTER_TYPE[indexMasterIP] == "Master" or self.MASTER_TYPE[indexMasterIP] == "Master and Launch")
                     and (self.ENABLE[indexMasterIP] == "True" and self.CONNECTION_STATUS[indexMasterIP] == "Found"))):
 
                 #Green
-                self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(0, 190, 0)))
-                self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(0, 190, 0)))
-                self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(0, 190, 0)))
-                self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(0, 190, 0)))
+                self.robotTable.item(i, 1).setBackground(QtGui.QBrush(QtGui.QColor(100, 255, 100)))
+                self.robotTable.item(i, 2).setBackground(QtGui.QBrush(QtGui.QColor(100, 255, 100)))
+                self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(100, 255, 100)))
+                self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(100, 255, 100)))
 
                 if master == "Master":
 
@@ -411,17 +430,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     #Light Blue/Green
                     gradient = QtGui.QLinearGradient(QtCore.QPointF(0, 0), QtCore.QPointF(200, 200))
                     gradient.setColorAt(0, QtGui.QColor(30, 220, 230))
-                    gradient.setColorAt(1, QtGui.QColor(0, 190, 0))
+                    gradient.setColorAt(1, QtGui.QColor(100, 255, 100))
 
                     self.robotTable.item(i, 1).setBackground(QtGui.QBrush(gradient))
                     self.robotTable.item(i, 2).setBackground(QtGui.QBrush(gradient))
                     self.robotTable.item(i, 3).setBackground(QtGui.QBrush(gradient))
                     self.robotTable.item(i, 5).setBackground(QtGui.QBrush(gradient))
 
-                #If the computer is supposed to be a master of some other computer
+                #If the remote machine is supposed to be a master of some other machine
                 elif self.IPS[i] in self.MASTER_TYPE:
 
-                    #If the other computer is enabled
+                    #If the other remote machine is enabled
                     if self.ENABLE[self.MASTER_TYPE.index(self.IPS[i])] == "True":
 
                         #Yellow
@@ -430,7 +449,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
                         self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
 
-            #If the computer is disabled
+            #If the remote machine is disabled
             elif statusEnable == "False":
 
                 #White
@@ -439,7 +458,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.robotTable.item(i, 3).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
                 self.robotTable.item(i, 5).setBackground(QtGui.QBrush(QtGui.QColor(255, 255, 255)))
 
-            #If the computer is not found or (its master is not enabled or found)
+            #If the remote machine is not found or (its master is not enabled or found)
             elif statusFound != "Found" or (self.ENABLE[indexMasterIP] != "True" or self.CONNECTION_STATUS[indexMasterIP] != "Found"):
 
                 #Yellow
@@ -478,7 +497,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.saved = False
 
 
-    #Takes the data from the text fields in the Main Window and loads them into the backend data structures for processing
+    #Takes the data from the robot table in the Main Window and loads them into the backend data structures for processing
     def updateLists(self):
 
         try:
@@ -500,9 +519,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.ARGS = self.makeListFromTable("Arguments")
             self.ENABLE = self.makeListFromTable("Enabled")
             self.MASTER_TYPE = self.makeListFromTable("ROSMASTER Settings")
-
-            # Checks to see if the application should allow the other functions to be active or not
-            self.enableWidgetFromCheckbox()
 
             #Load the data
             for x in range(len(self.IPS)):
@@ -526,13 +542,21 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 combo.clear()
                 combo.addItems(self.DICT_TYPES.keys())
+
+                #If the text matches a key in the types dictionary
                 if text in self.DICT_TYPES.keys():
                     index = combo.findText(text)
                     combo.setCurrentIndex(index)
 
+            #Check the status of the robots
+            self.setLaunchEnable(self.checkConnectionAvailable())
+
+            # Sets colors to the robots based on their status
+            self.colorsTableRows()
+
         except:
              e = sys.exc_info()[0]
-             print( "UpdateLists Error: %s" % e )
+             print( "Error in updating backend lists: %s" % e )
 
 
     #Gets the maximum number of concurrent SSH sessions based on the user's MaxSessions variable in sshd_config
@@ -555,28 +579,33 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Checks to see if the user is trying to connect to more robots than there sshd_config file will allow
     def checkMaxSSH(self):
-        if not self.maxSSHIgnore:
-            sessions = self.calcEnable() + self.calcMasterLaunch()
-            if sessions > self.maxSSH:
-                self.maxSSHIgnore = True
-                message = "Your combined number of enabled robots and \"Master and Launch\" ROS Settings has exceeded your maximum number of concurrent SSH connections." \
-                          "\nPlease update your ssh configuration file at:\n/etc/ssh/sshd_config\nand add or update" \
-                          " the line:\nMaxSessions "+str(sessions)+"\n" \
-                          "\nCurrent Maximum: "+str(self.maxSSH)+"\nNeeded Maximum: "+str(sessions)
-                temp = QtWidgets.QMessageBox.warning(self, "Warning", message)
+
+        sessions = self.calcEnable() + self.calcMasterLaunch()
+        if sessions > self.maxSSH:
+            self.maxSSHIgnore = True
+            message = "Your combined number of enabled robots and \"Master and Launch\" ROS Settings has exceeded your maximum number of concurrent SSH connections." \
+                      "\nPlease update your ssh configuration file at:\n/etc/ssh/sshd_config\nand add or update" \
+                      " the line:\nMaxSessions "+str(sessions)+"\n" \
+                      "\nCurrent Maximum: "+str(self.maxSSH)+"\nNeeded Maximum: "+str(sessions)
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", message)
 
 
-    #Updates the MaxSession variable in sshd_config
+    #Updates the MaxSessions variable in sshd_config
     def setMaxSessions(self):
         self.maxSSH = self.getMaxSSH()
         actualFileName = "/etc/ssh/sshd_config"
         sessions = self.calcEnable()+self.calcMasterLaunch()
-        if sessions > self.maxSSH:
-            result = subprocess.call("grep -q MaxSession " + actualFileName, shell=True)
 
+        #If the number of simultaneous SSH sessions exceeds the value set in the MaxSessions variable
+        if sessions > self.maxSSH:
+            result = subprocess.call("grep -q MaxSessions " + actualFileName, shell=True)
+
+            #If the MaxSessions variable was found
             if result == 0:
                 command = "pkexec sed -i \'s/MaxSessions [0-9][0-9]*/MaxSessions "+str(sessions)+"/\' "+actualFileName
                 subprocess.call(command, shell=True)
+
+            #If the MaxSessions variable was not found
             elif result == 1:
                 command = "pkexec sed -i \"$ a MaxSessions "+str(sessions)+"\" "+actualFileName
                 subprocess.call(command, shell=True)
@@ -586,9 +615,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             temp = QtWidgets.QMessageBox.warning(self, "Warning", "The current required number of ssh sessions does not exceed the value of MaxSessions")
 
 
-    #Lets the application continue if the MaxSessions variable in sshd_config is greater than or equal to the number of needed ssh sessions
+    #Lets the application continue if the MaxSessions variable in sshd_config is greater than or equal to the number of needed SSH sessions
     def continueProgram(self):
         self.checkMaxSSH()
+
+        #If the MaxSessions variable has been corrected
         if not self.maxSSHIgnore:
             return True
         else:
@@ -606,7 +637,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Helper function to catch the signal generated by successfully generating a new RSA key
     @QtCore.pyqtSlot(bool)
     def rsaConfirm(self, value):
-        print value
         self.RSA = value
         privateKeyFile = os.path.expanduser('~/.ssh/multikey')
         self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
@@ -631,7 +661,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         except:
             e = sys.exc_info()[0]
-            print("Find RSA Error: %s" % e)
+            print("Error in finding the specified RSA Key: %s" % e)
 
 
     #Checks to see if there is a valid RSA key set, returns True or False
@@ -695,10 +725,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         return connectionAvailable
 
 
-    #Locks and unlocks several functions after all enabled robots have been found and have valid ROS Settings
+    #Locks and unlocks several functions after all enabled robots have been found and have valid ROS Settings or if ROSMASTERs are running
     def setLaunchEnable(self, available):
 
-        if self.masterSetEnable:
+        #If the ROSMASTER Window is running
+        if self.masterIsRunning:
             self.robotTable.setEnabled(not available)
             self.editlistsbutton.setEnabled(not available)
             self.pingrobotsbutton.setEnabled(not available)
@@ -736,7 +767,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.generateRSAKeyButton.setEnabled(available)
 
 
-    #Returns True if ROSMASTERS are not  needed or if there are masters running when needed, False otherwise
+    #Returns True if ROSMASTERS are not needed or if there are masters running when needed, False otherwise
     def checkMastersRunning(self):
 
         tempList = []
@@ -745,7 +776,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         for i, statusEnable, master in zip(range(len(self.IPS)),self.ENABLE, self.MASTER_TYPE):
 
-            #If the computer is enabled and this computer is listening to a master
+            #If the remote machine is enabled and is listening to a master
             if statusEnable == "True" and master != "No ROS Settings" and master != "Master" and master != "Master and Launch":
                 indexMasterIP = self.IPS.index(master)
                 IP = self.IPS[indexMasterIP]
@@ -757,6 +788,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Flushes the tabbed command terminal in the Main Window
     def flushCommand(self):
 
+        #Reset the command terminal
         while self.tabCommands.count() != 0:
             obj = self.plaintextCommandDict[self.tabCommands.tabText(0)]
             obj.deleteLater()
@@ -767,6 +799,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.tabCommands.removeTab(0)
         self.plaintextCommandDict.clear()
 
+        #Prime the command terminal to have a tab for every robot type/configuration
         for rType in self.DICT_TYPES.keys():
             tempLayout = QtWidgets.QVBoxLayout()
             tempWidget = QtWidgets.QWidget()
@@ -779,18 +812,24 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.tabCommands.addTab(tempWidget, rType)
 
 
-    #Updates the master comboboxes when new robots are added or removed
+    #Updates the master combobox when new robots are added or removed
     def updateMasterCombobox(self):
+
+        #Reset the master combobox
         while self.comboboxMasterList != []:
             obj = self.comboboxMasterList.pop(0)
             obj.deleteLater()
 
+        #For every listed robot in the robot table
         for currentIndex, currentIp in enumerate(self.IPS):
             tempCombo = QtWidgets.QComboBox()
             tempCombo.addItem("No ROS Settings")
             tempCombo.addItem("Master")
             tempCombo.addItem("Master and Launch")
+
+            #Adds every other possible IP that is not the current IP
             for index, ip in enumerate(self.IPS):
+
                 if currentIp != ip:
                     tempCombo.addItem("Roscore at:"+ ip)
 
@@ -799,7 +838,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.comboboxMasterList.append(tempCombo)
 
 
-    #Remakes the list of rosmasters every time a "ROSMASTER Settings" combobox is changed
+    #Remakes the list of ROSMASTERs every time a "ROSMASTER Settings" combobox is changed
     def checkMasterDependencies(self):
         self.MASTER_TYPE = self.makeListFromTable("ROSMASTER Settings")
         self.setLaunchEnable(self.checkConnectionAvailable())
@@ -808,7 +847,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
     #Load data from a .csv file separated by commas (,)
-    def browseForFile(self):
+    def loadFile(self):
         if self.threadStillRunning == 'no':
             tempMasterList = []
 
@@ -837,19 +876,25 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                         line = line.strip().split(",")
 
+                        #If a RSA Key location was saved
                         if line[0] == "RSA":
                             self.rsaPath.setText(line[1])
                             self.rsaCheck()
 
+                        #If a username for a remote git repository was saved
                         elif line[0] == "GITUSER":
                             self.lineUsername.setText(line[1])
 
+                        #If the current line from the file is valid data
                         elif line[0] != "" and line[0] != "#####":
-                            # Add the basic robot data
+                            
+                            #Add the basic robot data
                             self.robotTable.insertRow(index)
 
                             tempCheckBox = QtWidgets.QCheckBox()
                             tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
+                            
+                            #If the current robot was saved as enabled
                             if line[0] == "True":
                                 tempCheckBox.setCheckState(QtCore.Qt.Checked)
                             tempCheckBox.stateChanged.connect(self.enableWidgetFromCheckbox)
@@ -887,6 +932,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     for index, string in enumerate(tempMasterList):
 
+                        #If the saved link to a ROSMASTER exists in the listed IPs
                         if string in self.IPS:
                             string = "Roscore at:"+string
                         self.comboboxMasterList[index].setCurrentIndex(self.comboboxMasterList[index].findText(string))
@@ -897,7 +943,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 except:
                     e = sys.exc_info()[0]
-                    print("Browsing File Error: %s" % e)
+                    print("Error when loading robotlist: %s" % e)
 
         else:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning)
@@ -930,9 +976,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     self.updateLists()
 
+                    #If there is a set location for a RSA Key listed
                     if str(self.rsaPath.text()) != "No RSA Key Found":
                         rFile.write("RSA,"+str(self.rsaPath.text())+"\n")
 
+                    #If there is a username for a remote git repository listed
                     if str(self.lineUsername.text()) != "":
                         rFile.write("GITUSER,"+str(self.lineUsername.text())+"\n")
 
@@ -983,13 +1031,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         rFile = open(self.STRINGOFPATH + ".txt", "w")
 
                     plainText = ""
-
                     plainText += self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())].toPlainText()
                     rFile.write(plainText)
                     rFile.close()
             except:
                 e = sys.exc_info()[0]
-                print("Save Command to File Error: %s" % e)
+                print("Error in saving commands to file: %s" % e)
 
 
     #Loads commands into the Command Editor text field from a .txt file
@@ -1002,7 +1049,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your command file", filter = "txt (*.txt *.)")
         try:
 
-            # Test to see if the user selected a valid path or canceled
+            #Test to see if the user selected a valid path or canceled
             self.STRINGOFPATH = filePath[0]
             if self.STRINGOFPATH:
                 partsOfPath = self.STRINGOFPATH.split("/")
@@ -1018,13 +1065,12 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 lines = ""
 
                 for line in listOfLines:
-
                     lines += line
                 plaintext.appendPlainText(lines)
                 rFile.close()
         except:
             e = sys.exc_info()[0]
-            print("Load Command Error: %s" % e)
+            print("Error in loading commands from file: %s" % e)
 
 
     #Checks to see if there is robot data to save or ping
@@ -1035,6 +1081,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         for statusEnable in self.ENABLE:
             if statusEnable == "False":
                 numberDisable += 1
+        
+        #If all the listed robots in the robot table are disabled
         if numberDisable == len(self.ENABLE):
             allDisabled = True
 
@@ -1097,6 +1145,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
             typeNames = []
             for typeName in self.TYPES:
+                
+                #If the currently indexed robot has a different type than in the typeNames list
                 if typeName not in typeNames:
                     typeNames.append(typeName)
             tempRobotTypeWidget.addItems(typeNames)
@@ -1124,9 +1174,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def specifyPackagePath(self, n):
         tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify the Package Directory")
 
+        #If the directory path exists
         if tempDirectoryPath:
             tempDirTest = tempDirectoryPath.split('/')
 
+            #Correcting the directory path
             if tempDirTest[1] == "home":
                 directoryPath = "~/"
                 lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
@@ -1143,64 +1195,92 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Handler function to launch one or more threads that perform git commands
     def gitCopyRepo(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
             self.ERRORTEXT = ""
 
+            #If there are no remote repositories listed
             if self.spinpackage.value() == 0:
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "Zero Repositories set")
 
             else:
-
+                
+                #If the username for the remote repositories is blank
                 if self.lineUsername.text().strip() == "":
                     self.ERRORTEXT += "\nMissing remote Git Username\n"
 
+                #If the password for the remote repositories is blank
                 if self.linePassword.text().strip() == "":
                     self.ERRORTEXT += "\nMissing remote Git Username\n"
 
                 index = 0
                 while index < self.spinpackage.value():
 
+                    #If the destination for the currently indexed remote repository is blank
                     if self.linePathParentPackage[index].text().strip() == "":
                         self.ERRORTEXT += "\nMissing Destination Directory for repository: "+ str(index+1) +"\n"
 
+                    #If the url for the currently indexed remote repository is blank
                     if self.linePathGitRepoList[index].text().strip() == "":
                         self.ERRORTEXT += "\nMissing Remote Repository URL for repository: " + str(index+1) +"\n"
                     index += 1
 
+                #If there were no blank entries
                 if self.ERRORTEXT == "":
                     temp = QtWidgets.QMessageBox.warning(self, "Warning", "Uncommitted changes will be saved using \"git stash\"")
                     self.checkPasswordLaunchThread("git")
 
+                #If there was a blank entry somewhere
                 else:
                     temp = QtWidgets.QMessageBox.warning(self, "Warning", self.ERRORTEXT)
 
 
     #Handler function to launch the ROSMASTERs
     def launchMaster(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
+            
+            #If there are not ROSMASTERs set
             if (self.calcMaster()+self.calcMasterLaunch()) == 0:
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "No ROS MASTERS have been set/Enabled")
+            
+            #Launch the relevant ROSMASTERs
             else:
-                self.masterSetEnable = True
+                self.masterIsRunning = True
                 self.checkPasswordLaunchThread("masters")
 
 
     #Handler function to launch one or more threads that perform launch commands
     def launchCommands(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
+
+            #If the relevant ROSMASTERs are running 
             if self.checkMastersRunning():
                 self.checkPasswordLaunchThread("commands")
+                
+            #If one or more ROSMASTERs are not running
             else:
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "One or more ROSMASTERs is not running, please close and relaunch the ROSCORE window")
 
 
     #Handler function to launch one or more threads that perform launch commands on a single type
     def launchThisType(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
+            
+            #If the relevant ROSMASTERs are running 
             if self.checkMastersRunning():
                 self.checkPasswordLaunchThread("type")
+
+            #If one or more ROSMASTERs are not running
             else:
-                temp = QtWidgets.QMessageBox.warning(self, "Warning", "One or more ROSMASTERs is not running, please close and relaunch the ROSCORE window")
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", "One or more ROSMASTERs is not running, "
+                                                                      "please check your ROSMASTER Settings and relaunch the ROSCORE window")
 
 
     #Handler function to launch one or more threads that perform ping commands
@@ -1213,39 +1293,48 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Handler function to launch one or more threads that perform commands to update the .bashrc file
     def updateBashrc(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
             flag = 0
 
             for index, string in enumerate(self.MASTER_TYPE):
+                
+                #If the currently indexed robot is enabled and has its ROSMASTER Settings to something other than "No ROS Settings"
                 if self.ENABLE[index] == "True" and string != "No ROS Settings":
                     flag = 1
                     break
 
+            #If there are no ROS Settings to change
             if flag == 0:
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "No ROS Settings to change")
 
+            #Update the .bashrc of the relevant robots
             else:
                 self.checkPasswordLaunchThread("bashrc")
 
 
-    #Returns a boolean value if the application is running in type only mode
-    def currentTabCheck(self, string, index):
-        correctType = True
-        if string == "type":
-            correctType = False
-            currentType = self.tabCommands.tabText(self.tabCommands.currentIndex())
-            if self.TYPES[index] == currentType:
-                correctType = True
-        return correctType
-
-
     #Handler function to generate a new RSA Key
     def genKey(self):
+        
+        #If there is no problem with the number of ssh sessions
         if self.continueProgram():
             self.checkPasswordLaunchThread("genKey")
 
 
-    #Sets flags bases on the type of thread to be run and if the RSA checkbox is selected
+    #Returns a boolean value if the application is running in type only mode
+    def currentTabCheck(self, command, index):
+        correctType = True
+        if command == "type":
+            currentType = self.tabCommands.tabText(self.tabCommands.currentIndex())
+            if self.TYPES[index] == currentType:
+                correctType = True
+            else:
+                correctType = False
+        return correctType
+
+
+    #Sets flags based on the type of thread to be run and if the RSA checkbox is selected
     def checkPasswordLaunchThread(self, commandType):
         self.updateLists()
 
@@ -1253,15 +1342,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         if commandType == "ping":
             self.launchThread(commandType, "rsa")
 
-        #If the rsacheckbox is selected
+        #If the Generate RSA Key button was not pushed and the rsacheckbox is selected
         elif commandType != "genKey" and self.rsacheckbox.isChecked():
 
             #If the proper RSA key is present on the user's machine at: ~/.ssh
             if self.RSA:
 
+                #If the Launch Masters button was pushed
                 if commandType == "masters":
                     self.masterThread("rsa")
 
+                #All other command types
                 else:
                     self.launchThread(commandType,"rsa")
 
@@ -1275,27 +1366,32 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             enableUSERS = []
 
             for index, ip, user in zip(range(len(self.IPS)),self.IPS,self.USERS):
-
                 if commandType == "masters":
+                    
+                    #If the currently indexed robot is enabled and its ROSMASTER Settings are set to be a type of Master
                     if self.ENABLE[index] == "True" and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
                         enableIPS.append(ip)
                         enableUSERS.append(user)
 
                 elif commandType == "bashrc":
+                    
+                    #If the currently indexed robot is enabled and has some ROSMASTER Settings other than "No ROS Settings"
                     if self.ENABLE[index] == "True" and self.MASTER_TYPE[index] != "No ROS Settings":
                         enableIPS.append(ip)
                         enableUSERS.append(user)
 
                 else:
+                    
+                    #If the currently indexed robot is enabled and its ROSMASTER Settings are not set to "Master"
                     if self.ENABLE[index] == "True" and self.currentTabCheck(commandType,index) and self.MASTER_TYPE[index] != "Master":
                         enableIPS.append(ip)
                         enableUSERS.append(user)
 
+            #Setup and display the Password Window
             self.passwordWindow = Password_Window(enableIPS,enableUSERS,commandType)
             self.passwordWindow.savePasswords.connect(self.updatePassword)
             self.passwordWindow.exitWindow.connect(self.termCheck)
             self.passwordWindow.show()
-            self.passwordWindow.key.connect(self.rsaConfirm)
 
 
     #Saves the entered passwords from the password window to the backend data structure
@@ -1304,8 +1400,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.PASSWORDS = {}
         self.PASSWORDS = passwordList.copy()
 
+        #If the Launch Masters button was pushed
         if commandType == "masters":
             self.masterThread("password")
+        
+        #All other command types
         else:
             self.launchThread(commandType, "password")
 
@@ -1322,6 +1421,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 #If the user is transferring files to multiple robots
                 if threadType == "git":
                     for index in range(len(self.IPS)):
+                        
+                        #If the currently indexed robot is enabled and found
                         if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
                             threadGitRepoList = []
                             threadPackageList = []
@@ -1360,13 +1461,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 elif threadType == "commands" or threadType == "type":
                     for index in range(len(self.IPS)):
 
+                        #If the currently indexed robot is enabled, found, and their ROSMASTER Settings is not set to "Master" 
                         if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and self.currentTabCheck(threadType,index) and self.MASTER_TYPE[index] != "Master":
                             tempThread = QtCore.QThread()
                             tempThread.start()
 
                             commandLinesList = str(self.plaintextCommandDict[self.TYPES[index]].toPlainText()).split("\n")
 
-                            #replacing the arguments in command lines
+                            #Replacing the arguments in command lines
                             commandLinesArgsList = []
                             for line in commandLinesList:
                                 for ipIndex, IP_Type in enumerate(self.DICT_TYPES[self.TYPES[index]][0]):
@@ -1379,11 +1481,11 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                     for arguments in reversed(argumentsList):
                                         tempArgument = arguments.replace('#', ':')
 
-                                        #replace the $variable in  the string
+                                        #Replace the $variable in the string
                                         newReplacedLine = newReplacedLine.replace(tempArgument.split(':')[0].split("/")[0],
                                                                                   ':'.join(tempArgument.split(':')[1:]))
 
-                                        #replace the $argument name in the string if there is one
+                                        #Replace the $argument name in the string if there is one
                                         if len(tempArgument.split(':')[0].split("/")) == 2:
                                             newReplacedLine = newReplacedLine.replace("$"+tempArgument.split(':')[0].split("/")[1],':'.join(tempArgument.split(':')[1:]))
                                     commandLinesArgsList.append(newReplacedLine)
@@ -1412,6 +1514,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 elif threadType == "ping":
                     self.childLaunchWindow.lineDebugCommand.setEnabled(False)
                     for index in range(len(self.IPS)):
+
+                        #If the currently indexed robot is enabled
                         if self.ENABLE[index] == "True":
                             tempThread = QtCore.QThread()
                             tempThread.start()
@@ -1431,16 +1535,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 elif threadType == "bashrc":
                     for index in range(len(self.IPS)):
 
+                        #If the currently indexed robot is enabled, found, and has some ROS Settings to update
                         if self.ENABLE[index]=="True" and self.CONNECTION_STATUS[index] == "Found" and self.MASTER_TYPE[index] != "No ROS Settings":
+
                             tempThread = QtCore.QThread()
                             tempThread.start()
 
                             tempMasterString = self.MASTER_TYPE[index]
 
+                            #If the currently indexed robot is a ROSMASTER
                             if tempMasterString == "Master" or tempMasterString == "Master and Launch":
                                 tempMasterString = self.IPS[index]
-
-                            print (str(self.IPS[index])+": "+str(tempMasterString))
 
                             #RSA checkbox test
                             if passwordType == "password":
@@ -1465,6 +1570,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     for index, ip, user in zip(range(len(self.IPS)), self.IPS, self.USERS):
 
+                            #If the currently indexed robot is enabled and found
                             if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
                                 enableIPS.append(ip)
                                 enableUSERS.append(user)
@@ -1490,6 +1596,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.refreshLaunchWindow("masters")
 
                 for index in range(len(self.IPS)):
+
+                    #If the currently indexed robot is enabled, found, and is set to be either a "Master" or a "Master and Launch"
                     if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
                         tempThread = QtCore.QThread()
                         tempThread.start()
@@ -1523,8 +1631,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Cleans the Launch Window of previous data and prepares new tabs for the new list of robots
     def refreshLaunchWindow(self,commands):
 
+        #If ROSMASTERs are to be launched
         if commands == "masters":
 
+            #Reset the ROSMASTER Window
             while self.childRoscoreWindow.tab_Launch.count() != 0:
                 try:
                     obj = self.masterTerminalList.pop(self.IPS.index(str(self.childRoscoreWindow.tab_Launch.tabText(0))))
@@ -1537,7 +1647,10 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     pass
                 self.childRoscoreWindow.tab_Launch.removeTab(0)
 
+        #Any other type of launch
         else:
+
+            #Reset the Launch Window
             while self.childLaunchWindow.tab_Launch.count() != 0:
                 try:
                     obj = self.terminalList.pop(self.IPS.index(str(self.childLaunchWindow.tab_Launch.tabText(0))))
@@ -1550,57 +1663,52 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     pass
                 self.childLaunchWindow.tab_Launch.removeTab(0)
 
-
         for index, IP in enumerate(self.IPS):
 
+            #If the currently indexed robot is enabled and the Ping Robots button is pushed
             if self.ENABLE[index] == "True" and commands == "ping":
-                tempLayout = QtWidgets.QVBoxLayout()
-                tempWidget = QtWidgets.QWidget()
-                tempTerminal = QtWidgets.QPlainTextEdit()
-                tempTerminal.setReadOnly(True)
-                tempLayout.addWidget(tempTerminal, 0)
-                tempWidget.setLayout(tempLayout)
-                self.widgetTerminalList[index] = tempWidget
-                self.layoutTerminalList[index] = tempLayout
-                self.terminalList[index] = tempTerminal
-                self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+                self.addToLaunchWindow(index,IP)
 
+            #If the currently indexed robot is enabled, the robot is found, the Launch Masters button is pushed,
+            # and the robot's ROS Settings are set to "Master" or "Master and Launch"
             elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "masters" \
                     and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
+                self.addToLaunchWindow(index,IP)
 
-                tempLayout = QtWidgets.QVBoxLayout()
-                tempWidget = QtWidgets.QWidget()
-                tempTerminal = QtWidgets.QPlainTextEdit()
-                tempTerminal.setReadOnly(True)
-                tempLayout.addWidget(tempTerminal, 0)
-                tempWidget.setLayout(tempLayout)
-                self.masterWidgetTerminalList[index] = tempWidget
-                self.masterLayoutTerminalList[index] = tempLayout
-                self.masterTerminalList[index] = tempTerminal
-                self.childRoscoreWindow.tab_Launch.addTab(tempWidget, str(IP))
+            #If the currently indexed robot is enabled, the robot is found, the Update .bashrc button is pushed,
+            # and the robot's ROS Settings are set to "Master" or "Master and Launch"
+            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "bashrc" \
+                 and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
+                self.addToLaunchWindow(index, IP)
 
-
-            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands != "masters" and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
-                tempLayout = QtWidgets.QVBoxLayout()
-                tempWidget = QtWidgets.QWidget()
-                tempTerminal = QtWidgets.QPlainTextEdit()
-                tempTerminal.setReadOnly(True)
-                tempLayout.addWidget(tempTerminal, 0)
-                tempWidget.setLayout(tempLayout)
-                self.widgetTerminalList[index] = tempWidget
-                self.layoutTerminalList[index] = tempLayout
-                self.terminalList[index] = tempTerminal
-                self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+            # If the currently indexed robot is enabled, the robot is found, the any other button is pushed,
+            # and the robot's ROS Settings are not set to "Master"
+            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and (commands != "masters" and commands != "bashrc") \
+                    and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
+                self.addToLaunchWindow(index,IP)
 
 
-    #Allows the user to send commands to the remote robots for unexpected terminal requests
+    #Adds the currently indexed robot to the Launch Window
+    def addToLaunchWindow(self, index, IP):
+        tempLayout = QtWidgets.QVBoxLayout()
+        tempWidget = QtWidgets.QWidget()
+        tempTerminal = QtWidgets.QPlainTextEdit()
+        tempTerminal.setReadOnly(True)
+        tempLayout.addWidget(tempTerminal, 0)
+        tempWidget.setLayout(tempLayout)
+        self.widgetTerminalList[index] = tempWidget
+        self.layoutTerminalList[index] = tempLayout
+        self.terminalList[index] = tempTerminal
+        self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+
+
+    #Allows the user to send commands to the remote robots for unexpected terminal requests to un-terminated threads
     def sendDebugCommand(self):
         debugCommand = self.childLaunchWindow.lineDebugCommand.text().strip()
         self.childLaunchWindow.lineDebugCommand.clear()
-        IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
-        if "Finished" not in IP_text:
-            IP_key = self.IPS.index(IP_text)
-            self.workerList[IP_key].channel.send(debugCommand + "\n")
+        ipText = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
+        ipKey = self.IPS.index(ipText)
+        self.workerList[ipKey].channel.send(debugCommand + "\n")
 
 
     #Visually updates the Launch Window tabs to display feedback from the robots
@@ -1609,7 +1717,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.terminalList[ipIndex].appendPlainText(data)
 
 
-    #Visually updates the ROSCORE Window tabs to display feedback from the ROSMASTERS
+    #Visually updates the ROSCORE Window tabs to display feedback from the ROSMASTERs
     @QtCore.pyqtSlot(int, str)
     def masterWriteInOwnedTerminal(self, ipIndex, data):
         self.masterTerminalList[ipIndex].appendPlainText(data)
@@ -1618,19 +1726,19 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Visually updates the Launch Window tabs to display feedback from pinging the robots
     @QtCore.pyqtSlot(int, str, int)
     def pingWriteInOwnedTerminal(self, ipIndex, data, pingResult):
-        try:
-            self.terminalList[ipIndex].appendPlainText(data)
-            if pingResult == 0:
-                self.robotTable.setItem(ipIndex, 5, QtWidgets.QTableWidgetItem("Found"))
-            else:
-                self.robotTable.setItem(ipIndex, 5, QtWidgets.QTableWidgetItem("Not Found"))
-            self.updateLists()
-        except:
-            e = sys.exc_info()[0]
-            print( "Ping Error: %s" % e )
+        self.terminalList[ipIndex].appendPlainText(data)
+
+        #If the remote machine was found
+        if pingResult == 0:
+            self.robotTable.setItem(ipIndex, 5, QtWidgets.QTableWidgetItem("Found"))
+
+        #If it was not
+        else:
+            self.robotTable.setItem(ipIndex, 5, QtWidgets.QTableWidgetItem("Not Found"))
+        self.updateLists()
 
 
-    #Terminates the calling thread
+    #Terminates the calling Launch Window thread
     @QtCore.pyqtSlot(int, str)
     def killThread(self, ipIndex, eMessage):
         self.ERRORTEXT = ""
@@ -1639,11 +1747,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         if eMessage != "":
             self.ERRORTEXT += "\n"+eMessage +"\n"
 
+        #Terminates the thread
         del self.workerList[ipIndex]
         self.threadList[ipIndex].quit()
         self.threadList[ipIndex].wait()
         del self.threadList[ipIndex]
 
+        #Appends "(Finished)" to visually denote a terminated thread
         for index in range(self.childLaunchWindow.tab_Launch.count()):
             if self.childLaunchWindow.tab_Launch.tabText(index) == self.IPS[ipIndex]:
                 self.childLaunchWindow.tab_Launch.setTabText(index, self.IPS[ipIndex]+" (Finished)")
@@ -1653,12 +1763,15 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             if self.threadStillRunning == 'Bashrc still running':
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
                                                          "Bashrc Update Finished\n" + self.ERRORTEXT)
+
             elif self.threadStillRunning == 'Pings still running':
                 self.setLaunchEnable(self.checkConnectionAvailable())
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information", "Ping Test Finished\n" + self.ERRORTEXT)
+
             elif self.threadStillRunning == 'Git repository synchronisation still running':
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
                                                          "Git Repo Cloning/Pulling Finished\n" + self.ERRORTEXT)
+
             elif self.threadStillRunning == 'Launch files still running':
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
                                                          "Finished Executing Commands\n" + self.ERRORTEXT)
@@ -1667,7 +1780,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.updateLists()
 
 
-    #Terminates the calling thread
+    #Terminates the calling ROSMASTER thread
     @QtCore.pyqtSlot(int, str)
     def masterKillThread(self, ipIndex, eMessage):
         self.ERRORTEXT = ""
@@ -1676,11 +1789,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         if eMessage != "":
             self.ERRORTEXT += "\n" + eMessage + "\n"
 
+        #Terminates the thread
         del self.masterWorkerList[ipIndex]
         self.masterThreadList[ipIndex].quit()
         self.masterThreadList[ipIndex].wait()
         del self.masterThreadList[ipIndex]
 
+        #Appends "(Finished)" to visually denote a terminated thread
         for index in range(self.childRoscoreWindow.tab_Launch.count()):
             if self.childRoscoreWindow.tab_Launch.tabText(index) == self.IPS[ipIndex]:
                 self.childRoscoreWindow.tab_Launch.setTabText(index, self.IPS[ipIndex] + " (Finished)")
@@ -1696,38 +1811,50 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Helper function to interrupt the correct threads
     @QtCore.pyqtSlot(str)
     def termCheck(self, window):
+
+        #If the window to be closed is a launch window
         if window == "launch":
             self.interruptRemainingThreads(window)
 
+        #If the window to be closed is a ROSMASTER window
         elif window == "masters":
             self.interruptRemainingThreads(window)
-            self.masterSetEnable = False
+            self.masterIsRunning = False
             self.setLaunchEnable(True)
 
-        elif window == "pass" and self.masterSetEnable == True:
-            self.masterSetEnable = False
+        #If the Password Window is closed prematurely and ROSMASTERs were to be run
+        elif window == "pass" and self.masterIsRunning == True:
+            self.masterIsRunning = False
             self.setLaunchEnable(True)
 
 
     #Terminates the currently selected tab/thread
     def terminateCurrentThread(self, flag):
-        if flag == "masters":
-            IP_text = str(self.childRoscoreWindow.tab_Launch.tabText(self.childRoscoreWindow.tab_Launch.currentIndex()))
-            if "Finished" not in IP_text:
-                workerKey = self.IPS.index(IP_text)
-                self.masterWorkerList[workerKey].stopSignal = True
-                if self.masterThreadStillRunning == 'Masters still running':
-                    try:
-                        self.masterWorkerList[workerKey].channel.send("\x03\n")
-                        self.masterWorkerList[workerKey].channel.close()
-                    except:
-                        pass
 
+        #If the thread that is being interrupted is a ROSMASTER thread
+        if flag == "masters":
+            ipText = str(self.childRoscoreWindow.tab_Launch.tabText(self.childRoscoreWindow.tab_Launch.currentIndex()))
+
+            #If the thread is not already terminated
+            if "Finished" not in ipText:
+                workerKey = self.IPS.index(ipText)
+                self.masterWorkerList[workerKey].stopSignal = True
+                try:
+                    self.masterWorkerList[workerKey].channel.send("\x03\n")
+                    self.masterWorkerList[workerKey].channel.close()
+                except:
+                    pass
+
+        #Interrupt a non-ROSMASTER thread
         else:
-            IP_text = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
-            if "Finished" not in IP_text:
-                workerKey = self.IPS.index(IP_text)
+            ipText = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
+
+            #If the thread is not already terminated
+            if "Finished" not in ipText:
+                workerKey = self.IPS.index(ipText)
                 self.workerList[workerKey].stopSignal = True
+
+                #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
                     try:
                         self.workerList[workerKey].channel.send("\x03\n")
@@ -1738,24 +1865,28 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Interrupts any currently running threads
     def interruptRemainingThreads(self, flag):
+
+        #If the threads that are being interrupted are ROSMASTER threads
         if flag == "masters":
+
             for workerKey in self.masterWorkerList.keys():
                 self.masterWorkerList[workerKey].stopSignal = True
-                if self.masterThreadStillRunning == 'Masters still running':
-                    try:
-                        self.masterWorkerList[workerKey].channel.send("\x03\n")
-                        self.masterWorkerList[workerKey].channel.close()
-                    except:
-                        pass
+                try:
+                    self.masterWorkerList[workerKey].channel.send("\x03\n")
+                    self.masterWorkerList[workerKey].channel.close()
+                except:
+                    pass
 
+        #Interrupting all other types of threads
         else:
             for workerKey in self.workerList.keys():
                 self.workerList[workerKey].stopSignal = True
+
+                #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
                     try:
                         self.workerList[workerKey].channel.send("\x03\n")
                         self.workerList[workerKey].channel.close()
-
                     except:
                         pass
 
@@ -1765,18 +1896,28 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.interruptRemainingThreads("launch")
         self.interruptRemainingThreads("masters")
 
+        #If there are threads running
         if self.workerList != {} and self.threadList != {}:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning + "\nThe threads are shutting down, just wait a little bit and try one more time!")
             event.ignore()
+
+        #If there are no threads running
         else:
+
+            #If the current session has recently been saved or reset
             if self.saved:
                 event.accept()  #let the window close
+
+            #If there are unsaved changes
             else:
                 reply = QtWidgets.QMessageBox.question(self, 'Message', "Exit Without Saving?",
                                                        QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
 
+                #The User does not want to save their changes
                 if reply == QtWidgets.QMessageBox.Yes:
                     event.accept()
+
+                #Cancel quiting the application
                 else:
                     event.ignore()
 

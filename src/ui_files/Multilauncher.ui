@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Multilauncher ver 1.9</string>
+   <string>Multilauncher ver 2.0</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_6">
@@ -61,7 +61,7 @@
         <item row="4" column="0">
          <widget class="QPushButton" name="checkAllButton">
           <property name="text">
-           <string>Check/Uncheck All</string>
+           <string>Enable/Disable All</string>
           </property>
          </widget>
         </item>

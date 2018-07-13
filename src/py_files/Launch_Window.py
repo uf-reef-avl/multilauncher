@@ -2,13 +2,13 @@
 # File: Launch_Window.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
-# Created:
+# Created: Summer 2018
 #
 
 from PyQt5 import QtWidgets, QtCore
 import Launch_Window_Design
 
-#Creates Launch Window used in all multi-threading functions
+#Creates Launch Window used in all non-ROSMASTER multi-threading functions
 class Launch_Window(QtWidgets.QDialog, Launch_Window_Design.Ui_Dialog):
 
 	closeThreads = QtCore.pyqtSignal(str)

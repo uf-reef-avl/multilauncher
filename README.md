@@ -3,8 +3,7 @@
 
 A utility that facilitates connecting to multiple remote computers/robots,
 downloading remote repositories to those remote computers, and
-executing a series of commands simultaneously on the computers.
-
+executing a series of commands simultaneously on remote machines
 
 **Table of Contents**
 ---------------------
@@ -65,7 +64,7 @@ executing a series of commands simultaneously on the computers.
 **Installation**
 ----------------
 
-1. If not already installed, install openssh-client on both the machine running this executable and the remote robots.
+1. If not already installed, install openssh-client on both the machine running this executable and the remote machines.
 
 2. Pull this repository to your local machine.
 
@@ -269,11 +268,7 @@ executing a series of commands simultaneously on the computers.
     This will either bring up the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox
     is currently checked the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
     
--Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
-
-    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-              from editing the listed robots or performing any other thread based function.
-              Warnings will be displayed if attempting to run one of these functions.
+-Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and the RSA checkbox.
 
 
 **Passwords and Using RSA KEYS** <a name="Passwords and Using RSA KEYS"/>
@@ -288,21 +283,15 @@ executing a series of commands simultaneously on the computers.
 -When the PasswordWindow is displayed, the center will list all of the remote robots with a corresponding textfield
     for password entry.
 
--To either launch the commands or generate a new RSA key all password fields must be filled (Correct is optional).
+-To either launch the commands all password fields must be filled (Correct is optional).
 
 -Clicking the "Launch the Command" button starts the process of remote SSH'ing and sending the commands to the robots.
 
--Clicking the "Generate RSA Key" button brings up the GenerateRSAKeyWindow.
-
-    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-              from editing the listed robots or performing any other thread based function.
-              Warnings will be displayed if attempting to run one of these functions.
 
 
 **GenerateRSAKeyWindow:** <a name="GenerateRSAKeyWindow"/>
 
--To generate a new set of RSA keys, enter the username and password of the computer running this application into
-    the appropriate textfields and click on the "Generate Key" button.
+-To generate a new set of RSA keys click on the "Generate Key" button from the MainWindow.
     
     Warning!: When generating the RSA Key the ownership of the ~/.ssh directory on the remote machine will be set
               to the user and the file permissions will be set to default.

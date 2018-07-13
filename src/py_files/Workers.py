@@ -2,7 +2,7 @@
 # File: Workers.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
-# Created:
+# Created: Summer 2018
 #
 
 from PyQt5 import QtCore

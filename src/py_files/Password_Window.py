@@ -2,20 +2,19 @@
 # File: Main.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
-# Created:
+# Created: Summer 2018
 #
 
 
 import Password_Window_Design
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 #Creates and runs the Password Window and its methods
 class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
 
-    #Variables for emitting a signal containing the list of passwords and if a RSA Key has been generated
+    #Variables for emitting a signal containing the list of passwords
     savePasswords = QtCore.pyqtSignal(dict,str)
-    key = QtCore.pyqtSignal(bool)
     exitWindow = QtCore.pyqtSignal(str)
 
     #Definition of the Password Window
@@ -40,7 +39,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
         #Paring buttons to functions
-        self.launchButton.clicked.connect(self.close_window)
+        self.launchButton.clicked.connect(self.closeWindow)
 
         #Dynamically populate the Password Window based on the number of robots
         for index, IP, USER in zip(range(len(self.ipList)),self.ipList,self.userList):
@@ -67,9 +66,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
            if str(linePassword.text().strip()) == "":
                eMessage = "The password of " + str(self.labelUSERS[index].text()) +" has not been set"
                error += "\n"+eMessage +"\n"
-               #temp = QtWidgets.QMessageBox.warning(self, "Warning", "the password of " + str(self.labelIPS[index].text()) +" has not be set")
                save = False
-               #break
            self.PASSWORDS[str(self.labelIPS[index].text().strip())] = str(linePassword.text().strip())
 
         #If all robots have passwords entered
@@ -83,7 +80,7 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
 
 
     #Closes the Password Window and emits the password list back to Main
-    def close_window(self):
+    def closeWindow(self):
         if self.saveData():
             self.setResult(1)
             self.savePasswords.emit(self.PASSWORDS, self.commandType)
