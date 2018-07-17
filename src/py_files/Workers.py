@@ -90,11 +90,18 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 						self.channel.send('catkin build\n')
 						self.waitFinishCommand()
 
-		except paramiko.ssh_exception.SSHException:
+
+		except paramiko.ssh_exception.AuthenticationException:
 			if self.password:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
 			elif self.password is None:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
 
 		except:
 			e = sys.exc_info()[0]
@@ -255,11 +262,18 @@ class Launch_Worker(QtCore.QObject):
 					break
 				self.waitFinishCommand()
 
-		except paramiko.ssh_exception.SSHException:
+
+		except paramiko.ssh_exception.AuthenticationException:
 			if self.password:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
 			elif self.password is None:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
 
 		#finish thread
 		ssh.close()
@@ -346,11 +360,18 @@ class ROSMASTER_Worker(QtCore.QObject):
 				self.waitFinishCommand()
 
 
-		except paramiko.ssh_exception.SSHException:
+
+		except paramiko.ssh_exception.AuthenticationException:
 			if self.password:
 				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
 			elif self.password is None:
 				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
 
 		#finish thread
 		ssh.close()
@@ -440,11 +461,17 @@ class Bashrc_Worker(QtCore.QObject):
 			self.channel.send(' echo export ROS_HOSTNAME='+self.IP+' >> ~/.bashrc\n')
 			self.waitFinishCommand()
 
-		except paramiko.ssh_exception.SSHException:
+		except paramiko.ssh_exception.AuthenticationException:
 			if self.password:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
 			elif self.password is None:
 				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
 
 		#finish thread
 		ssh.close()

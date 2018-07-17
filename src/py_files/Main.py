@@ -44,6 +44,9 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Signifies if there have been changes in the robot table data
         self.saved = True
 
+        #Used to warn the user about setting the number of remote repositories potentially too high
+        self.largeNumOfRepos = False
+
         #modify the ui to add the tab widget
         del self.commands
         self.tabCommands = QtWidgets.QTabWidget()
@@ -82,6 +85,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.ERRORTEXT = ""
         self.comboboxMasterList = []
         self.terminalRefreshSeconds = 0.1
+        self.directoryPaths = []
+        self.remoteURLs = []
 
         #Creates the Launch Window used in pinging and executing selected commands
         self.childLaunchWindow = Launch_Window()
@@ -564,7 +569,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Open the file and search for the MaxSessions variable
         actualFileName = "/etc/ssh/sshd_config"
-        rFile = open(actualFileName, "rU")
+        rFile = open(actualFileName, "r")
         listOfLines = rFile.readlines()
         for line in listOfLines:
             if "MaxSessions" in line:
@@ -612,7 +617,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.maxSSH = sessions
 
         else:
-            temp = QtWidgets.QMessageBox.warning(self, "Warning", "The current required number of ssh sessions does not exceed the value of MaxSessions")
+            temp = QtWidgets.QMessageBox.information(self, "Information", "The current required number of ssh sessions: ("
+                                                 +str(sessions)+") does not exceed the value of MaxSessions found in /etc/ssh/sshd_config: ("+str(self.maxSSH)+")")
 
 
     #Lets the application continue if the MaxSessions variable in sshd_config is greater than or equal to the number of needed SSH sessions
@@ -867,7 +873,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.selectedfilename.setText("Current File: " + actualFileName)
 
                 try:
-                    rFile = open(self.STRINGOFPATH, "rU")
+                    rFile = open(self.STRINGOFPATH, "r")
                     listOfLines = rFile.readlines()
                     index = 0
 
@@ -1057,7 +1063,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.commandFileLable.setText("Current File: "+actualFileName)
 
 
-                rFile = open(self.STRINGOFPATH, "rU")
+                rFile = open(self.STRINGOFPATH, "r")
                 listOfLines = rFile.readlines()
                 plaintext = self.plaintextCommandDict[self.tabCommands.tabText(self.tabCommands.currentIndex())]
 
@@ -1118,28 +1124,56 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Updates the File Transfer section when the user changes the number of packages to transfer
     def reloadPackage(self):
 
+        #Warns the user about setting the number of remote repositories in the spinbox to a high number
+        if self.spinpackage.value() > 20 and self.largeNumOfRepos == False:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "This program may slow down when transferring a large number of remote repositories")
+            self.largeNumOfRepos = True
+
+        #If the user is going to pull from more repositories than previously set
+        if len(self.directoryPaths) < self.spinpackage.value():
+            index = len(self.directoryPaths)
+
+            while index < self.spinpackage.value():
+
+                self.directoryPaths.append("")
+                self.remoteURLs.append("")
+
+                index += 1
+
+        x = 0
         #Clears the File Transfer section
         while self.linePathParentPackage != []:
+
+            self.directoryPaths[x] = self.linePathParentPackage.__getitem__(0).text().strip()
+            self.remoteURLs[x] = self.linePathGitRepoList.__getitem__(0).text().strip()
+
             obj = self.linePathParentPackage.pop(0)
             obj.deleteLater()
-        while self.linePathGitRepoList != []:
             obj = self.linePathGitRepoList.pop(0)
             obj.deleteLater()
-        while self.comboRobotTypeList != []:
             obj = self.comboRobotTypeList.pop(0)
             obj.deleteLater()
-        while self.buttonDirectoryPackageList != []:
             obj = self.buttonDirectoryPackageList.pop(0)
             obj.deleteLater()
-        while self.comboMakeList != []:
             obj = self.comboMakeList.pop(0)
             obj.deleteLater()
+            x+=1
+
 
         #Adds widgets to the File Transfer section based on the number of packages listed in the spinbox
-        for i in range(self.spinpackage.value()):
+        for index in range(self.spinpackage.value()):
             tempPackageWidget = QtWidgets.QLineEdit()
             tempGitRepoWidget = QtWidgets.QLineEdit()
-            tempGitRepoWidget.setPlaceholderText("Use http:// here")
+
+            #If there is data that was previously at this index
+            if index < len(self.directoryPaths) and self.directoryPaths[index] != "":
+                tempPackageWidget.setText(self.directoryPaths[index])
+                tempGitRepoWidget.setText(self.remoteURLs[index])
+
+            #If this is a new remote repository listing
+            else:
+                tempGitRepoWidget.setPlaceholderText("Use http:// here")
+
             tempRobotTypeWidget = QtWidgets.QComboBox()
             tempMakeWidget = QtWidgets.QComboBox()
             tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
@@ -1152,17 +1186,17 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             tempRobotTypeWidget.addItems(typeNames)
             tempPackageDirectoryWidget = QtWidgets.QPushButton()
             tempPackageDirectoryWidget.setText("Parent Package Directory")
-            tempPackageDirectoryWidget.clicked.connect(lambda state, arg = i:self.specifyPackagePath(arg))
+            tempPackageDirectoryWidget.clicked.connect(lambda state, arg = index:self.specifyPackagePath(arg))
             self.linePathParentPackage.append(tempPackageWidget)
             self.linePathGitRepoList.append(tempGitRepoWidget)
             self.comboRobotTypeList.append(tempRobotTypeWidget)
             self.buttonDirectoryPackageList.append(tempPackageDirectoryWidget)
             self.comboMakeList.append(tempMakeWidget)
-            self.gridpackage.addWidget(tempPackageDirectoryWidget, i, 0)
-            self.gridpackage.addWidget(tempPackageWidget, i, 1)
-            self.gridpackage.addWidget(tempGitRepoWidget, i, 2)
-            self.gridpackage.addWidget(tempRobotTypeWidget, i, 3)
-            self.gridpackage.addWidget(tempMakeWidget, i, 4)
+            self.gridpackage.addWidget(tempPackageDirectoryWidget, index, 0)
+            self.gridpackage.addWidget(tempPackageWidget, index, 1)
+            self.gridpackage.addWidget(tempGitRepoWidget, index, 2)
+            self.gridpackage.addWidget(tempRobotTypeWidget, index, 3)
+            self.gridpackage.addWidget(tempMakeWidget, index, 4)
             self.gridpackage.setColumnStretch(0,1)
             self.gridpackage.setColumnStretch(1,1)
             self.gridpackage.setColumnStretch(2,1)
@@ -1380,6 +1414,13 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         enableIPS.append(ip)
                         enableUSERS.append(user)
 
+                elif commandType == "genKey":
+
+                    #If the currently indexed robot is enable
+                    if self.ENABLE[index] == "True":
+                        enableIPS.append(ip)
+                        enableUSERS.append(user)
+
                 else:
                     
                     #If the currently indexed robot is enabled and its ROSMASTER Settings are not set to "Master"
@@ -1456,6 +1497,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             self.threadList[index] = tempThread
                     self.threadStillRunning = 'Git repository synchronisation still running'
                     self.childLaunchWindow.show()
+                    self.largeNumOfRepos = False
 
                 #If the user is launching commands
                 elif threadType == "commands" or threadType == "type":
@@ -1673,7 +1715,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             # and the robot's ROS Settings are set to "Master" or "Master and Launch"
             elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "masters" \
                     and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
-                self.addToLaunchWindow(index,IP)
+                self.addToRoscoreWindow(index,IP)
 
             #If the currently indexed robot is enabled, the robot is found, the Update .bashrc button is pushed,
             # and the robot's ROS Settings are set to "Master" or "Master and Launch"
@@ -1700,6 +1742,20 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.layoutTerminalList[index] = tempLayout
         self.terminalList[index] = tempTerminal
         self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
+
+
+    # Adds the currently indexed robot to the ROSMASTER Window
+    def addToRoscoreWindow(self, index, IP):
+        tempLayout = QtWidgets.QVBoxLayout()
+        tempWidget = QtWidgets.QWidget()
+        tempTerminal = QtWidgets.QPlainTextEdit()
+        tempTerminal.setReadOnly(True)
+        tempLayout.addWidget(tempTerminal, 0)
+        tempWidget.setLayout(tempLayout)
+        self.masterWidgetTerminalList[index] = tempWidget
+        self.masterLayoutTerminalList[index] = tempLayout
+        self.masterTerminalList[index] = tempTerminal
+        self.childRoscoreWindow.tab_Launch.addTab(tempWidget, str(IP))
 
 
     #Allows the user to send commands to the remote robots for unexpected terminal requests to un-terminated threads
@@ -1741,7 +1797,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Terminates the calling Launch Window thread
     @QtCore.pyqtSlot(int, str)
     def killThread(self, ipIndex, eMessage):
-        self.ERRORTEXT = ""
 
         #Append a failed terminal's error string to the master error string
         if eMessage != "":
@@ -1783,7 +1838,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Terminates the calling ROSMASTER thread
     @QtCore.pyqtSlot(int, str)
     def masterKillThread(self, ipIndex, eMessage):
-        self.ERRORTEXT = ""
 
         # Append a failed terminal's error string to the master error string
         if eMessage != "":

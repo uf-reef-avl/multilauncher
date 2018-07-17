@@ -72,17 +72,30 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
 
                 # create the shell for the current index
                 self.channel = self.ssh.invoke_shell()
-                self.channel.settimeout(1.5)
+                self.channel.settimeout(1.0)
                 # Changes the remote robot's .ssh directory permissions to the user remote user
                 self.launchChmod(index)
 
                 # Pushes the public key to the remote robot
                 self.launchPushKey(index)
 
-            except paramiko.AuthenticationException:
+            except paramiko.ssh_exception.AuthenticationException:
                 self.outPutString = self.outPutString + "X - Error in connecting to: "+self.ipList[index]+" due to password mismatch\n"
+                self.rsaProgressValue += 100 / len(self.ipList)
+                self.rsaProgressBar.setValue(self.rsaProgressValue)
+
+            except paramiko.ssh_exception.BadHostKeyException:
+                self.outPutString = self.outPutString + "X - Error in connecting to: "+self.ipList[index]+" due to the remote host not being verified\n"
+                self.rsaProgressValue += 100 / len(self.ipList)
+                self.rsaProgressBar.setValue(self.rsaProgressValue)
+
+            except paramiko.ssh_exception.NoValidConnectionsError:
+                self.outPutString = self.outPutString + "X - Error in connecting to: "+self.ipList[index]+" due to the remote host not having ssh installed or is unreachable (firewall)\n"
+                self.rsaProgressValue += 100 / len(self.ipList)
+                self.rsaProgressBar.setValue(self.rsaProgressValue)
 
             self.ssh.close()
+
 
         # update the progress bar
         self.rsaProgressBar.setValue(100)

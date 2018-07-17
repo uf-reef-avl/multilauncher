@@ -29,7 +29,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
         self.argumentList = []
 
         #Connect every button to their correct slot
-        self.treeRobotType.itemClicked.connect(self.editItem)
+        self.treeRobotType.itemDoubleClicked.connect(self.editItem)
         self.treeRobotType.itemChanged.connect(self.changeArgument)
         self.buttonSave.clicked.connect(self.saveArguments)
         self.buttonCancel.clicked.connect(self.cancelArguments)
@@ -76,7 +76,7 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
     #Updates and displays the current list of robots with their assigned arguments
     def updateTree(self):
 
-        #Delete all the previous item which populated the tree
+        #Delete all the previous items which populated the tree
         self.treeRobotType.clear()
 
         #Loop on all robotType
@@ -204,31 +204,50 @@ class Adjust_Arguments(QtWidgets.QDialog, Adjust_Arguments_Design.Ui_Dialog):
     #Updates the the argument lines in the Argument terminal to red if there is an argument missing
     # or green if the argument is found. It also updates the temporary dictionary and the variable name for every argument of the same robot type
     def changeArgument(self, item, column):
+        self.treeRobotType.itemChanged.disconnect()
+        duplicateName = False
 
         if str(item.text(0)[0].strip()) == '$':
 
             if column == 1:
+
                 rowArgument = item.parent().indexOfChild(item)
-                parentItemType = item
 
-                while parentItemType.parent() != None:
-                    parentItemType = parentItemType.parent()
+                for index in range(item.parent().childCount()):
+                    if item.parent().child(index).text(1).strip() == item.text(1) and index != rowArgument:
+                        duplicateName = True
+                        item.setText(1, "")
 
-                for ipItemIndex in range(parentItemType.childCount()):
-                    ipItem = parentItemType.child(ipItemIndex)
+                if not duplicateName:
+                    parentItemType = item
+                    while parentItemType.parent() != None:
+                        parentItemType = parentItemType.parent()
 
-                    if item != ipItem:
-                        ipItem.child(rowArgument).setText(1, item.text(column))
+                    for ipItemIndex in range(parentItemType.childCount()):
+                        ipItem = parentItemType.child(ipItemIndex)
+
+                        if item != ipItem:
+                            ipItem.child(rowArgument).setText(1, item.text(column))
+
 
             #If the argument is blank
             if str(item.text(2).strip()) == '':
+
+                #Red
                 item.setBackground(2, QtGui.QBrush(QtGui.QColor(200, 50, 50)))
 
             #Argument is not blank
             else:
+
+                #Green
                 item.setBackground(2, QtGui.QBrush(QtGui.QColor(100, 255, 100)))
 
-        self.createArgumentResume()
+        self.treeRobotType.itemChanged.connect(self.changeArgument)
+        if not duplicateName:
+            self.createArgumentResume()
+
+        else:
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Can't have arguments with the same name")
 
 
     #Check if there is still a new argument which is empty. Return "" if there is no error otherwise return IP and argument name with the string:"still empty"

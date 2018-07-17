@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_robotEditDialog(object):
     def setupUi(self, robotEditDialog):
         robotEditDialog.setObjectName("robotEditDialog")
-        robotEditDialog.resize(1189, 477)
+        robotEditDialog.resize(1189, 637)
         self.gridLayout_2 = QtWidgets.QGridLayout(robotEditDialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.label = QtWidgets.QLabel(robotEditDialog)

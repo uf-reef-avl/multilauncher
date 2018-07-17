@@ -14,21 +14,25 @@ executing a series of commands simultaneously on remote machines
 
 3. [Running the Application](#Running the Application)
 
-    A. [File Browser](#File Browser)
+    A. [File Browser/RoboData](#File Browser/RoboData)
         
-     1. [Adding/Removing Robots Manually](#Adding/Removing Robots Manually)
+     1. [Adding Robots via a .csv File](#Adding Robots via a csv File)
      
-     2. [Adding Robots via a .csv File](#Adding Robots via a csv File)
+     2. [Saving the Current List of Robots to a .csv File](#Saving the Current List of Robots to a csv File)
      
-     3. [Saving the Current List of Robots to a .csv File](#Saving the Current List of Robots to a csv File)
+     3. [Enabling and Disabling Listed Robots](#Enabling and Disabling Listed Robots)
+     
+     4. [Adding/Removing Robots Manually](#Adding/Removing Robots Manually)
+     
+     5. [Updating the MaxSessions Variable](#Updating the MaxSessions Variable)
      
      4. [Pinging the Listed Robots](#Pinging the Listed Robots)
      
      5. [Adjusting Robot Arguments](#Adjusting Robot Arguments)
     
-    B. [File Transfer](#File Transfer)
+    B. [Git Repository](#Git Repository)
      
-     1. [Transferring Repositories](#Transferring Repositories)
+     1. [Pulling Repositories](#Pulling Repositories)
      
      2. [Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots](#Update ROS MASTER URI IP in the bashrc on the Remote Robots)
    
@@ -40,9 +44,9 @@ executing a series of commands simultaneously on remote machines
      
      3. [Saving the Current List of Commands to a .txt File](#Saving the Current List of Commands to a txt File)
      
-     4. [Launching the Listed Robots and Commands](#Launching the Listed Robots and Commands)
+    D. [Launching](#Launching)
     
-    D. [Passwords and Using RSA KEYS](#Passwords and Using RSA KEYS)
+    E. [Passwords and Using RSA KEYS](#Passwords and Using RSA KEYS)
     
      1. [PasswordWindow](#PasswordWindow)
      
@@ -68,7 +72,7 @@ executing a series of commands simultaneously on remote machines
 
 2. Pull this repository to your local machine.
 
-3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/.
+3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/multilaunch/dist/.
 
 
 <a name="Important Notes Before Running"/>
@@ -82,7 +86,8 @@ executing a series of commands simultaneously on remote machines
 -Check that port 11311 is allowed through the firewall on the ROSMASTER machine (if not type: sudo ufw allow 11311).
 
 -If you intend to work with more than 10 computers go to the directory at "/etc/ssh/sshd_config" and
-	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used.
+	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used or
+	use the "Update MaxSessions" button from the MainWindow.
 	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
 
 
@@ -94,25 +99,39 @@ executing a series of commands simultaneously on remote machines
 
 -Once the the Multilauncher is running, the MainWindow will be displayed.
 
--A majority of the Multilauncher's functions will be deactivated until valid data is present in the textfields and
-	when the listed computers/robots have all been successfully pinged as denoted in the Connection Status textfield.
+-A majority of the Multilauncher's functions will be deactivated until valid data is present in the Robot Table and
+	when the listed computers/robots have all been successfully pinged as denoted in the Connection Status column.
 
 
 
-**File Browser** <a name="File Browser"/>
+**File Browser/RoboData** <a name="File Browser/RobotData"/>
+
+
+**Enabling and Disabling Listed Robots:** <a name="Enabling and Disabling Listed Robots"/>
+
+-From the MainWindow clicking on a checkbox listed in the robot table will alternate the checked status of a individual 
+    robot between checked (Enabled) and unchecked (Disabled)
+
+-Clicking on the "Enable/Disable All" button will alternate all "Enabled" checkboxes listed in 
+    the robot table between checked (Enabled) and unchecked (Disabled)
 
 
 **Adding/Removing Robots Manually:** <a name="Adding/Removing Robots Manually"/>
 
 -From the MainWindow, click on the "Add/Edit/Remove Robots" button to bring up the EditRobot dialog window.
 
--Add a new robot: Type the robot's IP address into the first textfield to the right of the "Selected" label,
-                  the robot's user/host name in the middle textfield, the robot's type/model in the last textfield, and
+-Add a new robot: Type the robot's IP address into the first textfield under the "New/Selected: IP Address" label,
+                  the robot's user/host name in the middle textfield under the "New/Selected: Robot Name" label, 
+                  the robot's type/model in the last textfield under the "New/Selected: Robot Type" label, and
 			      finally click on the "Add Robot" button to add the new robot to the robot table.
                   A message will appear next to the "result" label informing you if the operation was successful or how it might have failed.
-	
+
+-Modify a robot: Click on any of the intended robot's table entries to load the selected robot's data into the three "New/Selected" textfields under the table.
+                 Retype the relevant values into textfields and click on the "Modify Robot" button to update the entry in the robot table.
+
+
 -Remove a robot: Click on any of the intended robot's table entries and then click the "Delete Robot" button.
-				 To help identify the robot to be deleted its data will be loaded into the three textfields under the table.
+				 To help identify the robot to be deleted its data will be loaded into the three "New/Selected" textfields under the table.
 	
 	Warning!: If you have multiple robots listed in the robot table and have selected one, clicking the "Delete Robot" button multiple times
 				will delete the currently selected robot, then the robots above the original deletion, and finally the ones under the original deletion.
@@ -122,6 +141,13 @@ executing a series of commands simultaneously on remote machines
               delete in this order: 3, 2, 1, 4, 5. 
 
 -Save the current list of robots in the robot table to the MainWindow by clicking the "Save and Exit" button.
+
+
+**Updating the MaxSessions Variable:** <a name="Updating the MaxSessions Variable"/>
+
+-From the MainWindow, clicking on the "Update MaxSessions" button will either bring up a information dialog when your
+    combined number of enabled robots and their "ROSMASTER Settings" does not exceed the value set in the MaxSessions
+    variable or prompt the user for root credentials through PolicyKit to perform file operations in the /etc/ssh/sshd_config file.
 
 
 **Adding Robots via a .csv File:** <a name="Adding Robots via a csv File"/>
@@ -138,24 +164,23 @@ executing a series of commands simultaneously on remote machines
 
 **Pinging the Listed Robots:** <a name="Pinging the Listed Robots"/>
 
--From the MainWindow, click on the "Ping Robots" button to begin pinging the robots listed under "Robot's IP Address".  
+-From the MainWindow, click on the "Ping Robots" button to begin pinging the robots listed in the robot table.  
     
--Each tab displays the current status of pinging each listed IP address.  
+-Each tab displays the current status of pinging each listed robot's IP address from the robot table.  
     
 -If the IP address has been found a found message will be displayed in the associated tab while IP addresses 
     that have not been found will continue to ping up to a set number of times (default is 100 times).
-    
--All pinging threads can be interrupted and closed by clicking the "Stop all unfinished threads" button.  
+
+-All pinging threads can be interrupted and closed individually or all at the same time by clicking the 
+    "Stop Current Thread" and "Stop all unfinished threads" buttons respectively.  
     
 -Once all IP addresses have been found, reached the ping limit, or been interrupted
-    by the user a information dialog box will display an acknowledgement that the ping operation is finished.
+    by the user, a information dialog box will display an acknowledgement that the ping operation is finished.
     
--If all IP addresses have been successfully found the application will "unlock" the remaining buttons and textfields
+-If all IP addresses have been successfully found the application will "unlock" the remaining buttons and features
     in the MainWindow
-        
-    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-              from editing the listed robots or performing any other thread based function.
-              Warnings will be displayed if attempting to run one of these functions.
+
+    Warning!: Closing the LaunchWindow before all threads have finished terminates the running threads.
 
 
 **Adjusting Robot Arguments:** <a name="Adjusting Robot Arguments"/>
@@ -165,8 +190,8 @@ executing a series of commands simultaneously on remote machines
 
 -Argument requirements are grouped together based on robot type.
 
--The top part of the ArgumentWindow lists the different types of robots listed in the MainWindow and contains a spinbox
-    that controls how many arguments are required for each robot type.
+-The top part of the ArgumentWindow lists the different types of robots and contains a spinbox that controls how many 
+    arguments are required for each robot type.
     
 -The bottom part of the ArgumentWindow displays the listed robots grouped together as a series of trees each containing
     a single type, the robots that are of that type, and the required number of arguments for each robot of that type.
@@ -177,12 +202,12 @@ executing a series of commands simultaneously on remote machines
 -Save the current list of robot arguments in the argument tree to the MainWindow by clicking the "Save" button.
 
 
-**File Transfer** <a name="File Transfer"/>
+**Git Repository** <a name="Git Repository"/>
 
 
-**Transferring Repositories:** <a name="Transferring Repositories"/>
+**Pulling Repositories:** <a name="Pulling Repositories"/>
 
--To prevent re-entering data multiple times please follow this sequence of steps.
+-To pull repositories please follow this sequence of steps.
 
 1. From the MainWindow and after successfully pinging the listed robots, select the number of that need to be pulled
     from remote repositories with the "Select number of Packages" spinbox.  (If you need 3 packages for turtlebots and 
@@ -191,44 +216,32 @@ executing a series of commands simultaneously on remote machines
 2. Use the "Parent Package Directory" button to use a FileDialog window to select your destination for the remote repository or
     manually type the destination directory into the corresponding text field under "Destination Directory".
 
-3. Manually type the remote repository into the corresponding text field under "Remote Repository".
+3. Manually type the remote repository URL into the corresponding text field under "Remote Repository".
 
 4. Select the type of robot this git pull operation should be performed on in the corresponding spinbox under "Robot Type".
 
 5. Select the Catkin operation that should be performed on this directory  in the corresponding spinbox under "Catkin Option".
     "no make" is the default option and does not perform a catkin make or build operation.
-    
-6. Repeat steps 2-5 until all packages are setup for transfer.
-    
-7. When all the packages are ready to be transferred to the remote robots, click the "Transfer Files" button.
+        
+6. When all the packages are ready to be transferred to the remote robots, click the "Transfer Files" button.
     This will either bring up the PasswordWindow for processing passwords for each robot or if the
     "Use RSA Key" checkbox is currently checked the application will skip the PasswordWindow and go straight into starting the
     LaunchWindow.  
     
-    
 -Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
 
-    
-    Warning!: Changing the number of packages in the "Select Number of Packages" spinbox will reset all previously set
-              data for "Destination Directory", "Remote Repository", "Robot Type", and "Catkin Option" columns.
-
-    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-              from editing the listed robots or performing any other thread based function.
-              Warnings will be displayed if attempting to run one of these functions.
+    Warning!: Closing the LaunchWindow before all threads have finished terminates the running threads.
 
 
 **Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots:** <a name="Update ROS MASTER URI IP in the bashrc on the Remote Robots"/>
 
--From the MainWindow and after successfully pinging the listed robots, type the desired IP address into the 
-    "ROS MASTER URI IP ADDRESS" textfield and click the "Update .bashrc" button.  This will either bring up 
-    the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox is currently checked
-    the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
+-From the MainWindow and after successfully pinging the listed robots, click the "Update .bashrc" button.  
+    This will either bring up the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox 
+    is currently checked the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
     
 -Please refer to the section Passwords and Using RSA Keys for more detailed information on the PasswordWindow and RSA checkbox.
 
-    Warning!: Closing the LaunchWindow before all threads have finished does not terminate the threads and prevents you 
-              from editing the listed robots or performing any other thread based function.
-              Warnings will be displayed if attempting to run one of these functions.
+    Warning!: Closing the LaunchWindow before all threads have finished terminates the running threads.
 
 
 **Command Editor** <a name="Command Editor"/>
@@ -237,9 +250,9 @@ executing a series of commands simultaneously on remote machines
 **Preparing Commands for Robots:** <a name="Preparing Commands for Robots"/>
 
 -From the MainWindow and after successfully pinging the listed robots, the tabbed section of the Command will display
-    one tab per listed robot type from the "Robot's Type/Configuration" list.
+    one tab per listed robot type from the "Robot's Type/Configuration" column.
     
--Within each tab is a textfield that can be edited manually and is used to save and send a series of commands to the remote robots.
+-Within each tab is a textfield that can be edited manually and is used to send a series of commands to the remote robots.
 
 -A majority of commandline style commands are valid for use with the Command Editor.
 
@@ -262,9 +275,10 @@ executing a series of commands simultaneously on remote machines
     tab to the .txt file.
 
 
-**Launching the Listed Robots and Commands:** <a name="Launching the Listed Robots and Commands"/>
+**Launching** <a name="Launching"/>
 
--From the MainWindow and after commands have been entered into the tabbed textfields, click the "Launch All" button. 
+
+-To launch all enabled robots of all types, click the "Launch All" button. 
     This will either bring up the PasswordWindow for processing passwords for each robot or if the "Use RSA Key" checkbox
     is currently checked the application will skip the PasswordWindow and go straight into starting the LaunchWindow.  
     
@@ -274,8 +288,8 @@ executing a series of commands simultaneously on remote machines
 **Passwords and Using RSA KEYS** <a name="Passwords and Using RSA KEYS"/>
 
 
--The "Use RSA Key" checkbox is used when a RSA key has been successfully pushed to all the remote robots and is used
-    to skip entering in all robot passwords for every launch.  
+-The "Use RSA Key" checkbox is used when a RSA key has been successfully pushed to all the remote robots and allows the user
+    to skip entering in all robot passwords for every launch.
 
 
 **PasswordWindow:** <a name="PasswordWindow"/>
