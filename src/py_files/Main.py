@@ -38,7 +38,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Used to block the execution of certain functions if True
         self.maxSSHIgnore = False
 
-        #Signifies if the ROSMASTER Window is running
+        #Signifies if the ROSCORE Window is running
         self.masterIsRunning = False
 
         #Signifies if there have been changes in the robot table data
@@ -104,7 +104,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.workerList = {}
         self.threadStillRunning = 'no'
 
-        #Creates the Roscore Window used to manage/observe running roscores
+        #Creates the ROSCORE Window used to manage/observe running roscores
         self.childRoscoreWindow = Launch_Window()
         self.childRoscoreWindow.setWindowTitle("ROSCORE Window")
         self.childRoscoreWindow.window = "masters"
@@ -734,7 +734,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Locks and unlocks several functions after all enabled robots have been found and have valid ROS Settings or if ROSMASTERs are running
     def setLaunchEnable(self, available):
 
-        #If the ROSMASTER Window is running
+        #If the ROSCORE Window is running
         if self.masterIsRunning:
             self.robotTable.setEnabled(not available)
             self.editlistsbutton.setEnabled(not available)
@@ -742,13 +742,14 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.buttontransfer.setEnabled(not available)
             self.bashrcbutton.setEnabled(not available)
             self.argumentbutton.setEnabled(not available)
-            self.rsacheckbox.setEnabled(not available)
             self.spinpackage.setEnabled(not available)
             self.lineUsername.setEnabled(not available)
             self.linePassword.setEnabled(not available)
-            self.rsaPath.setEnabled(not available)
             self.launchMasterButton.setEnabled(not available)
             self.generateRSAKeyButton.setEnabled(not available)
+            self.checkAllButton.setEnabled(not available)
+            self.updateMaxSessionButton.setEnabled(not available)
+            self.findRSAButton.setEnabled(not available)
 
         else:
             self.editlistsbutton.setEnabled(True)
@@ -766,7 +767,6 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.lineUsername.setEnabled(available)
             self.linePassword.setEnabled(available)
             self.findRSAButton.setEnabled(available)
-            self.rsaPath.setEnabled(available)
             self.childLaunchWindow.lineDebugCommand.setEnabled(available)
             self.launchTypeButton.setEnabled(available)
             self.launchMasterButton.setEnabled(available)
@@ -1676,7 +1676,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #If ROSMASTERs are to be launched
         if commands == "masters":
 
-            #Reset the ROSMASTER Window
+            #Reset the ROSCORE Window
             while self.childRoscoreWindow.tab_Launch.count() != 0:
                 try:
                     obj = self.masterTerminalList.pop(self.IPS.index(str(self.childRoscoreWindow.tab_Launch.tabText(0))))
@@ -1744,7 +1744,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
 
 
-    # Adds the currently indexed robot to the ROSMASTER Window
+    # Adds the currently indexed robot to the ROSCORE Window
     def addToRoscoreWindow(self, index, IP):
         tempLayout = QtWidgets.QVBoxLayout()
         tempWidget = QtWidgets.QWidget()

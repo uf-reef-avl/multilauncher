@@ -48,5 +48,5 @@ class Ui_Dialog(object):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Password Window"))
         self.label_password.setText(_translate("Dialog", "In order to launch the command,  specify the device\'s password or generate a RSA key:"))
-        self.launchButton.setText(_translate("Dialog", "Launch the Command"))
+        self.launchButton.setText(_translate("Dialog", "Submit and Continue"))
 
