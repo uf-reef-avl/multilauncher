@@ -291,7 +291,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             return tempList
         except:
             e = sys.exc_info()[0]
-            print( "List from Table Error: %s" % e )
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in compiling lists: %s" % e)
 
 
     #Loads the text fields in the Main Window from the Edit Robot Dialog's table
@@ -560,8 +560,8 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.colorsTableRows()
 
         except:
-             e = sys.exc_info()[0]
-             print( "Error in updating backend lists: %s" % e )
+            e = sys.exc_info()[0]
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in updating backend lists: %s" % e)
 
 
     #Gets the maximum number of concurrent SSH sessions based on the user's MaxSessions variable in sshd_config
@@ -666,8 +666,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     self.RSA = True
 
         except:
-            e = sys.exc_info()[0]
-            print("Error in finding the specified RSA Key: %s" % e)
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in setting up RSA Key: Selected file not a Private RSA Key")
 
 
     #Checks to see if there is a valid RSA key set, returns True or False
@@ -949,7 +948,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 except:
                     e = sys.exc_info()[0]
-                    print("Error when loading robotlist: %s" % e)
+                    temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error when loading robotlist: %s" % e)
 
         else:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.threadStillRunning)
@@ -1007,7 +1006,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             except:
                 e = sys.exc_info()[0]
-                print("Save to File Error: %s" % e)
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in saving robot data to file: %s" % e)
 
         else:
             QtWidgets.QMessageBox.warning(self, "Warning", "No robot data found to save")
@@ -1042,7 +1041,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     rFile.close()
             except:
                 e = sys.exc_info()[0]
-                print("Error in saving commands to file: %s" % e)
+                temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in saving commands to command file: %s" % e)
 
 
     #Loads commands into the Command Editor text field from a .txt file
@@ -1076,7 +1075,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 rFile.close()
         except:
             e = sys.exc_info()[0]
-            print("Error in loading commands from file: %s" % e)
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error in loading commands from command file: %s" % e)
 
 
     #Checks to see if there is robot data to save or ping
