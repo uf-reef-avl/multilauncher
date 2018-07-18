@@ -17,7 +17,7 @@ executing a series of commands simultaneously on remote machines
 
     A. [File Browser/RoboData](#File Browser/RoboData)
         
-     1. [Adding Robots via a .csv File](#Adding Robots via a csv File)
+     1. [Adding Robots from a .csv File](#Adding Robots from a csv File)
      
      2. [Saving the Current List of Robots to a .csv File](#Saving the Current List of Robots to a csv File)
      
@@ -41,7 +41,7 @@ executing a series of commands simultaneously on remote machines
      
      1. [Preparing Commands for Robots](#Preparing Commands for Robots)
      
-     2. [Adding Commands via a .txt File](#Adding Commands via a txt File)
+     2. [Adding Commands from a .txt File](#Adding Commands from a txt File)
      
      3. [Saving the Current List of Commands to a .txt File](#Saving the Current List of Commands to a txt File) 
     
@@ -104,7 +104,7 @@ executing a series of commands simultaneously on remote machines
 **File Browser/RoboData** <a name="File Browser/RobotData"/>
 
 
-**Adding Robots via a .csv File:** <a name="Adding Robots via a csv File"/>
+**Adding Robots from a .csv File:** <a name="Adding Robots from a csv File"/>
 
 -From the Main Window, click on the "Find Robotlist file" button and a FileDialog window will be displayed.
     Navigate to your robotlist.csv file is located and click "Open".
@@ -199,7 +199,7 @@ executing a series of commands simultaneously on remote machines
     Warning!: Closing the Launch Window before all threads have finished terminates the running threads.
 
 
-**Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots:** <a name="Update ROS MASTER URI IP in the bashrc on the Remote Robots"/>
+**Update ROSMASTER URI IP in the ~/.bashrc on the Remote Robots:** <a name="Update ROSMASTER URI IP in the bashrc on the Remote Robots"/>
 
 -From the Main Window and after successfully pinging the listed robots, click the "Update .bashrc" button.  
     This will either bring up the Password Window for processing passwords for each robot or if the "Use RSA Key" checkbox 
@@ -252,7 +252,7 @@ executing a series of commands simultaneously on remote machines
 -A majority of commandline style commands are valid for use with the Command Editor.
 
 
-**Adding Commands via a .txt File:** <a name="Adding Commands via a txt File"/>
+**Adding Commands from a .txt File:** <a name="Adding Commands from a txt File"/>
 
 -From the Main Window, click on the "Load Commands File" button and a FileDialog window will be displayed.
     Navigate to your commands.txt file is located and click "Open".
