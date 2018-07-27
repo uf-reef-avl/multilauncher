@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 #
 # File: Workers.py
 # Author: Paul Buzaud and Matthew Hovatter
@@ -21,7 +22,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 	#Variables for emitting starting, displaying status, and closing signals
 	start = QtCore.pyqtSignal()
-	terminalSignal = QtCore.pyqtSignal(int, str)
+	terminalSignal = QtCore.pyqtSignal(int, list)
 	finishThread = QtCore.pyqtSignal(int,str)
 
 
@@ -43,7 +44,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.myKey = key
 		self.finishMessage = ""
 		self.skip = False
-
+		self.buffer = ""
 
 	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
 	@QtCore.pyqtSlot()
@@ -186,7 +187,20 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
-			self.terminalSignal.emit(self.ipIndex, data)
+
+			splitData = data.split("\n")
+			splitData[0] = self.buffer + splitData[0]
+			buffed = splitData[-1]
+
+			if buffed != "":
+				if buffed[-1] != "\r":
+					self.buffer = buffed
+				else:
+					self.buffer = ""
+			else:
+				self.buffer = ""
+
+			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
 
 			if 'Username for ' in data:
 				self.channel.send(self.gitUsername + '\n')
@@ -216,7 +230,7 @@ class Launch_Worker(QtCore.QObject):
 
 	#Variables for emitting starting, displaying status, and closing signals
 	start = QtCore.pyqtSignal()
-	terminalSignal = QtCore.pyqtSignal(int, str)
+	terminalSignal = QtCore.pyqtSignal(int, list)
 	finishThread = QtCore.pyqtSignal(int,str)
 
 
@@ -233,7 +247,7 @@ class Launch_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
-
+		self.buffer = ""
 
 	#This function connects to the remote robot and executes the user's list of commands
 	@QtCore.pyqtSlot()
@@ -287,7 +301,20 @@ class Launch_Worker(QtCore.QObject):
 				break
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
-			self.terminalSignal.emit(self.ipIndex, data)
+
+			splitData = data.split("\n")
+			splitData[0] = self.buffer + splitData[0]
+			buffed = splitData[-1]
+
+			if buffed != "":
+				if buffed[-1] != "\r":
+					self.buffer = buffed
+				else:
+					self.buffer = ""
+			else:
+				self.buffer = ""
+
+			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
 
 			if '[sudo]' in data and self.password is not None:
 				self.channel.send(self.password + '\n')
@@ -317,7 +344,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 
 	# Variables for emitting starting, displaying status, and closing signals
 	start = QtCore.pyqtSignal()
-	terminalSignal = QtCore.pyqtSignal(int, str)
+	terminalSignal = QtCore.pyqtSignal(int, list)
 	finishThread = QtCore.pyqtSignal(int, str)
 
 	# Definition of a Launch_Worker
@@ -332,6 +359,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
+		self.buffer = ""
 
 
 	# This function connects to the remote robot and executes the user's list of commands
@@ -383,9 +411,24 @@ class ROSMASTER_Worker(QtCore.QObject):
 		while True:
 			if self.stopSignal:
 				break
+
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
-			self.terminalSignal.emit(self.ipIndex, data)
+
+			splitData = data.split("\n")
+			splitData[0] = self.buffer + splitData[0]
+			buffed = splitData[-1]
+
+			if buffed != "":
+				if buffed[-1] != "\r":
+					self.buffer = buffed
+				else:
+					self.buffer = ""
+			else:
+				self.buffer = ""
+
+
+			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
 
 			if '[sudo]' in data and self.password is not None:
 				self.channel.send(self.password + '\n')
@@ -416,7 +459,7 @@ class Bashrc_Worker(QtCore.QObject):
 	#Preparing for starting and closing signals
 	start = QtCore.pyqtSignal()
 	finishThread = QtCore.pyqtSignal(int,str)
-	terminalSignal = QtCore.pyqtSignal(int, str)
+	terminalSignal = QtCore.pyqtSignal(int, list)
 
 
 	#Definition of a Bashrc_Worker
@@ -432,7 +475,7 @@ class Bashrc_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
-
+		self.buffer = ""
 
 	#This function connects to the remote robot and updates their .bashrc file
 	@QtCore.pyqtSlot()
@@ -485,7 +528,21 @@ class Bashrc_Worker(QtCore.QObject):
 				break
 			time.sleep(self.terminalRefreshSeconds)
 			data = self.channel.recv(1024).decode("utf-8")
-			self.terminalSignal.emit(self.ipIndex, data)
+
+			splitData = data.split("\n")
+			splitData[0] = self.buffer + splitData[0]
+			buffed = splitData[-1]
+
+			if buffed != "":
+				if buffed[-1] != "\r":
+					self.buffer = buffed
+				else:
+					self.buffer = ""
+			else:
+				self.buffer = ""
+
+			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
+
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
