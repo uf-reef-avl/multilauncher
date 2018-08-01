@@ -7,14 +7,14 @@
 #
 
 from PyQt5 import QtWidgets
-from Multilaunch import Multilaunch
+from Multilauncher import Multilauncher
 import sys
 
 
 #Creates and runs the Main Window
 def main():
     app = QtWidgets.QApplication(sys.argv)
-    form = Multilaunch()
+    form = Multilauncher()
     form.showMaximized()
     sys.exit(app.exec_())
 

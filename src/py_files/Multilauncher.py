@@ -1,5 +1,5 @@
 #
-# File: Multilaunch.py
+# File: Multilauncher.py
 # Author: Paul Buzaud and Matthew Hovatter
 #
 # Created: Summer 2018
@@ -24,9 +24,9 @@ ansiEscape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
 
 
 #This class creates the Main Window of the application
-class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
+class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
-    #Initializes and defines the Multilaunch Window
+    #Initializes and defines the Multilauncher Window
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
