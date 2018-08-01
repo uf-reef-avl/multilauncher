@@ -295,7 +295,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Multilauncher ver 2.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Multilauncher ver 1.0"))
         self.launchMasterButton.setText(_translate("MainWindow", "Launch Masters"))
         self.launchbutton.setText(_translate("MainWindow", "Launch All"))
         self.bashrcbutton.setText(_translate("MainWindow", "Update .bashrc"))

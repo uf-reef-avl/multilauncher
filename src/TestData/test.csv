@@ -1,5 +1,0 @@
-#####
-False,192.168.1.63,penguin,a,$0/temp:yo,No ROS Settings
-True,192.168.1.64,titicaca,b,$0/temp:hello,No ROS Settings
-True,192.168.1.60,moa-nalo,c,$0/temp:goodbye,No ROS Settings
-False,testa,testb,d,No Args,No ROS Settings

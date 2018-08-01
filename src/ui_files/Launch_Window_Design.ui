@@ -14,29 +14,18 @@
    <string>Launch Window</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="1">
-    <widget class="QTabWidget" name="tab_Launch">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Tab 1</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_3"/>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Tab 2</string>
-      </attribute>
-     </widget>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <layout class="QVBoxLayout" name="verticalLaunch">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
+   <item row="2" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="debugLabel">
+       <property name="text">
+        <string>Command Line:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineDebugCommand"/>
+     </item>
     </layout>
    </item>
    <item row="3" column="1">
@@ -66,19 +55,33 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="debugLabel">
-       <property name="text">
-        <string>Command Line:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineDebugCommand"/>
-     </item>
-    </layout>
+   <item row="1" column="1">
+    <widget class="QTabWidget" name="tab_Launch">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Tab 1</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3"/>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Tab 2</string>
+      </attribute>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QPushButton" name="saveTerminalOutput">
+     <property name="text">
+      <string>Save Terminal Output</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
