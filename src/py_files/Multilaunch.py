@@ -1833,7 +1833,7 @@ class Multilaunch(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childLaunchWindow.tab_Launch.addTab(tempWidget, str(IP))
 
 
-    # Adds the currently indexed robot to the ROSCORE Window
+    #Adds the currently indexed robot to the ROSCORE Window
     def addToRoscoreWindow(self, index, IP):
         tempLayout = QtWidgets.QVBoxLayout()
         tempWidget = QtWidgets.QWidget()
