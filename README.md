@@ -52,14 +52,12 @@ executing a series of commands simultaneously on remote machines
      2. [Generating RSA Keys](#Generating RSA Keys)
     
     E. [Launching](#Launching)
-    
-4. [Developer Tips](#Developer Tips)
 
-5. [Built With](#Built With)
+4. [Built With](#Built With)
 
-6. [Authors](#Authors)
+5. [Authors](#Authors)
 
-7. [License](#License)
+6. [License](#License)
 
 
 
@@ -316,14 +314,6 @@ executing a series of commands simultaneously on remote machines
 -Please refer to the Passwords and Using RSA Keys section for more detailed information on the Password Window and the RSA checkbox.
 
 
-<a name="Developer Tips"/>
-
-**Developer Tips**
-------------------
-
--
-
-
 <a name="Built With"/>
 
 **Built With**
@@ -331,11 +321,15 @@ executing a series of commands simultaneously on remote machines
 
 -Python 2.7: Version of Python
 
--Openssh: Underlying SSH program used
+-Paramiko: SSH utility used to contact remote machines
+
+-Openssh: Underlying SSH program used to receive connections from remote machines
 
 -PyCharm: IDE used
 
 -QtDesigner: Used to create base .ui files
+
+-PyInstaller: Used to create the compiled executable
 
 
 <a name="Authors"/>

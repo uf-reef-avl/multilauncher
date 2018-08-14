@@ -12,7 +12,9 @@ import paramiko
 import time
 import logging
 import sys
+import Xlib.support.connect as xlib_connect
 
+#logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
 
 PING_TIMEOUT = 100
@@ -67,10 +69,6 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 					break
 
 				self.prepPath(i)
-				self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
-				self.waitFinishCommand()
-				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
-				self.waitFinishCommand()
 
 				self.prepRepo(i)
 
@@ -129,6 +127,11 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 	#Sets up a new local repo or overrides the local existing repo with the remote one
 	def prepRepo(self,i):
 
+		self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
+		self.waitFinishCommand()
+		self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+		self.waitFinishCommand()
+
 		packageName = self.gitRepoList[i].split('/')[-1]
 		if ".git" in packageName:
 			packageName = packageName[:-4]
@@ -151,18 +154,13 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		# Existing local repo
 		else:
 			self.channel.send('git stash\n')
-			flag = self.waitFinishCommand()
+			self.waitFinishCommand()
 
-			#If the local repository has been changed
-			if flag != "No local changes to save":
-				self.channel.send('git checkout master\n')
-				self.waitFinishCommand()
+			self.channel.send('git pull\n')
+			self.waitFinishCommand()
 
-				self.channel.send('git pull\n')
-				self.waitFinishCommand()
-
-				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
-				self.waitFinishCommand()
+			self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+			self.waitFinishCommand()
 
 
 	#Sets up for catkin make or build
@@ -215,9 +213,6 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			if "No such file or directory" in data:
 				return "no file"
 
-			elif "No local changes to save" in data:
-				return "No local changes to save"
-
 			elif "Checking connectivity... done" in data:
 				return "done"
 
@@ -248,6 +243,7 @@ class Launch_Worker(QtCore.QObject):
 		self.myKey = key
 		self.finishMessage = ""
 		self.buffer = ""
+		self.x11 = False
 
 	#This function connects to the remote robot and executes the user's list of commands
 	@QtCore.pyqtSlot()
@@ -257,14 +253,25 @@ class Launch_Worker(QtCore.QObject):
 
 		#Creating a password or rsa key based ssh connection
 		try:
+
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
-				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
+				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False, look_for_keys=False)
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
 
 			#Execute the list of commands
 			self.channel = ssh.invoke_shell()
+
+			# local_x11_display = xlib_connect.get_display(os.environ['DISPLAY'])
+			# local_x11_socket = xlib_connect.get_socket(*local_x11_display[:3])
+
+			# transport = ssh.get_transport()
+			# session = transport.open_session()
+            #
+			# session.request_x11()
+			# self.channel = transport.accept()
+
 			for i in self.commandList:
 				if self.stopSignal:
 					break
@@ -288,6 +295,9 @@ class Launch_Worker(QtCore.QObject):
 
 		except paramiko.ssh_exception.NoValidConnectionsError:
 			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
+
+		except:
+			True
 
 		#finish thread
 		ssh.close()

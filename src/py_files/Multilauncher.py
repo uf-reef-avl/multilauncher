@@ -63,7 +63,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #modify the ui to add the tab widget
         del self.commands
         self.tabCommands = QtWidgets.QTabWidget()
-        self.gridLayout_4.addWidget(self.tabCommands, 3, 0, 1, 3)
+        self.gridLayout_4.addWidget(self.tabCommands, 3, 0, 1, 4)
 
         #Paring buttons to functions
         self.filesearchbutton.clicked.connect(self.loadFile)
@@ -126,6 +126,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.childRoscoreWindow.window = "masters"
         self.childRoscoreWindow.setModal(False)
         self.childRoscoreWindow.buttonStopThread.clicked.connect(lambda state, arg = "masters":self.interruptRemainingThreads(arg))
+        self.childRoscoreWindow.debugLabel.hide()
         self.childRoscoreWindow.lineDebugCommand.hide()
         self.childRoscoreWindow.stopCurrentThread.clicked.connect(lambda state, arg = "masters":self.terminateCurrentThread(arg))
         self.childRoscoreWindow.closeThreads.connect(self.termCheck)
@@ -683,7 +684,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 if os.path.exists(os.path.expanduser(self.STRINGOFPATH)):
                     privateKeyFile = os.path.expanduser(self.STRINGOFPATH)
                     self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
-                    self.rsaPath.setText(self.STRINGOFPATH)
+                    self.rsaPath.setText("Current RSA Key Path: "+self.STRINGOFPATH)
                     self.RSA = True
 
         except:
@@ -692,27 +693,31 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Checks to see if there is a valid RSA key set, returns True or False
     def rsaCheck(self):
+        try:
+            path = self.rsaPath.text().strip()
+            path = path[22:]
 
-        path = self.rsaPath.text().strip()
+            #RSA key that the User pointed to through a command file
+            if os.path.exists(os.path.expanduser(path)):
+                privateKeyFile = os.path.expanduser(path)
+                self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+                self.RSA = True
+                return True
 
-        #RSA key that the User pointed to through a command file
-        if os.path.exists(os.path.expanduser(path)):
-            privateKeyFile = os.path.expanduser(path)
-            self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
-            self.RSA = True
-            return True
+            # RSA Key made through the application
+            elif os.path.exists(os.path.expanduser('~/.ssh/multikey')):
+                privateKeyFile = os.path.expanduser('~/.ssh/multikey')
+                self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
+                self.rsaPath.setText('Current RSA Key Path: ~/.ssh/multikey')
+                return True
 
-        # RSA Key made through the application
-        elif os.path.exists(os.path.expanduser('~/.ssh/multikey')):
-            privateKeyFile = os.path.expanduser('~/.ssh/multikey')
-            self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
-            self.rsaPath.setText('~/.ssh/multikey')
-            return True
-
-        #No RSA key found in command file or in default location
-        else:
-            self.rsaPath.setText("No RSA Key Found")
-            return False
+            #No RSA key found in command file or in default location
+            else:
+                self.rsaPath.setText("Current RSA Key Path: No RSA Key Found")
+                return False
+        except:
+            e = sys.exc_info()[0]
+            temp = QtWidgets.QMessageBox.warning(self, "Warning", "Error when loading robotlist: %s" % e)
 
 
     #Checks to see if all listed robots have been found by the user's computer and checks their ROS status. Returns if the program should allow the user to use more features
@@ -787,12 +792,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.lineUsername.setEnabled(available)
             self.linePassword.setEnabled(available)
             self.findRSAButton.setEnabled(available)
-            self.childLaunchWindow.lineDebugCommand.setEnabled(available)
             self.launchTypeButton.setEnabled(available)
             self.launchMasterButton.setEnabled(available)
             self.generateRSAKeyButton.setEnabled(available)
             self.checkAllButton.setEnabled(True)
             self.updateMaxSessionButton.setEnabled(True)
+            self.x11CheckBox.setEnabled(available)
 
 
     #Returns True if ROSMASTERS are not needed or if there are masters running when needed, False otherwise
@@ -906,7 +911,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                         #If a RSA Key location was saved
                         if line[0] == "RSA":
-                            self.rsaPath.setText(line[1])
+                            self.rsaPath.setText("Current RSA Key Path: "+line[1])
                             self.rsaCheck()
 
                         #If a username for a remote git repository was saved
@@ -995,7 +1000,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     actualFileName = partsOfPath[-1]
 
                     #If the user is overwriting an existing .csv file
-                    if actualFileName[-1] == "v":
+                    if actualFileName[-4:] == ".csv":
                         rFile = open(self.STRINGOFPATH, "w")
 
                     #If the user is making a new .csv file
@@ -1005,8 +1010,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     self.updateLists()
 
                     #If there is a set location for a RSA Key listed
-                    if str(self.rsaPath.text()) != "No RSA Key Found":
-                        rFile.write("RSA,"+str(self.rsaPath.text())+"\n")
+                    if str(self.rsaPath.text()) != "Current RSA Key Path: No RSA Key Found":
+                        rFile.write("RSA,"+str(self.rsaPath.text()[22:])+"\n")
 
                     #If there is a username for a remote git repository listed
                     if str(self.lineUsername.text()) != "":
@@ -1038,7 +1043,10 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Save the current list of commands from the Command Editor text field to a .txt file
     def saveCommands(self):
 
-        filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", filter = "txt (*.txt *.)")
+        string = self.commandFileLabel.text()
+        name = string[14:]
+
+        filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", directory = name, filter = "txt (*.txt *.)")
         try:
 
             #Test to see if the user selected a valid path or canceled
@@ -1048,7 +1056,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 actualFileName = partsOfPath[-1]
 
                 #If the user is overwriting an existing .txt file
-                if actualFileName[-1] == "t":
+                if actualFileName[-4:] == ".txt":
                     rFile = open(self.STRINGOFPATH, "w")
 
                 #If the user is making a new .txt file
@@ -1083,7 +1091,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             if self.STRINGOFPATH:
                 partsOfPath = self.STRINGOFPATH.split("/")
                 actualFileName = partsOfPath[-1]
-                self.commandFileLable.setText("Current File: "+actualFileName)
+                self.commandFileLabel.setText("Current File: "+actualFileName)
 
                 rFile = open(self.STRINGOFPATH, "r")
                 listOfLines = rFile.readlines()
@@ -1145,7 +1153,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 actualFileName = partsOfPath[-1]
 
                 #If the user is overwriting an existing .txt file
-                if actualFileName[-1] == "t":
+                if actualFileName[-4:] == ".txt":
                     rFile = open(self.STRINGOFPATH, "w")
 
                 #If the user is making a new .txt file
@@ -1547,10 +1555,11 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 #If the user is transferring files to multiple robots
                 if threadType == "git":
+                    self.childLaunchWindow.lineDebugCommand.setEnabled(False)
                     for index in range(len(self.IPS)):
 
                         #If the currently indexed robot is enabled and found
-                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
+                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and self.MASTER_TYPE[index] != "Master":
                             threadGitRepoList = []
                             threadPackageList = []
                             threadMakeOptionList = []
@@ -1628,6 +1637,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                 worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
                                                        None, self.myKey)
 
+                            worker.x11 = self.x11CheckBox.isChecked()
                             #Create the worker
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
                             worker.finishThread.connect(self.killThread)
@@ -1809,7 +1819,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             #If the currently indexed robot is enabled, the robot is found, the Update .bashrc button is pushed,
             # and the robot's ROS Settings are set to "Master" or "Master and Launch"
             elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "bashrc" \
-                 and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
+                 and (self.MASTER_TYPE[index] != "No ROS Settings"):
                 self.addToLaunchWindow(index, IP)
 
             # If the currently indexed robot is enabled, the robot is found, the any other button is pushed,
@@ -1912,6 +1922,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #This line is to be hidden
             if line[start + 1:start + 4] == ']2;':
+                print "In hidden escape sequence"
                 cursor.insertText("\n")
                 term.moveCursor(QtGui.QTextCursor.End)
                 return True
@@ -1993,22 +2004,34 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             start = 0
             stop = 0
 
+            #print repr(line)
+
             #While not at the end of the current line
             while index < len(line):
 
                 #Find the next escape sequence (if one exists)
                 start = line.find("\x1B", start)
-                stop = line.find("m", start)
+                if start != -1 and line[start+1] == "[":
+                    if line[start+2] == "K":
+                        stop = -1
+                    else:
+                        stop = line.find("m", start)
+                else:
+                    stop = -1
+
+                if index == 0 and (start !=0 and start != -1):
+                    cursor = term.textCursor()
+                    cursor.insertText(line[:start])
+                    term.moveCursor(QtGui.QTextCursor.End)
+                    index = start
 
                 #If the escape sequence is special or if none exist in this line
-                if self.lineCheck(start, stop, line, term):
+                if self.lineCheck(start, stop, line[index:], term):
                     break
 
                 #Adjust for saving the escape code
                 start += 1
                 stop += 1
-
-                #print "escapeSequence: "+ str(line[start:stop])
 
                 escapeSequence = line[start:stop]
 
@@ -2056,6 +2079,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Display the finish message box based on the threads that were running
         if self.workerList == {} and self.threadList == {}:
+            self.childLaunchWindow.lineDebugCommand.setEnabled(False)
             if self.threadStillRunning == 'Bashrc still running':
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
                                                          "Bashrc Update Finished\n" + self.ERRORTEXT)
@@ -2145,9 +2169,10 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             ipText = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
 
             #If the thread is not already terminated
-            if "Finished" not in ipText:
+            if " (Finished)" not in ipText:
                 workerKey = self.IPS.index(ipText)
                 self.workerList[workerKey].stopSignal = True
+                self.childLaunchWindow.lineDebugCommand.setEnabled(False)
 
                 #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
@@ -2174,6 +2199,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Interrupting all other types of threads
         else:
+            self.childLaunchWindow.lineDebugCommand.setEnabled(False)
             for workerKey in self.workerList.keys():
                 self.workerList[workerKey].stopSignal = True
 

@@ -1,0 +1,5 @@
+#####
+TYPE: turtlebot
+cd Junk
+source devel/setup.bash
+roslaunch multilauncher_demos multilauncher_demo2.launch turtleName:=$robotName

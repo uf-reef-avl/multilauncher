@@ -19,6 +19,16 @@ class Launch_Window(QtWidgets.QDialog, Launch_Window_Design.Ui_Dialog):
 		self.setupUi(self)
 		self.setModal(True)
 		self.window = ""
+		self.tab_Launch.currentChanged.connect(self.debugEnable)
+
+
+	@QtCore.pyqtSlot(int)
+	def debugEnable(self, index):
+		ipText = str(self.tab_Launch.tabText(index))
+		if " (Finished)" not in ipText:
+			self.lineDebugCommand.setEnabled(True)
+		else:
+			self.lineDebugCommand.setEnabled(False)
 
 
 	#Catches all attempts to close the window
