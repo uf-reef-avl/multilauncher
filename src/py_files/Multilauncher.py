@@ -162,6 +162,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Only lets the user access certain functions if they have successfully pinged their listed robots
         self.setLaunchEnable(self.checkConnectionAvailable())
 
+        #Feature is hidden until it is properly implemented
+        self.x11CheckBox.hide()
+
 
     #Used to detect when the window size is changed
     def resizeEvent(self, QResizeEvent):
@@ -797,7 +800,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.generateRSAKeyButton.setEnabled(available)
             self.checkAllButton.setEnabled(True)
             self.updateMaxSessionButton.setEnabled(True)
-            self.x11CheckBox.setEnabled(available)
+            #self.x11CheckBox.setEnabled(available)
+
 
 
     #Returns True if ROSMASTERS are not needed or if there are masters running when needed, False otherwise
@@ -1637,7 +1641,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                 worker = Launch_Worker(index, self.IPS[index], self.USERS[index], commandLinesArgsList,
                                                        None, self.myKey)
 
-                            worker.x11 = self.x11CheckBox.isChecked()
                             #Create the worker
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
                             worker.finishThread.connect(self.killThread)
@@ -1645,6 +1648,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             worker.start.emit()
                             self.workerList[index] = worker
                             self.threadList[index] = tempThread
+                            #worker.x11 = self.x11CheckBox.isChecked()
+
 
                     if self.workerList != {}:
                         self.threadStillRunning = 'Launch files still running'
