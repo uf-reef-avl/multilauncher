@@ -1887,7 +1887,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     @QtCore.pyqtSlot(int, str, int)
     def pingWriteInOwnedTerminal(self, ipIndex, data, pingResult):
 
-        self.terminalList[ipIndex].insertPlainText(data)
+        self.terminalList[ipIndex].insertPlainText(data+"\n")
         self.terminalList[ipIndex].moveCursor(QtGui.QTextCursor.End)
 
         #If the remote machine was found

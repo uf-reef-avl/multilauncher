@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Password_Window_Design.ui'
+# Form implementation generated from reading ui file 'Password_Window_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -47,6 +47,6 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Password Window"))
-        self.label_password.setText(_translate("Dialog", "In order to launch the command,  specify the device\'s password or generate a RSA key:"))
+        self.label_password.setText(_translate("Dialog", "In order to perform the desired operation please enter the password for your remote machine(s):"))
         self.launchButton.setText(_translate("Dialog", "Submit and Continue"))
 
