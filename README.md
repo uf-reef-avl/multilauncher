@@ -316,17 +316,13 @@ executing a series of commands simultaneously on remote machines
 **Built With**
 --------------
 
--Python 2.7: Version of Python
+-Python 2.7
 
--Paramiko 2.4.1: SSH utility used to contact remote machines
-
--PyCharm: IDE used
+-Paramiko 2.4.1
 
 -PyQt 5.5.1
 
--QtDesigner: Used to create base .ui files
-
--PyInstaller: Used to create the compiled executable
+-QtDesigner
 
 
 <a name="Authors"/>
