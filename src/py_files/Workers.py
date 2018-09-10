@@ -27,7 +27,11 @@ import paramiko
 import time
 import logging
 import sys
+import subprocess
+import socket
+
 import Xlib.support.connect as xlib_connect
+
 
 #logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
@@ -634,3 +638,215 @@ class Ping_Worker(QtCore.QObject):
 
 		#Close the thread
 		self.finishThread.emit(self.ipIndex, self.errorString)
+
+
+#Creates and runs the GenKey_Worker class and its methods
+class GenKey_Worker(QtCore.QObject):
+
+	#Preparing for starting and closing signals
+	start = QtCore.pyqtSignal()
+	finishThread = QtCore.pyqtSignal(str, str, bool)
+	updateValue = QtCore.pyqtSignal(int)
+
+	#Definition of a GenKey_Worker
+	def __init__(self, IP, user, password):
+		super(GenKey_Worker, self).__init__()
+		self.IP = IP
+		self.user = user
+		self.password = password
+		self.start.connect(self.run)
+		self.finishMessage = ""
+		self.error = False
+		self.sleepTime = 1
+
+
+	#This function connects to the remote robot and pushes the new RSA key
+	@QtCore.pyqtSlot()
+	def run(self):
+
+		self.ssh = paramiko.SSHClient()
+		self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		try:
+			self.ssh.connect(self.IP, 22, username=self.user,
+							 password=self.password, allow_agent=False, look_for_keys=False)
+
+			#Create the shell for the current index
+			self.channel = self.ssh.invoke_shell()
+			self.channel.settimeout(1.0)
+
+			#Changes the remote robot's .ssh directory permissions to the user remote user
+			self.launchChmod()
+
+			#Pushes the public key to the remote robot
+			self.launchPushKey()
+
+		except paramiko.ssh_exception.AuthenticationException:
+			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to password mismatch"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to the remote host not being verified"
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to the remote host not having ssh installed or is unreachable (firewall)"
+
+		#Finish thread
+		self.ssh.close()
+		self.finishThread.emit(self.IP, self.finishMessage, self.error)
+
+
+	#Changes the remote robot's directory permissions to be able to push a public key to the .ssh directory
+	def launchChmod(self):
+
+		# update the progress bar
+		self.updateValue.emit(10)
+
+		# ssh into the device
+		self.channel.send("ssh " + str(self.user + "@" + str(self.IP + '\n')))
+		self.waitFinishCommandChmod()
+
+		# check if the ssh to the device worked properly
+		if self.error is False:
+			# if the ssh command worked then do the permissions modification to the file
+
+			# update the progress bar
+			self.updateValue.emit(12)
+
+			# change the owner of ssh directory
+			self.channel.send('sudo chown -R ' + str(self.user) + ' ~/.ssh/\n')
+			self.waitFinishCommandChmod()
+
+			# update the progress bar
+			self.updateValue.emit(8)
+
+			# change the owner of ssh directory
+			self.channel.send('sudo chgrp -R ' + str(self.user) + ' ~/.ssh/\n')
+			self.waitFinishCommandChmod()
+
+			# update the progress bar
+			self.updateValue.emit(10)
+
+			# change the permission of the authorized key file
+			self.channel.send('sudo chmod 700 ~/.ssh\n')
+			self.waitFinishCommandChmod()
+
+			# update the progress bar
+			self.updateValue.emit(10)
+
+			# change the permission of ssh directory
+			self.channel.send('sudo chmod 600 ~/.ssh/authorized_keys\n')
+			self.waitFinishCommandChmod()
+
+
+	#Loops indefinitely until the Chmod commands have finished executing or if the user has interrupted the current shell
+	def waitFinishCommandChmod(self):
+		while True:
+
+			#Wait a little bit
+			time.sleep(self.sleepTime)
+
+			#Retrieve the data from the shell
+			data = str(self.channel.recv(1024).decode("utf-8"))
+
+			#Check the possible different end of commands and adapt the behaviour
+			if self.error is True:
+				break
+
+			elif '[sudo]' in data:
+				self.channel.send(self.password + "\n")
+				self.waitFinishCommandChmod()
+				break
+
+			elif "continue connecting (yes/no)" in data:
+				self.channel.send("yes\n")
+				self.waitFinishCommandChmod()
+				break
+
+			elif "password:" in data:
+				self.channel.send(self.password + "\n")
+				self.waitFinishCommandChmod()
+				break
+
+			#If the password is wrong and the user cannot ssh to the device change the boolean error
+			elif "Permission denied" in data:
+				self.channel.send("\x03\n")
+				self.error = True
+				self.finishMessage = "X - " + self.IP + ": Wrong Password \n"
+				break
+
+			elif "passphrase for key" in data:
+				self.channel.send("\n")
+				self.waitFinishCommandChmod()
+				break
+
+			elif self.user+ "@" in data:
+				break
+
+
+	#Pushes the public RSA key to the remote robots
+	def launchPushKey(self):
+		# update the progress bar
+		self.updateValue.emit(10)
+
+		# create the public keys and send it to the right device
+		copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey " + str(self.user + "@" + str(self.IP))) + "\n"
+		subprocess.call(copy, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+
+		# update the progress bar
+		self.updateValue.emit(15)
+
+		# wait for the end of the command and check for possible error like : the ip device is wrong or the user device is wrong
+		self.waitFinishCommandKey("Permission denied", self.user + "@")
+
+		# update the progress bar
+		self.updateValue.emit(10)
+
+		# If an error occurs, append the error string to the finishMessage
+		if self.error is False:
+			self.finishMessage = "V - " + self.IP + ": RSA Public Key set up"
+
+
+	#Loops indefinitely until the RSA key has been setup or if the user has interrupted the shell
+	def waitFinishCommandKey(self, errorString, endString):
+		while True:
+			try:
+				# wait a little bit
+				time.sleep(self.sleepTime)
+
+				# retrieve the data from the thread shell
+				data = str(self.channel.recv(1024).decode("utf-8"))
+				# if an error has already occurs finish the thread
+				if self.error is True:
+					break
+
+				# check the possible error during the process and append error message to the output string
+				elif errorString in data:
+					if errorString == "Permission denied":
+						self.channel.send("\x03\n")
+					self.error = True
+					break
+
+				# check the possible different end of commands
+				elif "continue connecting (yes/no)" in data:
+					self.channel.send("yes\n")
+					self.waitFinishCommandKey(errorString, endString)
+					break
+
+				elif "password:" in data:
+					self.channel.send(self.password + "\n")
+					self.waitFinishCommandKey(errorString, endString)
+					break
+
+				elif '[sudo]' in data:
+					self.channel.send(self.password + "\n")
+					self.waitFinishCommandChmod()
+					break
+
+				elif endString in data:
+					break
+
+				elif self.user + "@" in data:
+					break
+
+			except socket.timeout:
+				break
+

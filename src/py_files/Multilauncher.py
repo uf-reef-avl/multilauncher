@@ -33,15 +33,16 @@ import paramiko
 import sys
 import subprocess
 import signal
+import datetime
 import re
 
-ansiEscape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+ansiEscape = re.compile(ur'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
 
 
 #This class creates the Main Window of the application
 class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
-    #Initializes and defines the Multilauncher Window
+    #Initializes and defines the Multilauncher/Main Window
     def __init__(self):
         super(self.__class__, self).__init__()
         self.setupUi(self)
@@ -75,7 +76,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #Used to warn the user about setting the number of remote repositories potentially too high
         self.largeNumOfRepos = False
 
-        #modify the ui to add the tab widget
+        #Modify the ui to add the tab widget
         del self.commands
         self.tabCommands = QtWidgets.QTabWidget()
         self.gridLayout_4.addWidget(self.tabCommands, 3, 0, 1, 4)
@@ -818,7 +819,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             #self.x11CheckBox.setEnabled(available)
 
 
-
     #Returns True if ROSMASTERS are not needed or if there are masters running when needed, False otherwise
     def mastersRunningCheck(self):
 
@@ -829,9 +829,18 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         for i, statusEnable, master in zip(range(len(self.IPS)),self.ENABLE, self.MASTER_TYPE):
 
             #If the remote machine is enabled and is listening to a master
-            if statusEnable == "True" and master != "No ROS Settings" and master != "Master" and master != "Master and Launch":
-                indexMasterIP = self.IPS.index(master)
-                IP = self.IPS[indexMasterIP]
+            if statusEnable == "True" and master != "No ROS Settings" and master != "Master":
+
+                #If the currently indexed robot is set to be a master and launch a script
+                if master == "Master and Launch":
+                    IP = self.IPS[i]
+
+                #All other cases
+                else:
+                    indexMasterIP = self.IPS.index(master)
+                    IP = self.IPS[indexMasterIP]
+
+                #If the requested IP does not have a ROSMASTER running
                 if IP not in tempList:
                     return False
         return True
@@ -1161,39 +1170,41 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Saves the terminal output of the current window
     def saveTerminalOutput(self, window):
 
-        filePath = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a name for your file", filter="txt (*.txt *.)")
-
+        tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify where you want your log files.")
         try:
-
-            #Test to see if the user selected a valid path or canceled
-            self.STRINGOFPATH = filePath[0]
-            if self.STRINGOFPATH:
-                partsOfPath = self.STRINGOFPATH.split("/")
-                actualFileName = partsOfPath[-1]
-
-                #If the user is overwriting an existing .txt file
-                if actualFileName[-4:] == ".txt":
-                    rFile = open(self.STRINGOFPATH, "w")
-
-                #If the user is making a new .txt file
-                else:
-                    rFile = open(self.STRINGOFPATH + ".txt", "w")
+            # If the directory path exists
+            if tempDirectoryPath:
+                date = datetime.datetime.now()
+                date = date.strftime("[%Y_%m_%d]_[%H:%M]")
 
                 if window == "masters":
+                    date = "ROSMASTER_" + date
+                    tempDirectoryPath = tempDirectoryPath+"/"+date
+                    subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+                    tempDirectoryPath = tempDirectoryPath+"/"+date
+                    print tempDirectoryPath
                     for index , value in enumerate(self.masterTerminalList):
 
+                        rFile = open(tempDirectoryPath+"/"+value + ".txt", "w+")
                         rFile.write("###############################################\n")
                         string = self.masterTerminalList[value].toPlainText()
                         rFile.write(string+"\n")
+                        rFile.close()
 
                 elif window == "launch":
-                    for index , value in enumerate(self.terminalList):
+                    date = "Launch_" + date
+                    tempDirectoryPath = tempDirectoryPath + "/" + date
+                    subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'),shell=True)
+                    print tempDirectoryPath
 
+                    for index , value in enumerate(self.terminalList):
+                        filename = self.childLaunchWindow.tab_Launch.tabText(index)
+                        filename = filename[:(filename.index(" (Finished)"))]
+                        rFile = open(tempDirectoryPath+"/"+filename + ".txt", "w+")
                         rFile.write("###############################################\n")
                         string = self.terminalList[value].toPlainText()
                         rFile.write(string+"\n")
-
-                rFile.close()
+                        rFile.close()
 
         except:
             e = sys.exc_info()[0]
@@ -1916,9 +1927,11 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
     #Helper function to remove certain types of escape characters
-    def removeCharacters(self, data):
+    def specialCharacters(self, data):
 
-        data = data.replace(r'\x1B[K', "")
+        data = data.replace(ur'\x1B[K\r', "")
+        data = data.replace(ur'\x1B[K', "")
+        data = data.replace(ur"\u2018","'").replace(ur"\u2019","'")
 
         return data
 
@@ -1933,7 +1946,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             cursor = term.textCursor()
             cursor.insertText(line)
             term.moveCursor(QtGui.QTextCursor.End)
-            return True
+            return -1
 
         #If there is an escape sequence but not one that is based on font colors or bold escape sequences
         elif stop == -1:
@@ -1944,54 +1957,58 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             if line[start + 1:start + 4] == ']2;':
                 cursor.insertText("\n")
                 term.moveCursor(QtGui.QTextCursor.End)
-                return True
+                return -1
+
+
+
 
             #Some other escape sequence
             else:
+                print repr(line)
                 temp = ansiEscape.sub('', line[start:])
-                temp = self.removeCharacters(temp)
+                temp = self.specialCharacters(temp)
                 cursor.insertText(temp)
                 cursor.insertText("\n")
                 term.moveCursor(QtGui.QTextCursor.End)
-                return True
+                return -1
 
-        return False
+        return 0
 
 
     #Sets the format of the current terminal for the current text sequence
     def setFormat(self, escapeSequence, term):
 
         # Bold
-        if escapeSequence == "[1m":
+        if escapeSequence == "1m":
             term.setFontWeight(75)
 
         # Reset to Default
-        elif escapeSequence == "[0m":
+        elif escapeSequence == "0m":
             term.setFontWeight(50)
             term.setTextColor((QtGui.QColor(0, 0, 0)))
 
         # Red
-        elif escapeSequence == "[31m" or escapeSequence == "[0;31m" or escapeSequence == "[01;31m":
+        elif escapeSequence == "31m" or escapeSequence == "0;31m" or escapeSequence == "01;31m":
             term.setTextColor((QtGui.QColor(175, 0, 0)))
 
         # Green
-        elif escapeSequence == "[32m" or escapeSequence == "[0;32m" or escapeSequence == "[01;32m":
+        elif escapeSequence == "32m" or escapeSequence == "0;32m" or escapeSequence == "01;32m":
             term.setTextColor((QtGui.QColor(0, 175, 0)))
 
         # Yellow
-        elif escapeSequence == "[33m" or escapeSequence == "[01;33m":
+        elif escapeSequence == "33m" or escapeSequence == "01;33m":
             term.setTextColor((QtGui.QColor(175, 175, 0)))
 
         # Blue
-        elif escapeSequence == "[34m" or escapeSequence == "[0;34m" or escapeSequence == "[01;34m":
+        elif escapeSequence == "34m" or escapeSequence == "0;34m" or escapeSequence == "01;34m":
             term.setTextColor((QtGui.QColor(0, 0, 175)))
 
         # Magenta
-        elif escapeSequence == "[35m" or escapeSequence == "[0;35m" or escapeSequence == "[01;35m":
+        elif escapeSequence == "35m" or escapeSequence == "0;35m" or escapeSequence == "01;35m":
             term.setTextColor((QtGui.QColor(175, 0, 175)))
 
         # Cyan
-        elif escapeSequence == "[36m" or escapeSequence == "[0;36m" or escapeSequence == "[01;36m":
+        elif escapeSequence == "36m" or escapeSequence == "0;36m" or escapeSequence == "01;36m":
             term.setTextColor((QtGui.QColor(0, 175, 175)))
 
 
@@ -2023,8 +2040,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             start = 0
             stop = 0
 
-            #print repr(line)
-
             #While not at the end of the current line
             while index < len(line):
 
@@ -2038,6 +2053,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 else:
                     stop = -1
 
+                #If the first escape sequence is not at the front of the line, add the text up to the first escape sequence
                 if index == 0 and (start !=0 and start != -1):
                     cursor = term.textCursor()
                     cursor.insertText(line[:start])
@@ -2045,12 +2061,17 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     index = start
 
                 #If the escape sequence is special or if none exist in this line
-                if self.lineCheck(start, stop, line[index:], term):
+                result = self.lineCheck(start, stop, line[index:], term)
+
+                if result == -1:
                     break
 
-                #Adjust for saving the escape code
-                start += 1
-                stop += 1
+                elif result == 0:
+                    #Adjust for saving the escape code
+                    start += 2
+                    stop += 1
+
+
 
                 escapeSequence = line[start:stop]
 
@@ -2061,7 +2082,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 index = stop
                 start = stop
 
-                #Look for the next escape sequence if one exists
+                # Look for the next escape sequence if one exists
                 # Also used to find the length of the text that will be modified by the current terminal format if
                 # there are no more format escape sequences
                 stop = line.find("\x1B", start)
