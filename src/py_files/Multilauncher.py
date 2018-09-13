@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from Adjust_Arguments import Adjust_Arguments
 from Password_Window import Password_Window
@@ -36,7 +35,7 @@ import signal
 import datetime
 import re
 
-ansiEscape = re.compile(ur'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+ansiEscape = (re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]'))
 
 
 #This class creates the Main Window of the application
@@ -1182,7 +1181,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     tempDirectoryPath = tempDirectoryPath+"/"+date
                     subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
                     tempDirectoryPath = tempDirectoryPath+"/"+date
-                    print tempDirectoryPath
+                    print(tempDirectoryPath)
                     for index , value in enumerate(self.masterTerminalList):
 
                         rFile = open(tempDirectoryPath+"/"+value + ".txt", "w+")
@@ -1195,7 +1194,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     date = "Launch_" + date
                     tempDirectoryPath = tempDirectoryPath + "/" + date
                     subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'),shell=True)
-                    print tempDirectoryPath
+                    print (tempDirectoryPath)
 
                     for index , value in enumerate(self.terminalList):
                         filename = self.childLaunchWindow.tab_Launch.tabText(index)
@@ -1929,9 +1928,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Helper function to remove certain types of escape characters
     def specialCharacters(self, data):
 
-        data = data.replace(ur'\x1B[K\r', "")
-        data = data.replace(ur'\x1B[K', "")
-        data = data.replace(ur"\u2018","'").replace(ur"\u2019","'")
+        data = data.replace(r'\x1B[K\r', "")
+        data = data.replace(r'\x1B[K', "")
+        data = data.replace(r"\u2018","'").replace(r"\u2019","'")
 
         return data
 
@@ -1964,7 +1963,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #Some other escape sequence
             else:
-                print repr(line)
+                print(repr(line))
                 temp = ansiEscape.sub('', line[start:])
                 temp = self.specialCharacters(temp)
                 cursor.insertText(temp)
