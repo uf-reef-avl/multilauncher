@@ -79,7 +79,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			if self.password is not None:
 				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
 			else:
-				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
+				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey, timeout=10)
 
 			#Pull the selected directory and push it to the desired location on the remote robot, catkin operations optional
 			self.channel = ssh.invoke_shell()
@@ -611,7 +611,7 @@ class Ping_Worker(QtCore.QObject):
 				break
 
 			#The actual ping message sent and the response back
-			response = os.system("ping -c1 " + self.IP + " 2>&1 >/dev/null")
+			response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
 			#If the robot was pinged successfully and found
 			if response == 0:

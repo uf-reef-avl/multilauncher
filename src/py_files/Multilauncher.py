@@ -116,6 +116,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.terminalRefreshSeconds = 0.1
         self.directoryPaths = []
         self.remoteURLs = []
+        self.diffTypesList = []
+        self.gitTypeList = []
+        self.catkinOptionList = []
 
         #Creates the Launch Window used in pinging and executing selected commands
         self.childLaunchWindow = Launch_Window()
@@ -1256,16 +1259,21 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 self.directoryPaths.append("")
                 self.remoteURLs.append("")
-
+                self.gitTypeList.append("")
+                self.catkinOptionList.append("")
                 index += 1
 
         x = 0
-        #Clears the File Transfer section
+        #Saves and clears the File Transfer section
         while self.linePathParentPackage != []:
 
+            #Saves current data into backend structures
             self.directoryPaths[x] = self.linePathParentPackage.__getitem__(0).text().strip()
             self.remoteURLs[x] = self.linePathGitRepoList.__getitem__(0).text().strip()
+            self.gitTypeList[x] = self.comboRobotTypeList.__getitem__(0).currentText()
+            self.catkinOptionList[x] = self.comboMakeList.__getitem__(0).currentText()
 
+            #Clean current row of widgets
             obj = self.linePathParentPackage.pop(0)
             obj.deleteLater()
             obj = self.linePathGitRepoList.pop(0)
@@ -1278,31 +1286,34 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             obj.deleteLater()
             x+=1
 
-
         #Adds widgets to the File Transfer section based on the number of packages listed in the spinbox
         for index in range(self.spinpackage.value()):
             tempPackageWidget = QtWidgets.QLineEdit()
             tempGitRepoWidget = QtWidgets.QLineEdit()
+            tempRobotTypeWidget = QtWidgets.QComboBox()
+            tempMakeWidget = QtWidgets.QComboBox()
+            tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
+            typeNames = []
+
+            for typeName in self.TYPES:
+
+                # If the currently indexed robot has a different type than in the typeNames list
+                if typeName not in typeNames:
+                    typeNames.append(typeName)
+
+            tempRobotTypeWidget.addItems(typeNames)
 
             #If there is data that was previously at this index
             if index < len(self.directoryPaths) and self.directoryPaths[index] != "":
                 tempPackageWidget.setText(self.directoryPaths[index])
                 tempGitRepoWidget.setText(self.remoteURLs[index])
+                tempRobotTypeWidget.setCurrentText(self.gitTypeList[index])
+                tempMakeWidget.setCurrentText(self.catkinOptionList[index])
 
             #If this is a new remote repository listing
             else:
                 tempGitRepoWidget.setPlaceholderText("Use http:// here")
 
-            tempRobotTypeWidget = QtWidgets.QComboBox()
-            tempMakeWidget = QtWidgets.QComboBox()
-            tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
-            typeNames = []
-            for typeName in self.TYPES:
-
-                #If the currently indexed robot has a different type than in the typeNames list
-                if typeName not in typeNames:
-                    typeNames.append(typeName)
-            tempRobotTypeWidget.addItems(typeNames)
             tempPackageDirectoryWidget = QtWidgets.QPushButton()
             tempPackageDirectoryWidget.setText("Parent Package Directory")
             tempPackageDirectoryWidget.clicked.connect(lambda state, arg = index:self.specifyPackagePath(arg))
@@ -1321,6 +1332,15 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.gridpackage.setColumnStretch(2,1)
             self.gridpackage.setColumnStretch(3,1)
             self.gridpackage.setColumnStretch(4,1)
+
+
+    #Helper function to populate a list of robot types that are listed for transferring files
+    def gitTypesForTransfer(self):
+        self.diffTypesList = []
+
+        for i in range(self.spinpackage.value()):
+            if str(self.comboRobotTypeList[i].currentText()) not in self.diffTypesList:
+                self.diffTypesList.append(str(self.comboRobotTypeList[i].currentText()))
 
 
     #Creates the specified package path for cloning the remote repos
@@ -1491,17 +1511,21 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def checkPasswordLaunchThread(self, commandType):
         self.updateLists()
 
-        # If the ping button was pushed
+        #If the Transfer Files(s) was clicked
+        if commandType == "git":
+            self.gitTypesForTransfer()
+
+        # If the ping button was clicked
         if commandType == "ping":
             self.launchThread(commandType, "rsa")
 
-        #If the Generate RSA Key button was not pushed and the RSA Checkbox is selected
+        #If the Generate RSA Key button was not clicked and the RSA Checkbox is selected
         elif commandType != "genKey" and self.rsacheckbox.isChecked():
 
             #If the proper RSA key is present on the user's machine at: ~/.ssh
             if self.RSA:
 
-                #If the Launch Masters button was pushed
+                #If the Launch Masters button was clicked
                 if commandType == "masters":
                     self.masterThread("rsa")
 
@@ -1541,6 +1565,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         enableIPS.append(ip)
                         enableUSERS.append(user)
 
+                elif commandType == "git":
+
+                    if self.ENABLE[index] == "True" and self.TYPES[index] in self.diffTypesList:
+                        enableIPS.append(ip)
+                        enableUSERS.append(user)
+
                 else:
 
                     #If the currently indexed robot is enabled and its ROSMASTER Settings are not set to "Master"
@@ -1565,7 +1595,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.PASSWORDS = {}
         self.PASSWORDS = passwordList.copy()
 
-        #If the Launch Masters button was pushed
+        #If the Launch Masters button was clicked
         if commandType == "masters":
             self.masterThread("password")
 
@@ -1589,7 +1619,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     for index in range(len(self.IPS)):
 
                         #If the currently indexed robot is enabled and found
-                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and self.MASTER_TYPE[index] != "Master":
+                        if self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
                             threadGitRepoList = []
                             threadPackageList = []
                             threadMakeOptionList = []
@@ -1598,6 +1628,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                     threadGitRepoList.append(str(self.linePathGitRepoList[i].text()))
                                     threadPackageList.append(str(self.linePathParentPackage[i].text()))
                                     threadMakeOptionList.append(self.comboMakeList[i].currentIndex())
+
+                            if len(threadGitRepoList) == 0:
+                                break
 
                             tempThread = QtCore.QThread()
                             tempThread.start()
@@ -1802,7 +1835,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
     #Cleans the Launch Window of previous data and prepares new tabs for the new list of robots
-    def refreshWindow(self,commands):
+    def refreshWindow(self, commands):
 
         #If ROSMASTERs are to be launched
         if commands == "masters":
@@ -1834,30 +1867,41 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.layoutTerminalList.clear()
             self.widgetTerminalList.clear()
 
+        #If the Transfer Files(s) button is clicked
+        if commands == "git":
+            self.gitTypesForTransfer()
 
+        #Loop through to add robot tabs
         for index, IP in enumerate(self.IPS):
 
-            #If the currently indexed robot is enabled and the Ping Robots button is pushed
-            if self.ENABLE[index] == "True" and commands == "ping":
+            #If the Ping Robots button is clicked and the currently indexed robot is enabled
+            if commands == "ping" and self.ENABLE[index] == "True":
                 self.addToLaunchWindow(index,IP)
 
-            #If the currently indexed robot is enabled, the robot is found, the Launch Masters button is pushed,
+            #If the Launch Masters button is clicked, the currently indexed robot is enabled, the robot is found,
             # and the robot's ROS Settings are set to "Master" or "Master and Launch"
-            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "masters" \
+            elif commands == "masters" and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found"\
                     and (self.MASTER_TYPE[index] == "Master" or self.MASTER_TYPE[index] == "Master and Launch"):
                 self.addToRoscoreWindow(index,IP)
 
-            #If the currently indexed robot is enabled, the robot is found, the Update .bashrc button is pushed,
+            #If the Update .bashrc button is clicked, the currently indexed robot is enabled, the robot is found,
             # and the robot's ROS Settings are set to "Master" or "Master and Launch"
-            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and commands == "bashrc" \
+            elif commands == "bashrc" and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" \
                  and (self.MASTER_TYPE[index] != "No ROS Settings"):
                 self.addToLaunchWindow(index, IP)
 
-            # If the currently indexed robot is enabled, the robot is found, the any other button is pushed,
+            #If the Transfer Files(s) button is clicked and the the currently indexed robot's type has a repository to
+            #be pulled/cloned, is enabled, and the robot is found
+            elif commands == "git" and self.TYPES[index] in self.diffTypesList and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
+                self.addToLaunchWindow(index, IP)
+                print "git "+str(IP)
+
+            # If either the launch all or launch current type buttons are clicked, the currently indexed robot is enabled, the robot is found,
             # and the robot's ROS Settings are not set to "Master"
-            elif self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" and (commands != "masters" and commands != "bashrc") \
+            elif (commands == "commands" or commands == "type") and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" \
                     and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
                 self.addToLaunchWindow(index,IP)
+                print "other "+str(IP)
 
 
     #Adds the currently indexed robot to the Launch Window
@@ -1929,9 +1973,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Helper function to remove certain types of escape characters
     def specialCharacters(self, data):
 
-        data = data.replace(ur'\x1B[K\r', "")
-        data = data.replace(ur'\x1B[K', "")
-        data = data.replace(ur"\u2018","'").replace(ur"\u2019","'")
+        data = data.replace(r'\x1B[K\r', "")
+        data = data.replace(r'\x1B[K', "")
+        data = data.replace(r"\u2018","'").replace(r"\u2019","'")
 
         return data
 
@@ -1959,7 +2003,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 term.moveCursor(QtGui.QTextCursor.End)
                 return -1
 
-
+            #add [K\r thing here with return 0
 
 
             #Some other escape sequence
