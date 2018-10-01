@@ -112,6 +112,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.ENABLE = []
         self.STRINGOFPATH = ""
         self.ERRORTEXT = ""
+        self.MASTERERRORTEXT = ""
         self.comboboxMasterList = []
         self.terminalRefreshSeconds = 0.1
         self.directoryPaths = []
@@ -694,6 +695,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Opens a dialog to allow the user to specify their preferred RSA Key
     def findRSA(self):
+
         filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your RSA Key")
         try:
 
@@ -1185,7 +1187,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     tempDirectoryPath = tempDirectoryPath+"/"+date
                     subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
                     tempDirectoryPath = tempDirectoryPath+"/"+date
-                    print tempDirectoryPath
                     for index , value in enumerate(self.masterTerminalList):
 
                         rFile = open(tempDirectoryPath+"/"+value + ".txt", "w+")
@@ -1198,7 +1199,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     date = "Launch_" + date
                     tempDirectoryPath = tempDirectoryPath + "/" + date
                     subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'),shell=True)
-                    print tempDirectoryPath
 
                     for index , value in enumerate(self.terminalList):
                         filename = self.childLaunchWindow.tab_Launch.tabText(index)
@@ -1709,7 +1709,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             self.threadList[index] = tempThread
                             #worker.x11 = self.x11CheckBox.isChecked()
 
-
                     if self.workerList != {}:
                         self.threadStillRunning = 'Launch files still running'
                         self.childLaunchWindow.show()
@@ -1787,6 +1786,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             else:
                 temp = QtWidgets.QMessageBox.warning(self,"Warning", self.threadStillRunning)
 
+
         except paramiko.AuthenticationException:
             temp = QtWidgets.QMessageBox.warning(self, "Warning",
                                          "Failed to connect to robot(s), please check your data and passwords")
@@ -1794,7 +1794,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
     #Create and launch one or more threads to run roscore
     def masterThread(self, passwordType):
-        self.ERRORTEXT = ""
+        self.MASTERERRORTEXT = ""
         try:
 
             #If there are no currently running threads
@@ -1894,14 +1894,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             #be pulled/cloned, is enabled, and the robot is found
             elif commands == "git" and self.TYPES[index] in self.diffTypesList and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found":
                 self.addToLaunchWindow(index, IP)
-                print "git "+str(IP)
 
             # If either the launch all or launch current type buttons are clicked, the currently indexed robot is enabled, the robot is found,
             # and the robot's ROS Settings are not set to "Master"
             elif (commands == "commands" or commands == "type") and self.ENABLE[index] == "True" and self.CONNECTION_STATUS[index] == "Found" \
                     and self.currentTabCheck(commands,index) and self.MASTER_TYPE[index] != "Master":
                 self.addToLaunchWindow(index,IP)
-                print "other "+str(IP)
 
 
     #Adds the currently indexed robot to the Launch Window
@@ -1935,10 +1933,26 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Allows the user to send commands to the remote robots for unexpected terminal requests to un-terminated threads
     def sendDebugCommand(self):
         debugCommand = self.childLaunchWindow.lineDebugCommand.text().strip()
-        self.childLaunchWindow.lineDebugCommand.clear()
         ipText = str(self.childLaunchWindow.tab_Launch.tabText(self.childLaunchWindow.tab_Launch.currentIndex()))
         ipKey = self.IPS.index(ipText)
-        self.workerList[ipKey].channel.send(debugCommand + "\n")
+        try:
+            print "Checking: " + str(ipText)
+            # Ping to see if the remote machine is still receiving
+            response = os.system("ping -c1 -W 3 " + str(ipText) + " 2>&1 >/dev/null")
+
+            # If the remote machine was pinged successfully
+            if response == 0:
+                self.workerList[ipKey].channel.send(debugCommand + "\n")
+                self.childLaunchWindow.lineDebugCommand.clear()
+
+            else:
+                temp = QtWidgets.QMessageBox.warning(self.childLaunchWindow, "Warning", "Unable to send command due to losing connection to the remote host")
+
+
+        except:
+            print "In debug except"
+            e = sys.exc_info()[0]
+            self.killThread(ipKey,ipText + " SSH Error: An unhandled error has occurred: %s" % e)
 
 
     #Visually updates the Launch Window tabs to display feedback from the robots
@@ -2189,7 +2203,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         #Append a failed terminal's error string to the master error string
         if eMessage != "":
-            self.ERRORTEXT += "\n" + eMessage + "\n"
+            self.MASTERERRORTEXT += "\n" + eMessage + "\n"
 
         #Terminates the thread
         del self.masterWorkerList[ipIndex]
@@ -2206,7 +2220,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         # Display the finish message box based on the threads that were running
         if self.masterWorkerList == {} and self.masterThreadList == {}:
-            temp = QtWidgets.QMessageBox.information(self.childRoscoreWindow, "Information", "ROSCOREs shutdown\n" + self.ERRORTEXT)
+            temp = QtWidgets.QMessageBox.information(self.childRoscoreWindow, "Information", "ROSCOREs shutdown\n" + self.MASTERERRORTEXT)
             self.masterThreadStillRunning = 'no'
         self.updateLists()
 
@@ -2242,11 +2256,18 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             if "Finished" not in ipText:
                 workerKey = self.IPS.index(ipText)
                 self.masterWorkerList[workerKey].stopSignal = True
+
                 try:
                     self.masterWorkerList[workerKey].channel.send("\x03\n")
                     self.masterWorkerList[workerKey].channel.close()
-                except:
+
+                except EOFError:
                     pass
+
+                except:
+                    e = sys.exc_info()[0]
+                    temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                         "Unhandled error when interrupting current thread (ROSMASTER) %s" % e)
 
         #Interrupt a non-ROSMASTER thread
         else:
@@ -2260,11 +2281,18 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
+
                     try:
                         self.workerList[workerKey].channel.send("\x03\n")
                         self.workerList[workerKey].channel.close()
-                    except:
+
+                    except EOFError:
                         pass
+
+                    except:
+                        e = sys.exc_info()[0]
+                        temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                             "Unhandled error when interrupting current thread (Launch) %s" % e)
 
 
     #Interrupts any currently running threads
@@ -2275,25 +2303,40 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             for workerKey in self.masterWorkerList.keys():
                 self.masterWorkerList[workerKey].stopSignal = True
+
                 try:
                     self.masterWorkerList[workerKey].channel.send("\x03\n")
                     self.masterWorkerList[workerKey].channel.close()
-                except:
+
+                except EOFError:
                     pass
+
+                except:
+                    e = sys.exc_info()[0]
+                    temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                         "Unhandled error when interrupting all threads (ROSMASTER) %s" % e)
 
         #Interrupting all other types of threads
         else:
+
             self.childLaunchWindow.lineDebugCommand.setEnabled(False)
             for workerKey in self.workerList.keys():
                 self.workerList[workerKey].stopSignal = True
 
                 #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
+
                     try:
                         self.workerList[workerKey].channel.send("\x03\n")
                         self.workerList[workerKey].channel.close()
-                    except:
+
+                    except EOFError:
                         pass
+
+                    except:
+                        e = sys.exc_info()[0]
+                        temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                             "Unhandled error when interrupting all threads (Launch) %s" % e)
 
 
     #Catches all attempts to close the application if there are threads still running
