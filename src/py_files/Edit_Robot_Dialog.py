@@ -27,7 +27,7 @@ import Edit_Robot_Design
 #This class creates and runs the Robot Editing Dialog box
 class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog):
 
-	#Sets up to receive the data when closing the Dialog box
+	#Sets up to emit the data when closing the Dialog box
 	save = QtCore.pyqtSignal(list, list, list, list, list)
 
 	#Initializes and defines the Robot Editing Dialog box

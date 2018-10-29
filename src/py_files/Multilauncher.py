@@ -28,6 +28,7 @@ from Launch_Window import Launch_Window
 from Workers import SSH_Transfer_File_Worker, Bashrc_Worker, Launch_Worker, Ping_Worker, ROSMASTER_Worker
 from Edit_Robot_Dialog import Edit_Robot_Dialog
 from Generate_Key import Generate_Key
+from Git_Repo_Branch import Git_Repo_Branch
 import os
 import paramiko
 import sys
@@ -36,7 +37,9 @@ import signal
 import datetime
 import re
 
-ansiEscape = re.compile(ur'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+
+#Used to remove unhandled escape characters when presenting visual output from the terminal
+ansiEscape = re.compile(u'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
 
 
 #This class creates the Main Window of the application
@@ -120,6 +123,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         self.diffTypesList = []
         self.gitTypeList = []
         self.catkinOptionList = []
+        self.branchList = []
 
         #Creates the Launch Window used in pinging and executing selected commands
         self.childLaunchWindow = Launch_Window()
@@ -398,12 +402,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             else:
                 tempCheckBox.setCheckState(QtCore.Qt.Unchecked)
             tempCheckBox.stateChanged.connect(self.enableWidgetFromCheckbox)
-
-            # tempWidget = QtWidgets.QWidget()
-            # tempLayout = QtWidgets.QHBoxLayout(tempWidget)
-            # tempLayout.addWidget(tempCheckBox)
-            # tempLayout.setAlignment(QtCore.Qt.AlignHCenter)
-            # tempWidget.setLayout(tempLayout)
 
             self.robotTable.setCellWidget(index, 0, tempCheckBox)
             self.robotTable.setItem(index, 1, QtWidgets.QTableWidgetItem(ipText[index]))
@@ -1247,10 +1245,11 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def reloadPackage(self):
 
         #Warns the user about setting the number of remote repositories in the spinbox to a high number
-        if self.spinpackage.value() > 20 and self.largeNumOfRepos == False:
+        if self.spinpackage.value() > 10 and self.largeNumOfRepos == False:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", "This program may slow down when transferring a large number of remote repositories")
             self.largeNumOfRepos = True
 
+        #TODO look why the lists are not saving data between changes
         #If the user is going to pull from more repositories than previously set
         if len(self.directoryPaths) < self.spinpackage.value():
             index = len(self.directoryPaths)
@@ -1378,7 +1377,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 temp = QtWidgets.QMessageBox.warning(self, "Warning", "Zero Repositories set")
 
             else:
-
                 #If the username for the remote repositories is blank
                 if self.lineUsername.text().strip() == "":
                     self.ERRORTEXT += "\nMissing remote Git Username\n"
@@ -1392,21 +1390,37 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     #If the destination for the currently indexed remote repository is blank
                     if self.linePathParentPackage[index].text().strip() == "":
-                        self.ERRORTEXT += "\nMissing Destination Directory for repository: "+ str(index+1) +"\n"
+                        self.ERRORTEXT += "\nMissing Destination Directory for repository: " + str(index+1) + "\n"
 
                     #If the url for the currently indexed remote repository is blank
                     if self.linePathGitRepoList[index].text().strip() == "":
-                        self.ERRORTEXT += "\nMissing Remote Repository URL for repository: " + str(index+1) +"\n"
+                        self.ERRORTEXT += "\nMissing Remote Repository URL for repository: " + str(index+1) + "\n"
                     index += 1
 
                 #If there were no blank entries
                 if self.ERRORTEXT == "":
-                    temp = QtWidgets.QMessageBox.information(self, "Information", "Uncommitted changes will be saved using \"git stash\"")
-                    self.checkPasswordLaunchThread("git")
+
+                    threadGitRepoList = []
+                    threadPackageList = []
+                    threadMakeOptionList = []
+                    for i in range(self.spinpackage.value()):
+                            threadGitRepoList.append(str(self.linePathGitRepoList[i].text().strip()))
+                            threadPackageList.append(str(self.linePathParentPackage[i].text().strip()))
+                            threadMakeOptionList.append(self.comboMakeList[i].currentText())
+
+                    self.gitBranch = Git_Repo_Branch(threadGitRepoList,threadPackageList,threadMakeOptionList, self.lineUsername.text().strip(), self.linePassword.text().strip())
+                    self.gitBranch.branches.connect(self.recieveBranches)
+                    self.gitBranch.show()
 
                 #If there was a blank entry somewhere
                 else:
                     temp = QtWidgets.QMessageBox.warning(self, "Warning", self.ERRORTEXT)
+
+
+    @QtCore.pyqtSlot(list)
+    def recieveBranches(self, branches):
+        self.branchList = branches
+        self.checkPasswordLaunchThread("git")
 
 
     #Handler function to launch the ROSMASTERs
@@ -1607,6 +1621,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Create and launch one or more threads to do different commands
     def launchThread(self, threadType, passwordType):
         self.ERRORTEXT = ""
+        self.childLaunchWindow.buttonStopThread.setEnabled(True)
+
         try:
 
             #If there are no currently running threads
@@ -1623,11 +1639,13 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             threadGitRepoList = []
                             threadPackageList = []
                             threadMakeOptionList = []
+                            threadBranchList = []
                             for i in range(self.spinpackage.value()):
                                 if self.TYPES[index] == str(self.comboRobotTypeList[i].currentText()):
                                     threadGitRepoList.append(str(self.linePathGitRepoList[i].text()))
                                     threadPackageList.append(str(self.linePathParentPackage[i].text()))
                                     threadMakeOptionList.append(self.comboMakeList[i].currentIndex())
+                                    threadBranchList.append(self.branchList[i])
 
                             if len(threadGitRepoList) == 0:
                                 break
@@ -1639,12 +1657,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                             if passwordType == "password":
                                 worker = SSH_Transfer_File_Worker(index,self.IPS[index], self.USERS[index], threadPackageList, threadGitRepoList,
                                                                str(self.lineUsername.text()), str(self.linePassword.text()),
-                                                               threadMakeOptionList,self.PASSWORDS[self.IPS[index]], self.myKey)
+                                                               threadMakeOptionList,self.PASSWORDS[self.IPS[index]], threadBranchList, self.myKey)
                             elif passwordType == "rsa":
                                 worker = SSH_Transfer_File_Worker(index, self.IPS[index], self.USERS[index],
                                                                threadPackageList, threadGitRepoList,
                                                                str(self.lineUsername.text()), str(self.linePassword.text()),
-                                                               threadMakeOptionList, None, self.myKey)
+                                                               threadMakeOptionList, None, threadBranchList, self.myKey)
 
                             #Create the worker
                             worker.terminalSignal.connect(self.writeInOwnedTerminal)
@@ -1795,6 +1813,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Create and launch one or more threads to run roscore
     def masterThread(self, passwordType):
         self.MASTERERRORTEXT = ""
+        self.childRoscoreWindow.buttonStopThread.setEnabled(True)
+
         try:
 
             #If there are no currently running threads
@@ -2017,12 +2037,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 term.moveCursor(QtGui.QTextCursor.End)
                 return -1
 
-            #add [K\r thing here with return 0
+            #TODO add [K\r thing here with return 0
 
 
             #Some other escape sequence
             else:
-                print repr(line)
+                #print repr(line)
                 temp = ansiEscape.sub('', line[start:])
                 temp = self.specialCharacters(temp)
                 cursor.insertText(temp)
@@ -2174,10 +2194,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.childLaunchWindow.tab_Launch.setTabText(index, self.IPS[ipIndex]+" (Finished)")
                 self.terminalList[ipIndex].insertPlainText(eMessage)
                 self.terminalList[ipIndex].moveCursor(QtGui.QTextCursor.End)
+                self.childLaunchWindow.stopCurrentThread.setEnabled(False)
 
         #Display the finish message box based on the threads that were running
         if self.workerList == {} and self.threadList == {}:
             self.childLaunchWindow.lineDebugCommand.setEnabled(False)
+            self.childLaunchWindow.buttonStopThread.setEnabled(False)
             if self.threadStillRunning == 'Bashrc still running':
                 temp = QtWidgets.QMessageBox.information(self.childLaunchWindow, "Information",
                                                          "Bashrc Update Finished\n" + self.ERRORTEXT)
@@ -2217,9 +2239,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.childRoscoreWindow.tab_Launch.setTabText(index, self.IPS[ipIndex] + " (Finished)")
                 self.masterTerminalList[ipIndex].insertPlainText(eMessage)
                 self.masterTerminalList[ipIndex].moveCursor(QtGui.QTextCursor.End)
+                self.childRoscoreWindow.stopCurrentThread.setEnabled(False)
+
 
         # Display the finish message box based on the threads that were running
         if self.masterWorkerList == {} and self.masterThreadList == {}:
+            self.childRoscoreWindow.buttonStopThread.setEnabled(False)
             temp = QtWidgets.QMessageBox.information(self.childRoscoreWindow, "Information", "ROSCOREs shutdown\n" + self.MASTERERRORTEXT)
             self.masterThreadStillRunning = 'no'
         self.updateLists()
@@ -2266,7 +2291,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 except:
                     e = sys.exc_info()[0]
-                    temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                    temp = QtWidgets.QMessageBox.warning(self.childRoscoreWindow, "Warning",
                                                          "Unhandled error when interrupting current thread (ROSMASTER) %s" % e)
 
         #Interrupt a non-ROSMASTER thread
@@ -2291,7 +2316,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     except:
                         e = sys.exc_info()[0]
-                        temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                        temp = QtWidgets.QMessageBox.warning(self.childLaunchWindow, "Warning",
                                                              "Unhandled error when interrupting current thread (Launch) %s" % e)
 
 
@@ -2313,7 +2338,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 except:
                     e = sys.exc_info()[0]
-                    temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                    temp = QtWidgets.QMessageBox.warning(self.childRoscoreWindow, "Warning",
                                                          "Unhandled error when interrupting all threads (ROSMASTER) %s" % e)
 
         #Interrupting all other types of threads
@@ -2335,7 +2360,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                     except:
                         e = sys.exc_info()[0]
-                        temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                        temp = QtWidgets.QMessageBox.warning(self.childLaunchWindow, "Warning",
                                                              "Unhandled error when interrupting all threads (Launch) %s" % e)
 
 

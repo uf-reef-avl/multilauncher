@@ -55,7 +55,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 
 	#Definition of a SSH_Transfer_File_Worker
-	def __init__(self, ipIndex, IP, user, parentPackageDirList, gitRepoList, gitUsername, gitPassword, makeOption, password, key):
+	def __init__(self, ipIndex, IP, user, parentPackageDirList, gitRepoList, gitUsername, gitPassword, makeOption, password, branches,key):
 		super(SSH_Transfer_File_Worker, self).__init__()
 		self.ipIndex = ipIndex
 		self.IP = IP
@@ -73,6 +73,9 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.finishMessage = ""
 		self.skip = False
 		self.buffer = ""
+		self.branchList = branches
+		self.branchFlag = -1
+
 
 	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
 	@QtCore.pyqtSlot()
@@ -93,28 +96,28 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			self.channel.get_transport().set_keepalive(30)
 			self.channel.settimeout(SSH_TIMEOUT)
 
-			for i in range(len(self.gitRepoList)):
+			for index in range(len(self.gitRepoList)):
 				if self.stopSignal:
 					break
 
-				self.prepPath(i)
+				self.prepPath(index)
 
-				self.prepRepo(i)
+				self.prepRepo(index)
 
 				#If there wasn't a problem with the retrieving data from the remote git repository
 				if not self.skip:
 
 					#catkin make option
-					if self.makeOption[i] == 1:
+					if self.makeOption[index] == 1:
 
-						self.prepCatkin(i)
+						self.prepCatkin(index)
 						self.channel.send('catkin_make\n')
 						self.waitFinishCommand()
 
 					#catkin build option
-					elif self.makeOption[i] == 2:
+					elif self.makeOption[index] == 2:
 
-						self.prepCatkin(i)
+						self.prepCatkin(index)
 						self.channel.send('catkin build\n')
 						self.waitFinishCommand()
 
@@ -148,61 +151,75 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 
 	#Corrects some incorrect user input and/or appends a src directory to hold the local repository
-	def prepPath(self, i):
+	def prepPath(self, index):
 
-		tempList = self.parentPackageDirList[i].split('/')
+		tempList = self.parentPackageDirList[index].split('/')
 		if tempList[-1] != '':
-			self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "/")
+			self.parentPackageDirList[index] = str(self.parentPackageDirList[index] + "/")
 
 		#If a catkin option was selected for this repo
-		if self.makeOption[i] != 0:
+		if self.makeOption[index] != 0:
 			if "src" not in tempList:
-				self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "src/")
+				self.parentPackageDirList[index] = str(self.parentPackageDirList[index] + "src/")
 
 
 	#Sets up a new local repo or overrides the local existing repo with the remote one
-	def prepRepo(self,i):
+	def prepRepo(self,index):
 
-		self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
+		self.channel.send('mkdir -p ' + self.parentPackageDirList[index] + '\n')
 		self.waitFinishCommand()
-		self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+		self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 		self.waitFinishCommand()
 
-		packageName = self.gitRepoList[i].split('/')[-1]
+		packageName = self.gitRepoList[index].split('/')[-1]
 		if ".git" in packageName:
 			packageName = packageName[:-4]
 
-		self.channel.send('cd ' + packageName + '\n')
+		self.channel.send('cd ' + packageName + '/.git\n')
 		flag = self.waitFinishCommand()
+
+		adjustedRepo = self.gitRepoList[index][:str(self.gitRepoList[index]).find("//") + 2] + str(self.gitUsername) + ":" + str(
+			self.gitPassword) + "@" + self.gitRepoList[index][str(self.gitRepoList[index]).find("//") + 2:]
 
 		# New local repo
 		if flag == "no file":
-			self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
-			flag = self.waitFinishCommand()
 
+			#Can cd into packageName only for directory check not needed though
+
+			self.channel.send("mkdir "+str(packageName)+"; cd " + str(packageName) +"; git init; git remote add "+
+							  str(packageName) +" "+ str(adjustedRepo) + "; git fetch " + str(packageName)+ " " + str(self.branchList[index]) +
+							  "; git checkout -b " + str(self.branchList[index]) + "; git pull " + str(packageName) + " " + str(self.branchList[index]) +'\n')
+
+			flag = self.waitFinishCommand()
+			print flag
 			# Successful git clone
-			if flag == "done":
-				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+			if flag == "done" or flag == "HEAD":
+				self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 				self.waitFinishCommand()
 			else:
 				self.skip = True
 
-		# Existing local repo
+		#Existing repository on remote machine
 		else:
-			self.channel.send('git stash\n')
+
+			self.channel.send('cd ..; git stash\n')
 			self.waitFinishCommand()
 
-			self.channel.send('git pull\n')
+			self.branchFlag = index
+			self.channel.send("git branch\n")
+			flag = self.waitFinishCommand()
+
+			self.channel.send("git "+ str(flag)+" "+str(self.branchList[index])+"; git pull "+str(adjustedRepo)+" "+str(self.branchList[index])+"\n")
 			self.waitFinishCommand()
 
-			self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+			self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 			self.waitFinishCommand()
 
 
 	#Sets up for catkin make or build
-	def prepCatkin(self, i):
+	def prepCatkin(self, index):
 
-		tempList = self.parentPackageDirList[i].split('/')
+		tempList = self.parentPackageDirList[index].split('/')
 		index = tempList.index("src")
 		toSrc = tempList[:index]
 		path = ""
@@ -224,6 +241,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			try:
 
 				data = self.channel.recv(1024).decode("utf-8")
+				#print "Data:\n"+repr(data)+"\n"
 
 			except socket.timeout:
 				print "Checking: "+str(self.IP)
@@ -236,7 +254,6 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 				else:
 					raise Manual_Timeout_Exception
-
 
 			splitData = data.split("\n")
 			splitData[0] = self.buffer + splitData[0]
@@ -252,23 +269,28 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
 
-			if 'Username for ' in data:
-				self.channel.send(self.gitUsername + '\n')
-
-			elif 'Password for ' in data:
-				self.channel.send(self.gitPassword + '\n')
+			if self.branchFlag != -1:
+				if str(self.branchList[self.branchFlag]) in data:
+					self.branchFlag = -1
+					return "checkout"
+				else:
+					self.branchFlag = -1
+					return "checkout -b"
 
 			elif "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
 
-			if "No such file or directory" in data:
+			elif "No such file or directory" in data:
 				return "no file"
 
 			elif "Checking connectivity... done" in data:
 				return "done"
 
-			if self.user + "@" in data:
+			elif "FETCH_HEAD" in data:
+				return "HEAD"
+
+			elif self.user + "@" in data:
 				break
 
 
@@ -692,6 +714,7 @@ class Bashrc_Worker(QtCore.QObject):
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
+
 			elif self.user + "@" in data:
 				break
 

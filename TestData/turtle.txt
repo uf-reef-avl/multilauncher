@@ -1,0 +1,7 @@
+#####
+TYPE: turtlebot
+
+#####
+TYPE: virtual
+export DISPLAY=:0.0
+rosrun turtlesim turtlesim_node

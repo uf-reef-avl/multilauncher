@@ -43,7 +43,6 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
         self.labelIPS = []
         self.labelUSERS = []
         self.PASSWORDS = {}
-        self.terminalRefreshSeconds = 0.5
 
         #Sets up the dynamic list of robots and corresponding text fields for entering passwords
         self.area = QtWidgets.QWidget()
