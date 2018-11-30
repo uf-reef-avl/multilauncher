@@ -11,11 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Git Repo Branch Confirm</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
-   <item row="0" column="0">
-    <layout class="QGridLayout" name="gridLayout" columnstretch="1,0">
+   <item row="1" column="0">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
      <item row="3" column="1">
       <widget class="QPushButton" name="confirmTransferButton">
        <property name="text">
@@ -30,16 +30,6 @@
       <widget class="QProgressBar" name="fetchBar">
        <property name="value">
         <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Select which branches you want to pull on the remote machines.</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -59,7 +49,7 @@
         <set>QAbstractItemView::NoEditTriggers</set>
        </property>
        <attribute name="horizontalHeaderDefaultSectionSize">
-        <number>180</number>
+        <number>145</number>
        </attribute>
        <attribute name="horizontalHeaderStretchLastSection">
         <bool>true</bool>
@@ -92,6 +82,11 @@
          <string>Available Branches</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>Remote Machine Type</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item row="2" column="1">
@@ -104,7 +99,24 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Select which branches you want to Git Pull to the remote machines.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

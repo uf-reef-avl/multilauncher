@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1403</width>
-    <height>799</height>
+    <height>798</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -260,6 +260,129 @@
         </item>
        </layout>
       </item>
+      <item row="1" column="1">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="2">
+       <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,0,0,0">
+        <property name="horizontalSpacing">
+         <number>1</number>
+        </property>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="loadcommandsbutton">
+          <property name="text">
+           <string>Load Commands File</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="rsaPath">
+          <property name="text">
+           <string>Current RSA Key Path: No RSA Key Found</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="2">
+         <widget class="QPushButton" name="launchTypeButton">
+          <property name="text">
+           <string>Launch Current Type</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="4" alignment="Qt::AlignHCenter">
+         <widget class="QLabel" name="commandeditorlabel">
+          <property name="font">
+           <font>
+            <pointsize>16</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <underline>false</underline>
+           </font>
+          </property>
+          <property name="text">
+           <string>Command Editor</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="4">
+         <widget class="QTextEdit" name="commands">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>610</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QPushButton" name="generateRSAKeyButton">
+          <property name="text">
+           <string>Generate RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="findRSAButton">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Find RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0" colspan="4">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="5" column="1" alignment="Qt::AlignHCenter">
+         <widget class="QCheckBox" name="rsacheckbox">
+          <property name="text">
+           <string>Use RSA Key</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="commandFileLabel">
+          <property name="text">
+           <string>Current File:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="savecommandsbutton">
+          <property name="text">
+           <string>Save Current Commands</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="1">
        <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
         <property name="sizeConstraint">
@@ -280,46 +403,7 @@
         <property name="verticalSpacing">
          <number>30</number>
         </property>
-        <item row="1" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
-          <item>
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Destination Directory</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Remote Repository</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Robot Type</string>
-            </property>
-           </widget>
-          </item>
-          <item alignment="Qt::AlignHCenter">
-           <widget class="QLabel" name="label_5">
-            <property name="text">
-             <string>Catkin Option</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="2" column="0">
+        <item row="2" column="0" colspan="2">
          <widget class="QScrollArea" name="scrollareapackage">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -335,8 +419,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>667</width>
-             <height>84</height>
+             <width>677</width>
+             <height>116</height>
             </rect>
            </property>
            <widget class="QWidget" name="gridLayoutWidget_2">
@@ -357,27 +441,46 @@
           </widget>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="buttontransfer">
-          <property name="text">
-           <string>Transfer File(s)</string>
-          </property>
-         </widget>
+        <item row="1" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1,1,1,1">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Destination</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Local File/Repository</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Robot Type</string>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignHCenter">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>Catkin Option</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-        <item row="2" column="1">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="0" column="0">
+        <item row="0" column="0" colspan="2">
          <layout class="QGridLayout" name="gridLayout_8">
           <item row="2" column="2" alignment="Qt::AlignRight">
            <widget class="QLabel" name="remotegitpasswordlabel">
@@ -452,136 +555,30 @@
           </item>
          </layout>
         </item>
-        <item row="4" column="0">
-         <layout class="QHBoxLayout" name="horizontalLayout"/>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="2" column="2">
-       <layout class="QGridLayout" name="gridLayout_4" columnstretch="1,1,1,1">
-        <property name="horizontalSpacing">
-         <number>1</number>
-        </property>
-        <item row="0" column="0" colspan="4" alignment="Qt::AlignHCenter">
-         <widget class="QLabel" name="commandeditorlabel">
-          <property name="font">
-           <font>
-            <pointsize>16</pointsize>
-            <weight>75</weight>
-            <bold>true</bold>
-            <underline>false</underline>
-           </font>
-          </property>
-          <property name="text">
-           <string>Command Editor</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="4">
-         <widget class="QTextEdit" name="commands">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>610</width>
-            <height>0</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QPushButton" name="generateRSAKeyButton">
-          <property name="text">
-           <string>Generate RSA Key</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QPushButton" name="findRSAButton">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Find RSA Key</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="3">
-         <widget class="QPushButton" name="savecommandsbutton">
-          <property name="text">
-           <string>Save Current Commands</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="3">
-         <widget class="QPushButton" name="launchTypeButton">
-          <property name="text">
-           <string>Launch Current Type</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QLabel" name="commandFileLabel">
-          <property name="text">
-           <string>Current File:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0" colspan="4">
-         <spacer name="horizontalSpacer_3">
+        <item row="2" column="2">
+         <spacer name="horizontalSpacer_6">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
-            <width>40</width>
+            <width>10</width>
             <height>20</height>
            </size>
           </property>
          </spacer>
         </item>
-        <item row="1" column="2">
-         <widget class="QPushButton" name="loadcommandsbutton">
+        <item row="4" column="0">
+         <widget class="QPushButton" name="transferLocalButton">
           <property name="text">
-           <string>Load Commands File</string>
+           <string>Transfer Local File(s) to Remote Machines</string>
           </property>
          </widget>
         </item>
-        <item row="5" column="1" alignment="Qt::AlignHCenter">
-         <widget class="QCheckBox" name="rsacheckbox">
+        <item row="4" column="1">
+         <widget class="QPushButton" name="remoteRepositoryButton">
           <property name="text">
-           <string>Use RSA Key</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1" colspan="3">
-         <widget class="QLabel" name="rsaPath">
-          <property name="text">
-           <string>Current RSA Key Path: No RSA Key Found</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="2" alignment="Qt::AlignHCenter">
-         <widget class="QCheckBox" name="x11CheckBox">
-          <property name="text">
-           <string>Enable X11</string>
+           <string>Pull Remote Repositories to Remote Machines</string>
           </property>
          </widget>
         </item>
@@ -601,7 +598,6 @@
   <tabstop>lineUsername</tabstop>
   <tabstop>linePassword</tabstop>
   <tabstop>scrollareapackage</tabstop>
-  <tabstop>buttontransfer</tabstop>
   <tabstop>commands</tabstop>
  </tabstops>
  <resources/>

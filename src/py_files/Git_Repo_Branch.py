@@ -33,13 +33,14 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
     branches = QtCore.pyqtSignal(list)
 
     #Definition of the Git Repo Branch Dialog window
-    def __init__(self, repoList, packageList, catkinList, user, password, parent=None):
+    def __init__(self, repoList, packageList, catkinList, typeList, user, password, parent=None):
         super(Git_Repo_Branch, self).__init__(parent)
         self.setupUi(self)
         self.setModal(True)
         self.repos = repoList
         self.packages = packageList
         self.catkins = catkinList
+        self.types = typeList
         self.userID = user
         self.repoPassword = password
 
@@ -47,20 +48,21 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
         self.checkAllButton.clicked.connect(self.enableAndDisable)
         self.gitFetchButton.clicked.connect(self.fetchBranches)
         self.confirmTransferButton.clicked.connect(self.closeWindow)
-
         self.fetchBarValue = 0
 
         #Make a temporary directory to use for checking remote branches
         subprocess.call("mkdir -p ~/MultilauncherGitTemp", shell=True)
 
         #Dynamically populate the Git Repo Branch dialog based on the number of repositories
-        for index, repo, package, catkin in zip(range(len(self.repos)),self.repos,self.packages,self.catkins):
+        for index, repo, package, catkin, remoteType in zip(range(len(self.repos)),self.repos,self.packages,self.catkins,self.types):
             tempRepo = QtWidgets.QLabel(self)
             tempRepo.setText(repo)
             tempPackage = QtWidgets.QLabel(self)
             tempPackage.setText(package)
             tempCatkin = QtWidgets.QLabel(self)
             tempCatkin.setText(catkin)
+            tempType = QtWidgets.QLabel(self)
+            tempType.setText(remoteType)
             tempComboBox = QtWidgets.QComboBox(self)
             tempComboBox.addItem("master")
             tempCheckBox = QtWidgets.QCheckBox(self)
@@ -72,9 +74,10 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
             self.repoTable.setCellWidget(index, 2, tempRepo)
             self.repoTable.setCellWidget(index, 3, tempCatkin)
             self.repoTable.setCellWidget(index, 4, tempComboBox)
+            self.repoTable.setCellWidget(index, 5, tempType)
 
 
-    #Begin process of contacting remote repositories to determine the number of branches that exist for each repoitory
+    #Begin process of contacting remote repositories to determine the number of branches that exist for each repository
     def fetchBranches(self):
         repoList = []
 
@@ -155,11 +158,12 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
 
     #Corrects the column header sizes
     def setTableSize(self):
-        self.repoTable.setColumnWidth(0, self.width() / 5.2)
-        self.repoTable.setColumnWidth(1, self.width() / 5.2)
-        self.repoTable.setColumnWidth(2, self.width() / 5.2)
-        self.repoTable.setColumnWidth(3, self.width() / 5.2)
-        self.repoTable.setColumnWidth(4, self.width() / 5.2)
+        self.repoTable.setColumnWidth(0, self.width() / 6.2)
+        self.repoTable.setColumnWidth(1, self.width() / 6.2)
+        self.repoTable.setColumnWidth(2, self.width() / 6.2)
+        self.repoTable.setColumnWidth(3, self.width() / 6.2)
+        self.repoTable.setColumnWidth(4, self.width() / 6.2)
+        self.repoTable.setColumnWidth(5, self.width() / 6.2)
 
 
     #Enables/Disables all listed repositories

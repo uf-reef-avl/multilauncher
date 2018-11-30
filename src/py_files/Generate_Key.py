@@ -135,10 +135,11 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
             temp = QtWidgets.QMessageBox.warning(self, "Warning", self.outPutString)
 
         else:
-            temp = QtWidgets.QMessageBox.information(self, "Information", self.outPutString)
+            if self.outPutString != "":
+                temp = QtWidgets.QMessageBox.information(self, "Information", self.outPutString)
 
-        #Finish the RSA key generation and come back to the Main Window
-        self.rsaKey.emit(True)
+                #Finish the RSA key generation and come back to the Main Window
+                self.rsaKey.emit(True)
 
         self.buttonCancel.setEnabled(True)
         self.buttonGenerateKey.setEnabled(True)
