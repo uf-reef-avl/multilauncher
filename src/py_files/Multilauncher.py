@@ -38,6 +38,7 @@ import signal
 import datetime
 import re
 
+
 #Used to remove unhandled escape characters when presenting visual output from the terminal
 ansiEscape = re.compile(u'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
 
@@ -723,6 +724,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 privateKeyFile = os.path.expanduser(path)
                 self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
                 self.RSA = True
+                self.rsacheckbox.setCheckState(QtCore.Qt.Checked)
                 return True
 
             # RSA Key made through the application
@@ -730,6 +732,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 privateKeyFile = os.path.expanduser('~/.ssh/multikey')
                 self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
                 self.rsaPath.setText('Current RSA Key Path: ~/.ssh/multikey')
+                self.RSA = True
+                self.rsacheckbox.setCheckState(QtCore.Qt.Checked)
                 return True
 
             #No RSA key found in command file or in default location
@@ -2142,7 +2146,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             start = 0
             stop = 0
 
-            print repr(line)+"\n"
+            #print repr(line)+"\n"
 
             #While not at the end of the current line
             while index < len(line):
@@ -2169,6 +2173,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 #If the escape sequence is special or if none exist in this line
                 result = self.lineCheck(start, stop, line[index:], term)
 
+                #Line has been handled, move to next line
                 if result == -1:
                     break
 
@@ -2178,13 +2183,14 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     start += 2
                     stop += 1
 
-
                 escapeSequence = line[start:stop]
+
+                #print "Escape: " + repr(escapeSequence)
 
                 #Set the terminal's format based on the escape sequence
                 self.setFormat(escapeSequence, term)
 
-                #Setup for the (possibly) next escape sequence
+                #Setup for the (potential) next escape sequence
                 index = stop
                 start = stop
 
@@ -2202,8 +2208,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     break
 
 
-    #Determines if there are escape sequences in the current line and if they are of a certain type
-    # Returns True if the line is processed here and False if the line needs to be examined by another function
+    #Determines if the escape sequences in the current line are of a certain type
+    # Returns -1 if the line is processed here and 0 if the line needs to be examined by another function
     def lineCheck(self, start, stop, line, term):
 
         #No escape sequences found
@@ -2225,12 +2231,12 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 term.moveCursor(QtGui.QTextCursor.End)
                 return -1
 
-            #TODO add [K\r thing here with return 0
+            #add [K\r thing here with return -1
 
 
             #Some other escape sequence
             else:
-                #print repr(line)
+                print repr(line)
                 temp = ansiEscape.sub('', line[start:])
                 temp = self.specialCharacters(temp)
                 cursor.insertText(temp)
@@ -2241,7 +2247,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         return 0
 
 
-    #Helper function to remove certain types of escape characters
+    #Helper function to remove certain types of escape characters not currently handled by the Multilauncher
     def specialCharacters(self, data):
 
         data = data.replace(r'\x1B[K\r', "")
@@ -2260,7 +2266,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             term.setFontWeight(75)
 
         # Reset to Default
-        elif escapeSequence == "0m":
+        elif escapeSequence == "0m" or escapeSequence == "m":
             term.setFontWeight(50)
             term.setTextColor((QtGui.QColor(0, 0, 0)))
 

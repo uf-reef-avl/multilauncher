@@ -331,7 +331,7 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 		try:
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
-				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False,look_for_keys=False)
+				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False, look_for_keys=False)
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
 
@@ -355,15 +355,13 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 						subprocess.check_output("rsync -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(self.parentPackageDirList[index])
 													 , stderr=subprocess.STDOUT, shell=True)
 
+					string.append("Successfully transferred: " + str(self.localList[index]) + "\nto destination: " + str(self.parentPackageDirList[index]) + "\n\n")
+					self.terminalSignal.emit(self.ipIndex, string)
+
 				except subprocess.CalledProcessError as exc:
 					#print str(exc.output)
 					string.append("Error when transferring: "+str(self.localList[index])+" "+str(exc.output)+"\n")
 					self.terminalSignal.emit(self.ipIndex, string)
-
-				else:
-					string.append("Successfully transferred: "+str(self.localList[index])+" to destination: "+str(self.parentPackageDirList[index])+"\n\n")
-					self.terminalSignal.emit(self.ipIndex, string)
-
 
 		except paramiko.ssh_exception.AuthenticationException:
 
@@ -382,12 +380,6 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 			ssh.close()
 
-		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
-			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
-				SSH_TIMEOUT) + " seconds"
-			ssh.close()
-
 		except:
 			e = sys.exc_info()
 			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
@@ -395,55 +387,6 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 
 		#Closing the thread
 		self.finishThread.emit(self.ipIndex, self.finishMessage)
-
-
-	#Loops indefinitely until the current set of commands has been fully executed or if the user has interrupted the threads
-	def waitFinishCommand(self):
-		while True:
-			if self.stopSignal:
-				break
-
-			time.sleep(self.terminalRefreshSeconds)
-
-			try:
-
-				data = self.channel.recv(1024).decode("utf-8")
-				#print "Data:\n"+repr(data)+"\n"
-
-			except socket.timeout:
-				print "Checking: "+str(self.IP)
-				#Ping to see if the remote machine is still receiving
-				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
-
-				#If the remote machine was pinged successfully
-				if response == 0:
-					continue
-
-				else:
-					raise Manual_Timeout_Exception
-
-			splitData = data.split("\n")
-			splitData[0] = self.buffer + splitData[0]
-			buffed = splitData[-1]
-
-			if buffed != "":
-				if buffed[-1] != "\r":
-					self.buffer = buffed
-				else:
-					self.buffer = ""
-			else:
-				self.buffer = ""
-
-			self.terminalSignal.emit(self.ipIndex, splitData[:-1])
-
-			if "continue connecting (yes/no)" in data:
-				self.channel.send("yes\n")
-
-			elif "No such file or directory" in data:
-				return "no file"
-
-			elif self.user + "@" in data:
-				break
 
 
 #Creates and runs the Launch_Worker class and its methods
