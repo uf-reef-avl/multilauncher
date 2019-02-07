@@ -389,9 +389,9 @@ class Transfer_Local_File_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 			ssh.close()
 
-		# except:
-		# 	e = sys.exc_info()
-		# 	self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % str(e)
+		except:
+			e = sys.exc_info()
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % str(e)
 		ssh.close()
 
 		#Closing the thread
