@@ -1,6 +1,6 @@
 #
-# File: Main.py
-# Authors: Paul Buzaud and Matthew Hovatter
+# File: Generate_Key.py
+# Authors: Matthew Hovatter
 #
 # Created: Summer 2018
 #
@@ -24,6 +24,7 @@ import Generate_Key_Design
 from PyQt5 import QtCore, QtWidgets
 import subprocess
 import os
+import getpass
 from Workers import GenKey_Worker
 
 
@@ -63,12 +64,16 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
     def generateKey(self):
         self.buttonCancel.setEnabled(False)
         self.buttonGenerateKey.setEnabled(False)
+        user = getpass.getuser()
 
         self.outPutString = ""
         self.error = [False] * len(self.ipList)
 
+        if not os.path.exists(os.path.expanduser("~/.ssh/")):
+            subprocess.call(["mdkir", "-p", "home/"+user+"/.ssh"])
+
         #Generate the specific Multilauncher RSA key on the local computer
-        subprocess.call('echo -e "\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/multikey ', stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+        subprocess.call(["ssh-keygen", "-q", "-t", "rsa", "-N", "", "-f", "/home/"+user+"/.ssh/multikey"])
 
         #Update the progress bar
         self.rsaProgressValue = 0

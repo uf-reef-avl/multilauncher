@@ -156,7 +156,7 @@ class Ui_MainWindow(object):
         self.generateRSAKeyButton.setObjectName("generateRSAKeyButton")
         self.gridLayout_4.addWidget(self.generateRSAKeyButton, 5, 0, 1, 1)
         self.findRSAButton = QtWidgets.QPushButton(self.centralwidget)
-        self.findRSAButton.setEnabled(False)
+        self.findRSAButton.setEnabled(True)
         self.findRSAButton.setObjectName("findRSAButton")
         self.gridLayout_4.addWidget(self.findRSAButton, 4, 0, 1, 1)
         spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)

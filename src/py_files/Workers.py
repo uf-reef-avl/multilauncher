@@ -1,7 +1,7 @@
 #!/usr/bin/python2.7
 #
 # File: Workers.py
-# Authors: Paul Buzaud and Matthew Hovatter
+# Authors: Matthew Hovatter and Paul Buzaud
 #
 # Created: Summer 2018
 #
@@ -29,7 +29,7 @@ import logging
 import sys
 import subprocess
 import socket
-
+import shlex
 
 #logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
@@ -295,8 +295,8 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 				break
 
 
-#Creates and runs the Local_Transfer_File_Worker class and its methods
-class Local_Transfer_File_Worker(QtCore.QObject):
+#Creates and runs the Transfer_Local_File_Worker class and its methods
+class Transfer_Local_File_Worker(QtCore.QObject):
 
 	#Variables for emitting starting, displaying status, and closing signals
 	start = QtCore.pyqtSignal()
@@ -306,7 +306,7 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 
 	#Definition of a SSH_Transfer_File_Worker
 	def __init__(self, ipIndex, IP, user, parentPackageDirList, localList, password, key):
-		super(Local_Transfer_File_Worker, self).__init__()
+		super(Transfer_Local_File_Worker, self).__init__()
 		self.ipIndex = ipIndex
 		self.IP = IP
 		self.user = user
@@ -335,11 +335,10 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 			else:
 				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
 
-			#Pull the selected directory and push it to the desired location on the remote robot, catkin operations optional
+			#Pull the selected directory and push it to the desired location on the remote robot
 			self.channel = ssh.invoke_shell()
 			self.channel.get_transport().set_keepalive(KEEPALIVE)
 			self.channel.settimeout(SSH_TIMEOUT)
-			ssh.close()
 
 			for index in range(len(self.localList)):
 				if self.stopSignal:
@@ -348,18 +347,28 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 				string = []
 
 				try:
+
+					# FIXME rsync problem: can't find directory when not shelled
+					# if self.password is not None:
+					# 	subprocess.check_output(["sshpass", "-p", str(self.password), "rsync", "-r", str(self.localList[index]), self.user+"@"+self.IP+":"+str(self.parentPackageDirList[index])])
+					# else:
+					# 	subprocess.check_output(["rsync", "-r", str(self.localList[index]), self.user+"@"+self.IP+":"+str(self.parentPackageDirList[index])])
+
+
 					if self.password is not None:
-						subprocess.check_output("sshpass -p \""+str(self.password)+"\" rsync -r "+str(self.localList[index])+" "+self.user+"@"+self.IP+":"+str(self.parentPackageDirList[index])
-													 , stderr=subprocess.STDOUT, shell=True)
+						subprocess.check_output("sshpass -p \"" + str(self.password) + "\" rsync -r " + str(
+							self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
+							self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
 					else:
-						subprocess.check_output("rsync -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(self.parentPackageDirList[index])
-													 , stderr=subprocess.STDOUT, shell=True)
+						subprocess.check_output(
+							"rsync -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
+								self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
+
 
 					string.append("Successfully transferred: " + str(self.localList[index]) + "\nto destination: " + str(self.parentPackageDirList[index]) + "\n\n")
 					self.terminalSignal.emit(self.ipIndex, string)
 
 				except subprocess.CalledProcessError as exc:
-					#print str(exc.output)
 					string.append("Error when transferring: "+str(self.localList[index])+" "+str(exc.output)+"\n")
 					self.terminalSignal.emit(self.ipIndex, string)
 
@@ -380,10 +389,10 @@ class Local_Transfer_File_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 			ssh.close()
 
-		except:
-			e = sys.exc_info()
-			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
-			ssh.close()
+		# except:
+		# 	e = sys.exc_info()
+		# 	self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % str(e)
+		ssh.close()
 
 		#Closing the thread
 		self.finishThread.emit(self.ipIndex, self.finishMessage)
@@ -942,6 +951,7 @@ class GenKey_Worker(QtCore.QObject):
 
 		# check if the ssh to the device worked properly
 		if self.error is False:
+
 			# if the ssh command worked then do the permissions modification to the file
 
 			# update the progress bar
@@ -1036,8 +1046,10 @@ class GenKey_Worker(QtCore.QObject):
 		self.updateValue.emit(10)
 
 		# create the public keys and send it to the right device
-		copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey " + str(self.user + "@" + str(self.IP))) + "\n"
-		subprocess.call(copy, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+
+		#copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey " + str(self.user + "@" + str(self.IP))) + "\n"
+
+		subprocess.call(["sshpass", "-p", str(self.password), "ssh-copy-id", "-i", "~/.ssh/multikey", str(self.user + "@" + str(self.IP))])
 
 		# update the progress bar
 		self.updateValue.emit(15)

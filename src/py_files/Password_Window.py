@@ -56,17 +56,17 @@ class Password_Window(QtWidgets.QDialog, Password_Window_Design.Ui_Dialog):
 
         #Dynamically populate the Password Window based on the number of robots
         for index, IP, USER in zip(range(len(self.ipList)),self.ipList,self.userList):
-            tempLabelIP = QtWidgets.QLabel(self)
-            tempLabelIP.setText(IP)
             tempLabelUser = QtWidgets.QLabel(self)
             tempLabelUser.setText(USER)
+            tempLabelIP = QtWidgets.QLabel(self)
+            tempLabelIP.setText(IP)
             tempLinePassword = QtWidgets.QLineEdit(self)
             tempLinePassword.setEchoMode(QtWidgets.QLineEdit.Password)
             self.linePasswords.append(tempLinePassword)
             self.labelIPS.append(tempLabelIP)
             self.labelUSERS.append(tempLabelUser)
-            self.gridPasswords.addWidget(tempLabelIP, index, 0)
-            self.gridPasswords.addWidget(tempLabelUser, index, 1)
+            self.gridPasswords.addWidget(tempLabelUser, index, 0)
+            self.gridPasswords.addWidget(tempLabelIP, index, 1)
             self.gridPasswords.addWidget(tempLinePassword, index, 2)
 
 

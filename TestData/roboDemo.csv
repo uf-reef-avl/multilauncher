@@ -1,4 +1,4 @@
-RSA,~/.ssh/multikey
+RSA,$HOME/.ssh/multikey
 #####
 True,192.168.1.60,moa-nalo,virtual,$0/robotName:moanalo,Master and Launch
 True,192.168.1.61,cassowary,virtual,$0/robotName:cassowary,192.168.1.60

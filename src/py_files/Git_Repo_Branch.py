@@ -33,7 +33,7 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
     branches = QtCore.pyqtSignal(list)
 
     #Definition of the Git Repo Branch Dialog window
-    def __init__(self, repoList, packageList, catkinList, typeList, user, password, parent=None):
+    def __init__(self, repoList, packageList, catkinList, typeList, user, password, parent = None):
         super(Git_Repo_Branch, self).__init__(parent)
         self.setupUi(self)
         self.setModal(True)
@@ -49,9 +49,6 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
         self.gitFetchButton.clicked.connect(self.fetchBranches)
         self.confirmTransferButton.clicked.connect(self.closeWindow)
         self.fetchBarValue = 0
-
-        #Make a temporary directory to use for checking remote branches
-        subprocess.call("mkdir -p ~/MultilauncherGitTemp", shell=True)
 
         #Dynamically populate the Git Repo Branch dialog based on the number of repositories
         for index, repo, package, catkin, remoteType in zip(range(len(self.repos)),self.repos,self.packages,self.catkins,self.types):
@@ -88,7 +85,14 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
 
         #If there are remote repositories to check
         if len(repoList) != 0:
+
+            #Make a temporary directory to use for checking remote branches
+            subprocess.call(["mkdir", "-p", "MultilauncherGitTemp"])
+
             self.updateComboBoxes(repoList)
+
+            if os.path.exists(os.path.expanduser("MultilauncherGitTemp")):
+                subprocess.call(["rm", "-rf", "MultilauncherGitTemp"])
 
         else:
             temp = QtWidgets.QMessageBox.warning(self, "Warning", "No remote repositories selected")
@@ -104,18 +108,21 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
             combo = QtWidgets.QComboBox(self)
             combo.addItem("master")
 
-            if os.path.exists(os.path.expanduser("~/MultilauncherGitTemp/.git")):
-                subprocess.call("rm -rf ~/MultilauncherGitTemp/.git", shell=True)
+            if os.path.exists(os.path.expanduser("MultilauncherGitTemp/.git")):
+                subprocess.call(["rm", "-rf", "MultilauncherGitTemp/.git"])
 
             self.updateFetchBar(25)
 
             adjustedRepo = repo[:str(repo).find("//")+2]+str(self.userID)+":"+str(self.repoPassword)+"@"+repo[str(repo).find("//")+2:]
 
-            subprocess.call( "cd ~/MultilauncherGitTemp; git init -q; git remote add MultilauncherGitRemote "+str(adjustedRepo)+"; git fetch MultilauncherGitRemote -q ", shell=True)
+            os.chdir("MultilauncherGitTemp")
+            subprocess.call(["git", "init", "-q"])
+            subprocess.call(["git", "remote", "add", "MultilauncherGitRemote", str(adjustedRepo)])
+            subprocess.call(["git", "fetch", "MultilauncherGitRemote", "-q"])
 
             self.updateFetchBar(25)
 
-            process = subprocess.Popen( "cd ~/MultilauncherGitTemp; git branch -r", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+            process = subprocess.Popen(["git", "branch", "-r"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             self.updateFetchBar(25)
 
@@ -133,6 +140,8 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
             index = self.findComboBox(repo)
             if index != -1:
                 self.repoTable.setCellWidget(index, 4, combo)
+
+            os.chdir("..")
 
 
     #Used to update the progress bar in the Git Repo Branch Dialog to provide visual feedback to the user
@@ -189,9 +198,6 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
             branchList.append(self.repoTable.cellWidget(index, 4).currentText())
 
         self.branches.emit(branchList)
-
-        if os.path.exists(os.path.expanduser("~/MultilauncherGitTemp")):
-            subprocess.call("rm -rf ~/MultilauncherGitTemp", shell=True)
 
         self.close()
         self.deleteLater()
