@@ -930,9 +930,9 @@ class GenKey_Worker(QtCore.QObject):
 			print "Quiting: " + str(self.IP)
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " the remote host did not respond within " + str(SSH_TIMEOUT) + " seconds"
 
-		except:
-			e = sys.exc_info()[0]
-			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to an unhandled error: %s" % e
+		# except:
+		# 	e = sys.exc_info()[0]
+		# 	self.finishMessage = "X - Error in connecting to: " + self.IP + " due to an unhandled error: %s" % e
 
 		#Finish thread
 		self.ssh.close()

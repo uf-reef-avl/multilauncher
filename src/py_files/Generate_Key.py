@@ -69,7 +69,7 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
         self.outPutString = ""
         self.error = [False] * len(self.ipList)
 
-        if not os.path.exists(os.path.expanduser("~/.ssh/")):
+        if not os.path.exists(os.path.expanduser("home/"+user+"/.ssh")):
             subprocess.call(["mdkir", "-p", "home/"+user+"/.ssh"])
 
         #Generate the specific Multilauncher RSA key on the local computer
