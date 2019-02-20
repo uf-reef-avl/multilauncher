@@ -24,7 +24,6 @@ import Generate_Key_Design
 from PyQt5 import QtCore, QtWidgets
 import subprocess
 import os
-import getpass
 from Workers import GenKey_Worker
 
 
@@ -64,20 +63,21 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
     def generateKey(self):
         self.buttonCancel.setEnabled(False)
         self.buttonGenerateKey.setEnabled(False)
-        user = getpass.getuser()
 
         self.outPutString = ""
         self.error = [False] * len(self.ipList)
 
-        if not os.path.exists(os.path.expanduser("home/"+user+"/.ssh")):
-            subprocess.call(["mdkir", "-p", "home/"+user+"/.ssh"])
+        if not os.path.exists(os.path.expanduser("~/.ssh")):
+            subprocess.call(["mdkir", "-p", "~/.ssh"])
 
+        #TODO maybe ask for passphrase
         #Generate the specific Multilauncher RSA key on the local computer
-        subprocess.call(["ssh-keygen", "-q", "-t", "rsa", "-N", "", "-f", "/home/"+user+"/.ssh/multikey"])
+        subprocess.call('echo -e "\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/multikey ', stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
 
         #Update the progress bar
         self.rsaProgressValue = 0
         self.rsaProgressBar.setValue(self.rsaProgressValue)
+
 
         #Loop that connects to the remote robots, changes the needed permissions, and pushes the public key
         for index in range(len(self.ipList)):

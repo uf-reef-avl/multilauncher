@@ -692,7 +692,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def rsaConfirm(self, value):
         self.RSA = value
         if value:
-            privateKeyFile = os.path.expanduser('$HOME/.ssh/multikey')
+            privateKeyFile = os.path.expanduser('~/.ssh/multikey')
             self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
 
 
@@ -733,10 +733,10 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 return True
 
             # RSA Key made through the application
-            elif os.path.exists(os.path.expanduser('$HOME/.ssh/multikey')):
-                privateKeyFile = os.path.expanduser('$HOME/.ssh/multikey')
+            elif os.path.exists(os.path.expanduser('~/.ssh/multikey')):
+                privateKeyFile = os.path.expanduser('~/.ssh/multikey')
                 self.myKey = paramiko.RSAKey.from_private_key_file(privateKeyFile)
-                self.rsaPath.setText('Current RSA Key Path: $HOME/.ssh/multikey')
+                self.rsaPath.setText('Current RSA Key Path: ~/.ssh/multikey')
                 self.RSA = True
                 self.rsacheckbox.setCheckState(QtCore.Qt.Checked)
                 return True
@@ -1388,7 +1388,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
             #Correcting the directory path
             if tempDirTest[1] == "home":
-                directoryPath = "$HOME/"
+                directoryPath = "~/"
                 lastPartDirectoryPath = tempDirectoryPath.split('/')[3:]
 
             else:
@@ -1658,7 +1658,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #If the Generate RSA Key button was not clicked and the RSA Checkbox is selected
         elif commandType != "genKey" and self.rsacheckbox.isChecked():
 
-            #If the proper RSA key is present on the user's machine at: $HOME/.ssh
+            #If the proper RSA key is present on the user's machine at: ~/.ssh
             if self.RSA:
 
                 #If the Launch Masters button was clicked
