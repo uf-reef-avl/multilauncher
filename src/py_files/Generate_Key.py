@@ -24,6 +24,7 @@ import Generate_Key_Design
 from PyQt5 import QtCore, QtWidgets
 import subprocess
 import os
+import getpass
 from Workers import GenKey_Worker
 
 
@@ -51,16 +52,16 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
         self.rsaProgressValue = 0
 
         #Connect every button to its correct slot
-        self.buttonGenerateKey.clicked.connect(self.generateKey)
+        self.buttonGenerateKey.clicked.connect(self.generateAndPushKey)
         self.buttonCancel.clicked.connect(self.quitWindow)
 
-        #Initialise the error string and list in order to know if some errors occur during the RSA generation process
+        #Initialise the error string and list in order to know if some errors occurred during the RSA generation process
         self.outPutString = ""
         self.error = [False] * len(self.ipList)
 
 
     #Launch the RSA key generation
-    def generateKey(self):
+    def generateAndPushKey(self):
         self.buttonCancel.setEnabled(False)
         self.buttonGenerateKey.setEnabled(False)
 
@@ -68,31 +69,62 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
         self.error = [False] * len(self.ipList)
 
         if not os.path.exists(os.path.expanduser("~/.ssh")):
-            subprocess.call(["mdkir", "-p", "~/.ssh"])
 
-        #TODO maybe ask for passphrase
-        #Generate the specific Multilauncher RSA key on the local computer
-        subprocess.call('echo -e "\n" | ssh-keygen -q -t rsa -N "" -f ~/.ssh/multikey ', stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+            subprocess.call(["mdkir", "-p", "/home/" + str(getpass.getuser()) + "/.ssh"])
 
-        #Update the progress bar
-        self.rsaProgressValue = 0
-        self.rsaProgressBar.setValue(self.rsaProgressValue)
+        if not os.path.exists(os.path.expanduser("~/.ssh/multikey")):
+
+            #Generate the specific Multilauncher RSA key on the local computer
+            subprocess.call('echo -e "\n" | ssh-keygen -q -t rsa -N "" -C multikey -f ~/.ssh/multikey', stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+
+        if os.path.exists(os.path.expanduser("~/.ssh/multikey")):
+
+            #Check to see if a multikey is already added to the ssh-agent
+            if not self.checkSSHAgent():
+                subprocess.call(["ssh-add", "/home/" + str(getpass.getuser()) + "/.ssh/multikey"], stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'))
+
+            #Update the progress bar
+            self.rsaProgressValue = 0
+            self.rsaProgressBar.setValue(self.rsaProgressValue)
+
+            #Loop that connects to the remote robots, occurs changes the needed permissions, and pushes the public key
+            for index in range(len(self.ipList)):
+
+                tempThread = QtCore.QThread()
+                tempThread.start()
+                worker = GenKey_Worker(self.ipList[index], self.userList[index], self.passwordList[self.ipList[index]])
+
+                #Create the worker
+                worker.finishThread.connect(self.killThread)
+                worker.moveToThread(tempThread)
+                worker.updateValue.connect(self.updateProgressbar)
+                worker.start.emit()
+                self.workerList[index] = worker
+                self.threadList[index] = tempThread
+
+        else:
+            self.error = [True]
+            self.outPutString += "There was an issue with creating the RSA key at: ~/.ssh/multikey\n"
+            self.quitWindow()
 
 
-        #Loop that connects to the remote robots, changes the needed permissions, and pushes the public key
-        for index in range(len(self.ipList)):
+    #Checks the ssh-agent to see if multikey is already added
+    def checkSSHAgent(self):
 
-            tempThread = QtCore.QThread()
-            tempThread.start()
-            worker = GenKey_Worker(self.ipList[index], self.userList[index], self.passwordList[self.ipList[index]])
+        process = subprocess.Popen(["ssh-add", "-L"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-            #Create the worker
-            worker.finishThread.connect(self.killThread)
-            worker.moveToThread(tempThread)
-            worker.updateValue.connect(self.updateProgressbar)
-            worker.start.emit()
-            self.workerList[index] = worker
-            self.threadList[index] = tempThread
+        result = process.communicate()
+
+        rFile = open("/home/" + str(getpass.getuser()) + "/.ssh/multikey.pub", "r")
+        listOfLines = rFile.readlines()
+        rFile.close()
+        listOfLines = listOfLines[0].splitlines()
+        pubKey = listOfLines[0]
+
+        if str(pubKey) + " multikey" in result[0]:
+            return True
+        else:
+            return False
 
 
     #Updates the progress bar for visual feedback
@@ -124,7 +156,7 @@ class Generate_Key(QtWidgets.QDialog, Generate_Key_Design.Ui_Dialog):
     #Check if there was at least one error during execution
     def checkError(self):
         for error in self.error:
-            if error is True:
+            if error:
                 return True
         return False
 

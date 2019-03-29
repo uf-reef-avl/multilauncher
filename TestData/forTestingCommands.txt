@@ -1,0 +1,7 @@
+#####
+TYPE: device
+
+#####
+TYPE: workstation
+cd catkin_ws
+catkin_make

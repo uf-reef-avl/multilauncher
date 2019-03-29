@@ -31,7 +31,6 @@ import subprocess
 import socket
 import getpass
 
-#logging.basicConfig(level=logging.DEBUG)
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
 
 NUM_OF_PINGS = 15
@@ -134,7 +133,6 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 
 		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
 			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
 				SSH_TIMEOUT) + " seconds"
 
@@ -181,7 +179,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			self.channel.send("mkdir " + str(packageName) + "; cd " + str(packageName) + "; git init; git remote add " +
 							  str(packageName) + " "+ self.gitRepoList[index] + "; git fetch " + str(packageName)+ " " + str(self.branchList[index]) +
-			 				  "; git checkout -b " + str(self.branchList[index]) + "; git pull " + str(packageName) + " " + str(self.branchList[index]) +'\n')
+							  "; git checkout -b " + str(self.branchList[index]) + "; git pull " + str(packageName) + " " + str(self.branchList[index]) +'\n')
 
 			#This result tells the program if the git pull operation was successful or not
 			flag = self.waitFinishCommand()
@@ -237,10 +235,9 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			try:
 
 				data = self.channel.recv(4096).decode("utf-8")
-				#print "Data:\n"+repr(data)+"\n"
 
 			except socket.timeout:
-				print "Checking: "+str(self.IP)
+
 				# Ping to see if the remote machine is still receiving
 				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
@@ -356,12 +353,12 @@ class Transfer_Local_File_Worker(QtCore.QObject):
 
 
 					if self.password is not None:
-						subprocess.check_output("sshpass -p \"" + str(self.password) + "\" rsync -r " + str(
+						subprocess.check_output("sshpass -p \"" + str(self.password) + "\" rsync -v -r " + str(
 							self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
 							self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
 					else:
 						subprocess.check_output(
-							"rsync -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
+							"rsync -v -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
 								self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
 
 
@@ -468,7 +465,6 @@ class Launch_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (ex: Firewall blocking the connection)"
 
 		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
 			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
 				SSH_TIMEOUT) + " seconds"
 
@@ -477,7 +473,6 @@ class Launch_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
 
 		#finish thread
-		print "Finishing: "+str(self.IP)
 		ssh.close()
 		self.finishThread.emit(self.ipIndex, self.finishMessage)
 
@@ -493,10 +488,9 @@ class Launch_Worker(QtCore.QObject):
 			try:
 
 				data = self.channel.recv(4096).decode("utf-8")
-				print "data:\n" + repr(data) + "\nEND\n"
 
 			except socket.timeout:
-				print "Checking: "+str(self.IP)
+
 				# Ping to see if the remote machine is still receiving
 				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
@@ -611,7 +605,6 @@ class ROSMASTER_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 
 		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
 			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
 				SSH_TIMEOUT) + " seconds"
 
@@ -637,7 +630,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 				data = self.channel.recv(4096).decode("utf-8")
 
 			except socket.timeout:
-				print "Checking: " + str(self.IP)
+
 				# Ping to see if the remote machine is still receiving
 				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
@@ -758,7 +751,6 @@ class Bashrc_Worker(QtCore.QObject):
 			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
 
 		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
 			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
 				SSH_TIMEOUT) + " seconds"
 
@@ -784,7 +776,7 @@ class Bashrc_Worker(QtCore.QObject):
 				data = self.channel.recv(4096).decode("utf-8")
 
 			except socket.timeout:
-				print "Checking: " + str(self.IP)
+
 				# Ping to see if the remote machine is still receiving
 				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
@@ -915,21 +907,20 @@ class GenKey_Worker(QtCore.QObject):
 
 			if self.checkForKey():
 
-				# Update the progress bar
+				#Update the progress bar
 				self.updateValue.emit(15)
 
-				#Changes the remote robot's .ssh directory permissions to the user remote user
-				#self.launchChmod()
-
 				#Pushes the public key to the remote robot
-				self.launchPushKey()
+				self.pushKey()
 
+			#If the public key is present of remote machine
+			if self.error is False:
+				self.finishMessage = "V - " + self.IP + ": RSA Public Key is set up"
+
+			#If an error occurs, append the error string to the finishMessage
 			else:
+				self.finishMessage = "X - " + self.IP + ": RSA Public Key is not set up, permissions to push the public key may be denied"
 
-				# Update the progress bar
-				self.updateValue.emit(40)
-
-				self.finishMessage = "V - " + self.IP + ": RSA Public Key already present on this machine"
 
 		except paramiko.ssh_exception.AuthenticationException:
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to password mismatch"
@@ -941,7 +932,6 @@ class GenKey_Worker(QtCore.QObject):
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to the remote host not having ssh installed or is unreachable (firewall)"
 
 		except Manual_Timeout_Exception:
-			print "Quiting: " + str(self.IP)
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " the remote host did not respond within " + str(SSH_TIMEOUT) + " seconds"
 
 		except:
@@ -964,7 +954,7 @@ class GenKey_Worker(QtCore.QObject):
 
 		self.channel.send("grep -c \""+ str(pubKey) +"\" ~/.ssh/authorized_keys \n")
 
-		# Update the progress bar
+		#Update the progress bar
 		self.updateValue.emit(15)
 
 		if self.waitFinishCheck():
@@ -985,7 +975,7 @@ class GenKey_Worker(QtCore.QObject):
 				result = data.split("\n")[-2]
 
 			except socket.timeout:
-				print "Checking: " + str(self.IP)
+
 				#Ping to see if the remote machine is still receiving
 				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
@@ -996,172 +986,31 @@ class GenKey_Worker(QtCore.QObject):
 				else:
 					raise Manual_Timeout_Exception
 
+			if "Permission denied" in data:
+				self.error = True
+				return True
+
+			#There is no /.ssh/ directory or a copy of the public key present on the remote machine
 			if "No such file or directory" in data or int(result) == 0:
 				return True
 
+			#One or more copies of the public key are present on the remote machine
 			elif int(result) >= 1:
 				return False
 
 
-	#TODO Might not be required
-	# #Changes the remote robot's directory permissions to be able to push a public key to the .ssh directory
-	# def launchChmod(self):
-    #
-	# 	# update the progress bar
-	# 	self.updateValue.emit(10)
-    #
-	# 	# ssh into the device #TODO check if this is needed
-	# 	self.channel.send("ssh " + str(self.user + "@" + str(self.IP + '\n')))
-	# 	self.waitFinishCommandChmod()
-    #
-	# 	# check if the ssh to the device worked properly
-	# 	if self.error is False:
-    #
-	# 		# if the ssh command worked then do the permissions modification to the file
-    #
-	# 		# update the progress bar
-	# 		self.updateValue.emit(12)
-    #
-	# 		# change the owner of ssh directory
-	# 		self.channel.send('sudo chown -R ' + str(self.user) + ' ~/.ssh/\n')
-	# 		self.waitFinishCommandChmod()
-    #
-	# 		# update the progress bar
-	# 		self.updateValue.emit(8)
-    #
-	# 		# change the owner of ssh directory
-	# 		self.channel.send('sudo chgrp -R ' + str(self.user) + ' ~/.ssh/\n')
-	# 		self.waitFinishCommandChmod()
-    #
-	# 		# update the progress bar
-	# 		self.updateValue.emit(10)
-    #
-	# 		# change the permission of the authorized key file
-	# 		self.channel.send('sudo chmod 700 ~/.ssh\n')
-	# 		self.waitFinishCommandChmod()
-    #
-	# 		# update the progress bar
-	# 		self.updateValue.emit(10)
-    #
-	# 		# change the permission of ssh directory
-	# 		self.channel.send('sudo chmod 600 ~/.ssh/authorized_keys\n')
-	# 		self.waitFinishCommandChmod()
-    #
-    #
-	# #Loops indefinitely until the Chmod commands have finished executing
-	# def waitFinishCommandChmod(self):
-	# 	while True:
-    #
-	# 		time.sleep(self.terminalRefreshSeconds)
-    #
-	# 		try:
-    #
-	# 			data = self.channel.recv(4096).decode("utf-8")
-	# 			print data
-    #
-	# 		except socket.timeout:
-	# 			print "Checking: " + str(self.IP)
-	# 			# Ping to see if the remote machine is still receiving
-	# 			response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
-    #
-	# 			# If the remote machine was pinged successfully
-	# 			if response == 0:
-	# 				continue
-    #
-	# 			else:
-	# 				raise Manual_Timeout_Exception
-    #
-	# 		#Check the possible different end of commands and adapt the behaviour
-	# 		if self.error is True:
-	# 			break
-    #
-	# 		#TODO assumption: sudo password is same as login password
-	# 		elif '[sudo]' in data:
-	# 			self.channel.send(self.password + "\n")
-	# 			self.waitFinishCommandChmod()
-	# 			break
-    #
-	# 		elif "continue connecting (yes/no)" in data:
-	# 			self.channel.send("yes\n")
-	# 			self.waitFinishCommandChmod()
-	# 			break
-    #
-	# 		elif "password:" in data:
-	# 			self.channel.send(self.password + "\n")
-	# 			self.waitFinishCommandChmod()
-	# 			break
-    #
-	# 		#If the password is wrong and the user cannot ssh to the device
-	# 		elif "Permission denied" in data:
-	# 			self.channel.send("\x03\n")
-	# 			self.error = True
-	# 			self.finishMessage = "X - " + self.IP + ": Wrong Password \n"
-	# 			break
-    #
-	# 		elif "passphrase for key" in data:
-	# 			self.channel.send("\n")
-	# 			self.waitFinishCommandChmod()
-	# 			break
-    #
-	# 		elif self.user+ "@" in data:
-	# 			break
-
-
 	#Pushes the public RSA key to the remote robots
-	def launchPushKey(self):
+	def pushKey(self):
 
 		#Push the new key to the remote machine
 		copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey.pub " + str(self.user + "@" + str(self.IP)))
-		subprocess.call(copy, shell=True)
+		subprocess.call(copy, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
 
 		#Update the progress bar
 		self.updateValue.emit(15)
 
-		#Wait for the end of the command and check for possible error such as the public key was not pushed because of invalid permissions
-		self.waitFinishCommandKey()
+		#Confirm that the public key is on the remote machine
+		self.checkForKey()
 
 		#Update the progress bar
 		self.updateValue.emit(15)
-
-		# If an error occurs, append the error string to the finishMessage
-		if self.error is False:
-			self.finishMessage = "V - " + self.IP + ": RSA Public Key set up"
-
-		else:
-			self.finishMessage = "X - " + self.IP + ": RSA Public Key not set up, permissions to push the public key may be denied"
-
-
-	#Loops indefinitely until the RSA key has been setup
-	def waitFinishCommandKey(self):
-		while not self.error:
-
-			time.sleep(self.terminalRefreshSeconds)
-			try:
-
-				data = self.channel.recv(4096).decode("utf-8")
-
-			except socket.timeout:
-				#Ping to see if the remote machine is still receiving
-				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
-
-				#If the remote machine was pinged successfully
-				if response == 0:
-
-					#If public key is present of remote machine
-					if not self.checkForKey():
-						break
-
-					else:
-						self.error = True
-						break
-				else:
-					raise Manual_Timeout_Exception
-
-			#Check the possible error during the process and append error message to the output string
-			if "Permission denied" in data:
-				self.channel.send("\x03\n")
-				self.error = True
-				break
-
-			elif self.user + "@" in data:
-				break

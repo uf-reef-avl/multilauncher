@@ -39,10 +39,6 @@ import datetime
 import re
 
 
-#Used to remove unhandled escape characters when presenting visual output from the terminal
-ansiEscape = re.compile(u'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
-
-
 #This class creates the Main Window of the application
 class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
@@ -858,7 +854,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         return True
 
 
-    #Flushes the tabbed command terminal in the Main Window
+    #Flushes/Clears the tabbed command terminal in the Main Window
     def flushCommand(self):
 
         #Reset the command terminal
@@ -1722,7 +1718,13 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 self.passwordWindow.show()
 
             else:
-                temp = QtWidgets.QMessageBox.warning(self, "Warning", "No valid and enabled robots to login to")
+
+                if commandType == "type":
+                    temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                         "No valid and enabled robots of type: \"" + self.tabCommands.tabText(
+                                                             self.tabCommands.currentIndex()) + "\" to login to")
+                else:
+                    temp = QtWidgets.QMessageBox.warning(self, "Warning", "No valid and enabled robots to login to")
 
 
     #Saves the entered passwords from the Password Window to the backend data structure
@@ -1825,7 +1827,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                                                                       self.myKey)
                                 elif passwordType == "rsa":
                                     worker = Transfer_Local_File_Worker(index, self.IPS[index], self.USERS[index],
-                                                                      threadPackageList, threadLocalFileList, None,self.myKey)
+                                                                      threadPackageList, threadLocalFileList, None, self.myKey)
 
                                 #Create the worker
                                 worker.terminalSignal.connect(self.writeInOwnedTerminal)
@@ -1892,8 +1894,15 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     if self.workerList != {}:
                         self.threadStillRunning = 'Launch files still running'
                         self.childLaunchWindow.show()
+
                     else:
-                        temp = QtWidgets.QMessageBox.warning(self, "Warning", "No valid and enabled robots to login to")
+                        if threadType == "commands":
+                            temp = QtWidgets.QMessageBox.warning(self, "Warning", "No valid and enabled robots to login to")
+
+                        elif threadType == "type":
+                            temp = QtWidgets.QMessageBox.warning(self, "Warning",
+                                                                 "No valid and enabled robots of type: \""+ self.tabCommands.tabText(self.tabCommands.currentIndex()) +"\" to login to")
+
 
                 #If the user is pinging the listed robots
                 elif threadType == "ping":
@@ -2179,25 +2188,22 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             start = 0
             stop = 0
 
-            #print repr(line)+"\n"
+            #print repr(line) + "\n"
+
+            line = self.escapeCharacters(line)
 
             #While not at the end of the current line
             while index < len(line):
 
                 #Find the next escape sequence (if one exists)
-                start = line.find("\x1B", start)
+                start = line.find("\x1b", start)
                 if start != -1 and line[start+1] == "[":
-
-                    #Hidden line escape sequence
-                    if line[start+2] == "K":
-                        stop = -1
-                    else:
-                        stop = line.find("m", start)
+                    stop = line.find("\x1b", start+1)
                 else:
                     stop = -1
 
-                #If the first escape sequence is not at the front of the line, add the text up to the first escape sequence
-                if index == 0 and (start != 0 and start != -1):
+                #If the escape sequence is not at the front of the line, add the text up to the escape sequence
+                if index == 0 and (start > 0):
                     cursor = term.textCursor()
                     cursor.insertText(line[:start])
                     term.moveCursor(QtGui.QTextCursor.End)
@@ -2206,31 +2212,37 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                 #If the escape sequence is special or if none exist in this line
                 result = self.lineCheck(start, stop, line[index:], term)
 
-                #Line has been handled, move to next line
                 if result == -1:
                     break
 
-                elif result == 0:
-
-                    #Adjust for saving the escape code
-                    start += 2
-                    stop += 1
+                #Adjust for saving the escape code
+                start += 1
 
                 escapeSequence = line[start:stop]
 
                 #print "Escape: " + repr(escapeSequence)
 
                 #Set the terminal's format based on the escape sequence
-                self.setFormat(escapeSequence, term)
+                formatted = self.setFormat(escapeSequence, term)
 
-                #Setup for the (potential) next escape sequence
+                if not formatted:
+
+                    #FIXME subbing correctly? Not yet.
+                    cursor = term.textCursor()
+                    cursor.insertText("UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop]))
+                    term.moveCursor(QtGui.QTextCursor.End)
+                    print "UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop])
+
+
+                #Setup for the (possible) next escape sequence
+                stop += 1
                 index = stop
                 start = stop
 
                 # Look for the next escape sequence if one exists
                 # Also used to find the length of the text that will be modified by the current terminal format if
                 # there are no more format escape sequences
-                stop = line.find("\x1B", start)
+                stop = line.find("\x1b", start)
 
                 #If there are not consecutive escape sequences
                 if start != stop:
@@ -2241,91 +2253,154 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     break
 
 
-    #Determines if the escape sequences in the current line are of a certain type
+    #Helper function to handle known escape characters
+    def escapeCharacters(self, line):
+
+        line = re.sub(r'\x1b\[K', "", line)
+        line = re.sub(r'\x1b\[A', "", line)
+        line = re.sub(r'\x1b\[B', "", line)
+        line = re.sub(r'\x1b\[C', "", line)
+        line = re.sub(r'\x1b\[D', "", line)
+        line = re.sub(r'\x1b\[s', "", line)
+        line = re.sub(r'\x1b\[u', "", line)
+
+        line = re.sub(r'\u2018', "\'", line)
+        line = re.sub(r'\u2019', "\'", line)
+
+        line = re.sub(r'\x1b\[m', "\x1b[m\x1b", line)
+        line = re.sub(r'\x1b\[0m', "\x1b[0m\x1b", line)
+        line = re.sub(r'\x1b\[1m', "\x1b[1m\x1b", line)
+        line = re.sub(r'\x1b\[01m', "\x1b[01m\x1b", line)
+        line = re.sub(r'\x1b\[4m', "\x1b[4m\x1b", line)
+
+        line = re.sub(r'\x1b\[30m', "\x1b[30m\x1b", line)
+        line = re.sub(r'\x1b\[0;30m', "\x1b[0m\x1b\x1b[30m\x1b", line)
+        line = re.sub(r'\x1b\[01;30m', "\x1b[01m\x1b\x1b[30m\x1b", line)
+
+        line = re.sub(r'\x1b\[31m', "\x1b[31m\x1b", line)
+        line = re.sub(r'\x1b\[0;31m', "\x1b[0m\x1b\x1b[31m\x1b", line)
+        line = re.sub(r'\x1b\[01;31m', "\x1b[01m\x1b\x1b[31m\x1b", line)
+
+        line = re.sub(r'\x1b\[32m', "\x1b[32m\x1b", line)
+        line = re.sub(r'\x1b\[0;32m', "\x1b[0m\x1b\x1b[32m\x1b", line)
+        line = re.sub(r'\x1b\[01;32m', "\x1b[01m\x1b\x1b[32m\x1b", line)
+
+        line = re.sub(r'\x1b\[33m', "\x1b[33m\x1b", line)
+        line = re.sub(r'\x1b\[0;33m', "\x1b[0m\x1b\x1b[33m\x1b", line)
+        line = re.sub(r'\x1b\[01;33m', "\x1b[01m\x1b\x1b[33m\x1b", line)
+
+        line = re.sub(r'\x1b\[34m', "\x1b[34m\x1b", line)
+        line = re.sub(r'\x1b\[0;34m', "\x1b[0m\x1b\x1b[34m\x1b", line)
+        line = re.sub(r'\x1b\[01;34m', "\x1b[01m\x1b\x1b[34m\x1b", line)
+
+        line = re.sub(r'\x1b\[35m', "\x1b[35m\x1b", line)
+        line = re.sub(r'\x1b\[0;35m', "\x1b[0m\x1b\x1b[35m\x1b", line)
+        line = re.sub(r'\x1b\[01;35m', "\x1b[01m\x1b\x1b[35m\x1b", line)
+
+        line = re.sub(r'\x1b\[36m', "\x1b[36m\x1b", line)
+        line = re.sub(r'\x1b\[0;36m', "\x1b[0m\x1b\x1b[36m\x1b", line)
+        line = re.sub(r'\x1b\[01;36m', "\x1b[01m\x1b\x1b[36m\x1b", line)
+
+        line = re.sub(r'\x1b\[37m', "\x1b[37m\x1b", line)
+        line = re.sub(r'\x1b\[0;37m', "\x1b[0m\x1b\x1b[37m\x1b", line)
+        line = re.sub(r'\x1b\[01;37m', "\x1b[01m\x1b\x1b[37m\x1b", line)
+
+
+        return line
+
+
+    #Determines if the escape sequences in the current line are not currently handled
     #Returns -1 if the line is processed here and 0 if the line needs to be examined by another function
     def lineCheck(self, start, stop, line, term):
 
         #No escape sequences found
         if start == -1 and stop == -1:
-
             cursor = term.textCursor()
             cursor.insertText(line)
             term.moveCursor(QtGui.QTextCursor.End)
             return -1
 
-        #If there is an escape sequence but not one that is based on font colors or bold escape sequences
-        elif stop == -1:
-
+        #If this line is to be hidden
+        if line[start + 1:start + 4] == ']2;':
             cursor = term.textCursor()
-
-            #This line is to be hidden
-            if line[start + 1:start + 4] == ']2;':
-                cursor.insertText("\n")
-                term.moveCursor(QtGui.QTextCursor.End)
-                return -1
-
-            #TODO [K\r thing here with return -1
-
-
-            #Some other escape sequence
-            else:
-                print str("line check: " + repr(line))
-                temp = ansiEscape.sub('', line[start:])
-                temp = self.specialCharacters(temp)
-                cursor.insertText(temp)
-                cursor.insertText("\n")
-                term.moveCursor(QtGui.QTextCursor.End)
-                return -1
+            cursor.insertText("\n")
+            term.moveCursor(QtGui.QTextCursor.End)
+            return -1
 
         return 0
 
 
-    #Helper function to remove certain types of escape characters not currently handled by the Multilauncher
-    def specialCharacters(self, data):
-
-        data = data.replace(r'\x1B[K\r', "")
-        data = data.replace(r'\x1B[K', "")
-        data = data.replace(r"\u2018","'")
-        data = data.replace(r"\u2019","'")
-
-        return data
-
-
-    #Sets the format of the current terminal for the current text sequence
+    #Sets the format of the current terminal for the current text sequence, returns true if the escape sequence is
+    # valid, returns false if the escape sequence is not a text format sequence
     def setFormat(self, escapeSequence, term):
 
         # Bold
-        if escapeSequence == "1m":
+        if escapeSequence == "[1m":
             term.setFontWeight(75)
+            return True
 
+        #TODO adjust color based on light (255) or dark (0) theme
         # Reset to Default
-        elif escapeSequence == "0m" or escapeSequence == "m":
-            term.setFontWeight(50)
+        elif escapeSequence == "[0m" or escapeSequence == "[m":
             term.setTextColor((QtGui.QColor(0, 0, 0)))
+            term.setFontUnderline(False)
+            term.setFontWeight(50)
+            return True
+
+        # Reset then bold
+        elif escapeSequence == "[01m":
+            term.setTextColor((QtGui.QColor(0, 0, 0)))
+            term.setFontUnderline(False)
+            term.setFontWeight(75)
+            return True
+
+        # Underline
+        elif escapeSequence == "[4m":
+            term.setFontUnderline(True)
+            return True
+
+        # Black
+        elif escapeSequence == "[30m":
+            term.setTextColor((QtGui.QColor(0, 0, 0)))
+            return True
 
         # Red
-        elif escapeSequence == "31m" or escapeSequence == "0;31m" or escapeSequence == "01;31m":
+        elif escapeSequence == "[31m":
             term.setTextColor((QtGui.QColor(175, 0, 0)))
+            return True
 
         # Green
-        elif escapeSequence == "32m" or escapeSequence == "0;32m" or escapeSequence == "01;32m":
+        elif escapeSequence == "[32m":
             term.setTextColor((QtGui.QColor(0, 175, 0)))
+            return True
 
         # Yellow
-        elif escapeSequence == "33m" or escapeSequence == "01;33m":
+        elif escapeSequence == "[33m":
             term.setTextColor((QtGui.QColor(175, 175, 0)))
+            return True
 
         # Blue
-        elif escapeSequence == "34m" or escapeSequence == "0;34m" or escapeSequence == "01;34m":
+        elif escapeSequence == "[34m":
             term.setTextColor((QtGui.QColor(0, 0, 175)))
+            return True
 
         # Magenta
-        elif escapeSequence == "35m" or escapeSequence == "0;35m" or escapeSequence == "01;35m":
+        elif escapeSequence == "[35m":
             term.setTextColor((QtGui.QColor(175, 0, 175)))
+            return True
 
         # Cyan
-        elif escapeSequence == "36m" or escapeSequence == "0;36m" or escapeSequence == "01;36m":
+        elif escapeSequence == "[36m":
             term.setTextColor((QtGui.QColor(0, 175, 175)))
+            return True
+
+        # White
+        elif escapeSequence == "[37m":
+            term.setTextColor((QtGui.QColor(255, 255, 255)))
+            return True
+
+
+        return False
 
 
     #Appends formatted text to the terminal

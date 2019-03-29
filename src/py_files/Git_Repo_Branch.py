@@ -77,7 +77,7 @@ class Git_Repo_Branch(QtWidgets.QDialog, Git_Repo_Branch_Design.Ui_Dialog):
     #Begin process of contacting remote repositories to determine the number of branches that exist for each repository
     def fetchBranches(self):
         repoList = []
-
+        #TODO revisit method of git branching
         #Add only checked repositories
         for index in range(self.repoTable.rowCount()):
             if self.repoTable.cellWidget(index, 0).checkState() == 2:

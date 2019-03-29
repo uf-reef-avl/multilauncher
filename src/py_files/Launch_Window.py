@@ -1,6 +1,6 @@
 #
 # File: Launch_Window.py
-# Author: Paul Buzaud and Matthew Hovatter
+# Author: Matthew Hovatter and Paul Buzaud
 #
 # Created: Summer 2018
 #
