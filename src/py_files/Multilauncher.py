@@ -2227,7 +2227,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
                 if not formatted:
 
-                    #FIXME subbing correctly? Not yet.
                     cursor = term.textCursor()
                     cursor.insertText("UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop]))
                     term.moveCursor(QtGui.QTextCursor.End)
@@ -2304,7 +2303,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         line = re.sub(r'\x1b\[37m', "\x1b[37m\x1b", line)
         line = re.sub(r'\x1b\[0;37m', "\x1b[0m\x1b\x1b[37m\x1b", line)
         line = re.sub(r'\x1b\[01;37m', "\x1b[01m\x1b\x1b[37m\x1b", line)
-
 
         return line
 

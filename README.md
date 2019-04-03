@@ -1,9 +1,9 @@
 **MULTILAUNCHER**
 =================
 
-A utility that facilitates connecting to multiple remote computers/robots,
-downloading remote repositories to those remote computers, and
-executing a series of commands simultaneously on remote machines
+The Multilauncher utility facilitates connecting to multiple remote machines,
+git clone/pulling multiple remote repositories, transferring local files, and
+executing a series of commands simultaneously across multiple remote machines.
 
 
 **Table of Contents**
@@ -63,11 +63,11 @@ executing a series of commands simultaneously on remote machines
 **Installation**
 ----------------
 
-1. If not already installed, install openssh-client on both the machine running this executable and the remote machines.
+1. If not already installed, install openssh-client on both the machine running the Multilauncher utility and the remote machines.
 
 2. Pull this repository to your local machine.
 
-3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/multilaunch/dist/.
+3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/
 
 
 <a name="Important Notes Before Running"/>
@@ -79,11 +79,6 @@ executing a series of commands simultaneously on remote machines
 
 -Check that port 11311 is allowed through the firewall on the ROSMASTER machine (if not type: sudo ufw allow 11311).
 
--If you intend to work with more than 10 computers go to the directory at "/etc/ssh/sshd_config" and
-	find/add the "MaxSessions" variable and set it equal to or greater than the number of computers to be used or
-	use the "Update MaxSessions" button from the Main Window.
-	A warning will popup if you add more than the "MaxSessions" number of computers to the list of robots.
-
 
 <a name="Running the Application"/>
 
@@ -92,43 +87,43 @@ executing a series of commands simultaneously on remote machines
 
 -Once the the Multilauncher is running, the Main Window will be displayed.
 
--A majority of the Multilauncher's functions will be deactivated until valid data is present in the Robot Table and
-	when the listed computers/robots have all been successfully pinged as denoted in the Connection Status column.
+-Some of Multilauncher's functions will be deactivated until valid data is present in the Robot Table and
+	when the listed computers/robots have all been successfully found/pinged as denoted in the Connection Status column.
 
 
 **File Browser/RoboData** <a name="File Browser/RobotData"/>
 
 
-**Adding Robots from a .csv File:** <a name="Adding Robots from a csv File"/>
+*Adding Robots from a .csv File:* <a name="Adding Robots from a csv File"/>
 
 -From the Main Window, click on the "Find Robotlist file" button and a FileDialog window will be displayed.
-    Navigate to your robotlist.csv file is located and click "Open".
+    Navigate to your (.csv) file is located and click "Open".
 	
 
-**Saving the Current List of Robots to a .csv File:** <a name="Saving the Current List of Robots to a csv File"/>
+*Saving the Current List of Robots to a .csv File:* <a name="Saving the Current List of Robots to a .csv File"/>
 
 -From the Main Window, click on the "Save Current Data to File" button and a FileDialog window will be displayed.
-    Navigate to where you want your .csv to reside, give the file a name, and click "Save".
+    Navigate to where you want your .csv to be saved, give the file a name, and click "Save".
 
 
-**Enabling and Disabling Listed Robots:** <a name="Enabling and Disabling Listed Robots"/>
+*Enabling and Disabling Listed Robots:* <a name="Enabling and Disabling Listed Robots"/>
 
--From the Main Window clicking on a checkbox listed in the robot table will alternate the checked status of a individual 
-    robot between checked (Enabled) and unchecked (Disabled)
+-From the Main Window clicking on a checkbox listed in the robot table's "Enabled" column will alternate the checked status of a individual 
+    robot between Enabled (checked) and Disabled (unchecked).
 
 -Clicking on the "Enable/Disable All" button will alternate all "Enabled" checkboxes listed in 
-    the robot table between checked (Enabled) and unchecked (Disabled)
+    the robot table between Enabled (checked) and Disabled (unchecked).
 
 
-**Adding/Removing Robots Manually:** <a name="Adding/Removing Robots Manually"/>
+*Adding/Removing Robots Manually:* <a name="Adding/Removing Robots Manually"/>
 
 -From the Main Window, click on the "Add/Edit/Remove Robots" button to bring up the EditRobot dialog window.
 
--Add a new robot: Type the robot's IP address into the first textfield under the "New/Selected: IP Address" label,
+-Add a new robot: `Type the robot's IP address into the first textfield under the "New/Selected: IP Address" label,
                   the robot's user/host name in the middle textfield under the "New/Selected: Robot Name" label, 
                   the robot's type/model in the last textfield under the "New/Selected: Robot Type" label, and
 			      finally click on the "Add Robot" button to add the new robot to the robot table.
-                  A message will appear next to the "result" label informing you if the operation was successful or how it might have failed.
+                  A message will appear next to the "result" label informing you if the operation was successful or how it might have failed.`
 
 -Modify a robot: Click on any of the intended robot's table entries to load the selected robot's data into the three "New/Selected" textfields under the table.
                  Retype the relevant values into textfields and click on the "Modify Robot" button to update the entry in the robot table.
@@ -147,14 +142,14 @@ executing a series of commands simultaneously on remote machines
 -Save the current list of robots in the robot table to the Main Window by clicking the "Save and Exit" button.
 
 
-**Updating the MaxSessions Variable:** <a name="Updating the MaxSessions Variable"/>
+*Updating the MaxSessions Variable:* <a name="Updating the MaxSessions Variable"/>
 
 -From the Main Window, clicking on the "Update MaxSessions" button will either bring up a information dialog when your
     combined number of enabled robots and their "ROSMASTER Settings" does not exceed the value set in the MaxSessions
     variable or prompt the user for root credentials through PolicyKit to perform file operations in the /etc/ssh/sshd_config file.
 
 
-**Adjusting Robot Arguments:** <a name="Adjusting Robot Arguments"/>
+*Adjusting Robot Arguments:* <a name="Adjusting Robot Arguments"/>
 
 -From the Main Window and after successfully pinging the listed robots, click on the "Adjust Arguments" button to open
     the Adjust Arguments dialog window.
@@ -173,7 +168,7 @@ executing a series of commands simultaneously on remote machines
 -Save the current list of robot arguments in the argument tree to the Main Window by clicking the "Save" button.
 
 
-**Pinging the Listed Robots:** <a name="Pinging the Listed Robots"/>
+*Pinging the Listed Robots:* <a name="Pinging the Listed Robots"/>
 
 -From the Main Window, click on the "Ping Robots" button to begin pinging the robots listed in the robot table.  
     
@@ -194,7 +189,7 @@ executing a series of commands simultaneously on remote machines
     Warning!: Closing the Launch Window before all threads have finished terminates the running threads.
 
 
-**Update ROSMASTER URI IP in the ~/.bashrc on the Remote Robots:** <a name="Update ROSMASTER URI IP in the bashrc on the Remote Robots"/>
+*Update ROSMASTER URI IP in the ~/.bashrc on the Remote Robots:* <a name="Update ROSMASTER URI IP in the bashrc on the Remote Robots"/>
 
 -From the Main Window and after successfully pinging the listed robots, click the "Update .bashrc" button.  
     This will either bring up the Password Window for processing passwords for each robot or if the "Use RSA Key" checkbox 

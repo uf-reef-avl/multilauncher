@@ -1,4 +1,4 @@
-RSA,$HOME/.ssh/multikey
+RSA,~/.ssh/multikey
 #####
 True,192.168.1.60,moa-nalo,device,$0/robotName:moa-nalo,No ROS Settings
 True,192.168.1.61,cassowary,device,$0/robotName:cassowary,No ROS Settings
@@ -9,4 +9,4 @@ False,192.168.1.65,auk,device,$0/robotName:auk,No ROS Settings
 False,192.168.1.66,takahe,device,$0/robotName:takahe,No ROS Settings
 False,192.168.1.67,kiwi,device,$0/robotName:kiwi,No ROS Settings
 False,192.168.1.68,emu,device,$0/robotName:emu,No ROS Settings
-True,192.168.1.118,matthewh,workstation,No Args,No ROS Settings
+False,192.168.1.118,matthewh,workstation,No Args,No ROS Settings
