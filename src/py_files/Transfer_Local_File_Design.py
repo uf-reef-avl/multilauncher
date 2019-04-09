@@ -49,7 +49,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "Transfer Local File Confirm"))
         item = self.fileTable.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "Destination"))
         item = self.fileTable.horizontalHeaderItem(1)

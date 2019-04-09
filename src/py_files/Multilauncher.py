@@ -695,7 +695,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Opens a dialog to allow the user to specify their preferred RSA Key
     def findRSA(self):
 
-        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your RSA Key")
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find Your RSA Key")
         try:
 
             # Test to see if the user selected a valid path or canceled
@@ -923,7 +923,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             tempMasterList = []
 
             # Open a dialog box where the user can select an existing file
-            filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your Robotlist file", filter="csv (*.csv *.)")
+            filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find Your Robotlist File", filter="csv (*.csv *.)")
 
             # Test to see if the user selected a valid path or canceled
             self.STRINGOFPATH = filePath[0]
@@ -1089,7 +1089,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         string = self.commandFileLabel.text()
         name = string[14:]
 
-        filePath = QtWidgets.QFileDialog.getSaveFileName(self,"Choose a name for your file", directory = name, filter = "txt (*.txt *.)")
+        filePath = QtWidgets.QFileDialog.getSaveFileName(self, "Choose a Name for Your File", directory = name, filter = "txt (*.txt *.)")
         try:
 
             #Test to see if the user selected a valid path or canceled
@@ -1126,7 +1126,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     def loadCommands(self):
 
         #Prompt the user for a file selection
-        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find your command file", filter = "txt (*.txt *.)")
+        filePath = QtWidgets.QFileDialog.getOpenFileName(self, "Find Your Command File", filter = "txt (*.txt *.)")
         try:
 
             #Test to see if the user selected a valid path or canceled
@@ -1187,7 +1187,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
         if self.windowTerminalCheck(window):
 
-            tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify where you want your log files.")
+            tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify Where You Want Your Log Files.")
             try:
 
                 # If the directory path exists
@@ -1332,7 +1332,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             tempGitRepoWidget = QtWidgets.QLineEdit()
             tempRobotTypeWidget = QtWidgets.QComboBox()
             tempMakeWidget = QtWidgets.QComboBox()
-            tempMakeWidget.addItems(["no make", "catkin_make", "catkin_build"])
+            tempMakeWidget.addItems(["No make", "catkin_make", "catkin build"])
             typeNames = []
 
             for typeName in self.TYPES:
@@ -2138,7 +2138,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
 
 
         except:
-            print "In debug except"
+            print ("In debug except")
             e = sys.exc_info()[0]
             self.killThread(ipKey,ipText + " SSH Error: An unhandled error has occurred: %s" % e)
 
@@ -2230,7 +2230,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                     cursor = term.textCursor()
                     cursor.insertText("UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop]))
                     term.moveCursor(QtGui.QTextCursor.End)
-                    print "UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop])
+                    print ("UNHANDLED ESCAPE SEQUENCE: " + repr(line[start:stop]))
 
 
                 #Setup for the (possible) next escape sequence

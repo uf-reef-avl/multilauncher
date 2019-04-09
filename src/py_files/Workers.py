@@ -1,4 +1,3 @@
-#!/usr/bin/python2.7
 #
 # File: Workers.py
 # Authors: Matthew Hovatter and Paul Buzaud
@@ -33,7 +32,7 @@ import getpass
 
 logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
 
-NUM_OF_PINGS = 15
+NUM_OF_PINGS = 30
 SSH_TIMEOUT = 10
 KEEPALIVE = 30
 
