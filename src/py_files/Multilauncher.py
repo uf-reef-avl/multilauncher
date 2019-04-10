@@ -815,7 +815,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.remoteRepositoryButton.setEnabled(available)
             self.bashrcbutton.setEnabled(available)
             self.argumentbutton.setEnabled(available)
-            self.rsacheckbox.setEnabled(available)
+            #self.rsacheckbox.setEnabled(available)
             self.spinpackage.setEnabled(available)
             self.lineUsername.setEnabled(available)
             self.linePassword.setEnabled(available)
