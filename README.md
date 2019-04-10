@@ -31,7 +31,7 @@ executing a series of commands simultaneously across multiple remote machines.
      
      7. [Pinging the Listed Robots](#Pinging the Listed Robots)
 
-     8. [Update ROS MASTER URI IP in the ~/.bashrc on the Remote Robots](#Update ROS MASTER URI IP in the bashrc on the Remote Robots)
+     8. [Update ROSMASTER URI IP in the ~/.bashrc on the Remote Robots](#Update ROSMASTER URI IP in the bashrc on the Remote Robots)
 
     B. [Git Repository](#Git Repository)
      
@@ -93,7 +93,7 @@ executing a series of commands simultaneously across multiple remote machines.
 	when the listed computers/robots have all been successfully found/pinged as denoted in the Connection Status column.
 
 
-**File Browser/RoboData** <a name="File Browser/RobotData"/>
+**File Browser/RoboData** <a name="File Browser/RoboData"/>
 
 
 **Adding Robots from a .csv File:** <a name="Adding Robots from a csv File"/>
@@ -102,7 +102,7 @@ executing a series of commands simultaneously across multiple remote machines.
     Navigate to your (.csv) file is located and click Open.
 	
 
-**Saving the Current List of Robots to a .csv File:** <a name="Saving the Current List of Robots to a .csv File"/>
+**Saving the Current List of Robots to a .csv File:** <a name="Saving the Current List of Robots to a csv File"/>
 
 - From the Main Window, click on the Save Current Data to File button and a FileDialog window will be displayed.
     Navigate to where you want your .csv to be saved, give the file a name, and click Save.
