@@ -33,7 +33,7 @@ executing a series of commands simultaneously across multiple remote machines.
 
      8. [Update ROSMASTER URI IP in the ~/.bashrc on the Remote Robots](#Update ROSMASTER URI IP in the bashrc on the Remote Robots)
 
-    B. [Git Repository](#Git Repository)
+    B. [Local File/Git Repository](#Local File/Git Repository)
      
      1. [Transferring Local Files](#Transferring Local Files)
      
@@ -205,7 +205,7 @@ executing a series of commands simultaneously across multiple remote machines.
     Warning!: Closing the Launch Window before all threads have finished terminates the running threads.
 
 
-**Git Repository** <a name="Git Repository"/>
+**Local File/Git Repository** <a name="Local File/Git Repository"/>
 
 
 **Transferring Local Files:** <a name="Transferring Local Files"/>
