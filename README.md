@@ -9,11 +9,13 @@ executing a series of commands simultaneously across multiple remote machines.
 **Table of Contents**
 ---------------------
 
-1. [Installation](#Installation)
+1. [Prerequisites](#Prerequisites)
 
-2. [Important Notes Before Running](#Important Notes Before Running)
+2. [Installation](#Installation)
 
-3. [Running the Application](#Running the Application)
+3. [Important Notes Before Running](#Important Notes Before Running)
+
+4. [Running the Application](#Running the Application)
 
     A. [File Browser/RoboData](#File Browser/RoboData)
         
@@ -55,9 +57,62 @@ executing a series of commands simultaneously across multiple remote machines.
     
     E. [Launching](#Launching)
 
-4. [Built With](#Built With)
+5. [Built With](#Built With)
 
-5. [Authors](#Authors)
+6. [Authors](#Authors)
+
+7. [Acknowledgements](#Acknowledgements)
+
+
+<a name="Prerequisites"/>
+
+**Prerequisites**
+-----------------
+
+- If you are missing any of these prerequisites type "sudo apt update" into the terminal to prepare for installing the
+    required software.
+
+- Git
+    
+    If not already installed, install git on the machine running the Multilauncher utility.
+    
+    Check for git by typing "git --version" into the terminal.
+    
+    If git is not present type "sudo apt install git".
+    
+    More information what git is and how it works can be found at [https://git-scm.com/docs].
+
+- openssh-server
+
+    If not already installed, install openssh-client on both the machine running the Multilauncher utility and the remote machines.
+    
+    Type "sudo apt install openssh-server" into the terminal to install openssh.
+
+    More information what openssh is and how it works can be found at [https://www.openssh.com/].
+    
+- pip / pip3
+
+    pip is required for Python 2 distributions while pip3 is required for Python 3 distributions.
+    
+    pip:
+    
+    Type "sudo apt install python-pip" into the terminal.
+    
+    Check the installation of pip with "pip --version".
+    
+    pip3:
+    
+    Type "sudo apt install python3-pip" into the terminal.
+    
+    Check the installation of pip3 with "pip3 --version".
+
+    More information on how to use pip or pip3 are found at [https://pip.pypa.io/en/stable/user_guide/].
+    
+- paramiko
+
+    Type "pip install paramiko" or "pip3 install paramiko" into the terminal.
+
+    More information what paramiko is and how it works can be found at [http://www.paramiko.org/index.html].
 
 
 <a name="Installation"/>
@@ -65,11 +120,11 @@ executing a series of commands simultaneously across multiple remote machines.
 **Installation**
 ----------------
 
-1. If not already installed, install openssh-client on both the machine running the Multilauncher utility and the remote machines.
+1. Pull this repository to your local machine.
 
-2. Pull this repository to your local machine.
+    git clone http://REEF180_SRV/AVL-Summer-18/multilauncher.git
 
-3. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilaunch/dist/
+2. Navigate to the repository and launch the Multilauncher executable at ~/path/to/directory/Multilauncher/dist/
 
 
 <a name="Important Notes Before Running"/>
@@ -79,7 +134,7 @@ executing a series of commands simultaneously across multiple remote machines.
 
 - Make sure all computers are on the same network.
 
-- Check that port 11311 is allowed through the firewall on the ROSMASTER machine (if not type: sudo ufw allow 11311).
+- Check that port 11311 is allowed through the firewall on ROSMASTER machines (if not type: sudo ufw allow 11311).
 
 
 <a name="Running the Application"/>
@@ -368,3 +423,11 @@ executing a series of commands simultaneously across multiple remote machines.
 - Matthew Hovatter: Co-Author
 
 - Paul Buzaud: Co-Author
+
+
+<a name="Acknowledgements"/>
+
+**Acknowledgements**
+--------------------
+
+- Paramiko

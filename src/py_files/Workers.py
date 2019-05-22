@@ -560,7 +560,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 		self.start.connect(self.run)
 
 
-	# This function connects to the remote robot and executes the user's list of commands
+	# This function connects to the remote robot and executes roscore command
 	@QtCore.pyqtSlot()
 	def run(self):
 

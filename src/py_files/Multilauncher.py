@@ -1740,7 +1740,7 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         else:
             self.launchThread(commandType, "password")
 
-
+    #TODO make all launching threads simultaneous
     #Create and launch one or more threads to do different commands
     def launchThread(self, threadType, passwordType):
         self.ERRORTEXT = ""
@@ -1901,7 +1901,6 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
                         elif threadType == "type":
                             temp = QtWidgets.QMessageBox.warning(self, "Warning",
                                                                  "No valid and enabled robots of type: \""+ self.tabCommands.tabText(self.tabCommands.currentIndex()) +"\" to login to")
-
 
                 #If the user is pinging the listed robots
                 elif threadType == "ping":
@@ -2589,7 +2588,8 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             self.childLaunchWindow.buttonStopThread.setEnabled(False)
             self.childLaunchWindow.lineDebugCommand.setEnabled(False)
             for workerKey in self.workerList.keys():
-                self.workerList[workerKey].stopSignal = True #FIXME KeyError when pressing terminated thread button too fast
+                if not self.workerList[workerKey].stopSignal:
+                    self.workerList[workerKey].stopSignal = True
 
                 #If not a ping thread
                 if self.threadStillRunning == 'git repository synchronisation still running' or self.threadStillRunning == 'bashrc still running' or self.threadStillRunning == 'Launch files still running':
