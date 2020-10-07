@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python3
 # File: Launch_Window.py
 # Author: Paul Buzaud and Matthew Hovatter
 #

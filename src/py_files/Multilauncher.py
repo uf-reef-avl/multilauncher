@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python3
 # File: Multilauncher.py
 # Authors: Paul Buzaud and Matthew Hovatter
 #

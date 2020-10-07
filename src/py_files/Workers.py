@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 #
 # File: Workers.py
 # Authors: Paul Buzaud and Matthew Hovatter
@@ -29,8 +29,6 @@ import logging
 import sys
 import subprocess
 import socket
-
-import Xlib.support.connect as xlib_connect
 
 
 #logging.basicConfig(level=logging.DEBUG)
