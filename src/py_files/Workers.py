@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 #
 # File: Workers.py
 # Authors: Matthew Hovatter and Paul Buzaud
@@ -30,11 +31,6 @@ import subprocess
 import socket
 import getpass
 
-logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
-
-NUM_OF_PINGS = 30
-SSH_TIMEOUT = 10
-KEEPALIVE = 30
 
 class Manual_Timeout_Exception(Exception):
 	"""Used to handle specific timeouts"""

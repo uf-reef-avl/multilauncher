@@ -1,6 +1,6 @@
-#
-# File: Generate_Key.py
-# Authors: Matthew Hovatter
+#!/usr/bin/python3
+# File: Main.py
+# Authors: Paul Buzaud and Matthew Hovatter
 #
 # Created: Summer 2018
 #

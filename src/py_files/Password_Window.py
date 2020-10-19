@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python3
 # File: Main.py
 # Authors: Paul Buzaud and Matthew Hovatter
 #

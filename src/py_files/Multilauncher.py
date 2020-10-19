@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python3
 # File: Multilauncher.py
 # Authors: Matthew Hovatter and Paul Buzaud
 #
@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from Adjust_Arguments import Adjust_Arguments
 from Password_Window import Password_Window
@@ -37,6 +36,8 @@ import subprocess
 import signal
 import datetime
 import re
+
+ansiEscape = (re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]'))
 
 
 #This class creates the Main Window of the application
@@ -1184,7 +1185,41 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
     #Saves the terminal output of the current window
     def saveTerminalOutput(self, window):
 
-        if self.windowTerminalCheck(window):
+        tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify where you want your log files.")
+        try:
+            # If the directory path exists
+            if tempDirectoryPath:
+                date = datetime.datetime.now()
+                date = date.strftime("[%Y_%m_%d]_[%H:%M]")
+
+                if window == "masters":
+                    date = "ROSMASTER_" + date
+                    tempDirectoryPath = tempDirectoryPath+"/"+date
+                    subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
+                    tempDirectoryPath = tempDirectoryPath+"/"+date
+                    print(tempDirectoryPath)
+                    for index , value in enumerate(self.masterTerminalList):
+
+                        rFile = open(tempDirectoryPath+"/"+value + ".txt", "w+")
+                        rFile.write("###############################################\n")
+                        string = self.masterTerminalList[value].toPlainText()
+                        rFile.write(string+"\n")
+                        rFile.close()
+
+                elif window == "launch":
+                    date = "Launch_" + date
+                    tempDirectoryPath = tempDirectoryPath + "/" + date
+                    subprocess.call("mkdir -p " + tempDirectoryPath, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'),shell=True)
+                    print (tempDirectoryPath)
+
+                    for index , value in enumerate(self.terminalList):
+                        filename = self.childLaunchWindow.tab_Launch.tabText(index)
+                        filename = filename[:(filename.index(" (Finished)"))]
+                        rFile = open(tempDirectoryPath+"/"+filename + ".txt", "w+")
+                        rFile.write("###############################################\n")
+                        string = self.terminalList[value].toPlainText()
+                        rFile.write(string+"\n")
+                        rFile.close()
 
             tempDirectoryPath = QtWidgets.QFileDialog.getExistingDirectory(self, "Specify Where You Want Your Log Files.")
             try:
@@ -2186,7 +2221,9 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
             start = 0
             stop = 0
 
-            #print repr(line) + "\n"
+        data = data.replace(r'\x1B[K\r', "")
+        data = data.replace(r'\x1B[K', "")
+        data = data.replace(r"\u2018","'").replace(r"\u2019","'")
 
             line = self.escapeCharacters(line)
 
@@ -2319,9 +2356,25 @@ class Multilauncher(QtWidgets.QMainWindow, MultilauncherDesign.Ui_MainWindow):
         #If this line is to be hidden
         if line[start + 1:start + 4] == ']2;':
             cursor = term.textCursor()
-            cursor.insertText("\n")
-            term.moveCursor(QtGui.QTextCursor.End)
-            return -1
+
+            #This line is to be hidden
+            if line[start + 1:start + 4] == ']2;':
+                cursor.insertText("\n")
+                term.moveCursor(QtGui.QTextCursor.End)
+                return -1
+
+
+
+
+            #Some other escape sequence
+            else:
+                print(repr(line))
+                temp = ansiEscape.sub('', line[start:])
+                temp = self.specialCharacters(temp)
+                cursor.insertText(temp)
+                cursor.insertText("\n")
+                term.moveCursor(QtGui.QTextCursor.End)
+                return -1
 
         return 0
 

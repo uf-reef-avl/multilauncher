@@ -1,4 +1,4 @@
-#
+#!/usr/bin/python3
 # File: Adjust_Arguments.py
 # Authors: Paul Buzaud and Matthew Hovatter
 #
