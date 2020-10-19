@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # File: Launch_Window.py
-# Author: Paul Buzaud and Matthew Hovatter
+# Author: Matthew Hovatter and Paul Buzaud
 #
 # Created: Summer 2018
 #
@@ -42,8 +42,10 @@ class Launch_Window(QtWidgets.QDialog, Launch_Window_Design.Ui_Dialog):
 		ipText = str(self.tab_Launch.tabText(index))
 		if " (Finished)" not in ipText:
 			self.lineDebugCommand.setEnabled(True)
+			self.stopCurrentThread.setEnabled(True)
 		else:
 			self.lineDebugCommand.setEnabled(False)
+			self.stopCurrentThread.setEnabled(False)
 
 
 	#Catches all attempts to close the window

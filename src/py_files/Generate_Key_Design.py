@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/home/matthewh/multilauncher/src/ui_files/Generate_Key_Design.ui'
+# Form implementation generated from reading ui file 'Generate_Key_Design.ui'
 #
 # Created by: PyQt5 UI code generator 5.5.1
 #
@@ -11,12 +11,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(704, 432)
+        Dialog.resize(971, 482)
         self.gridLayout_2 = QtWidgets.QGridLayout(Dialog)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
         self.instructionslabel = QtWidgets.QLabel(Dialog)
+        self.instructionslabel.setAlignment(QtCore.Qt.AlignCenter)
         self.instructionslabel.setObjectName("instructionslabel")
         self.verticalLayout.addWidget(self.instructionslabel)
         self.rsaProgressBar = QtWidgets.QProgressBar(Dialog)
@@ -46,8 +47,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Generate RSA Key"))
-        self.instructionslabel.setText(_translate("Dialog", "When generating the RSA Key the ownership of the ~/.ssh directory on the \n"
-" remote machine will be set to the remote user and the file permissions will be set to default"))
+        self.instructionslabel.setText(_translate("Dialog", "<html><head/><body><p align=\"center\">When generating a new RSA key the following occurs:</p><p align=\"center\">1. The &quot;~/.ssh&quot; directory, &quot;multikey&quot;, and &quot;multikey.pub&quot; RSA keys are created if not already present on the local machine.</p><p align=\"center\">2. The RSA keys are added to the local ssh-agent\'s keyring if not automatically added by the operating system.</p><p align=\"center\">3. The &quot;multikey.pub&quot; is added to the &quot;authorized_keys&quot; file on the remote machine(s) if the public key is not already present.</p></body></html>"))
         self.buttonCancel.setText(_translate("Dialog", "Cancel"))
         self.buttonGenerateKey.setText(_translate("Dialog", "Generate Key"))
 

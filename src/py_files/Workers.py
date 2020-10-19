@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #
 # File: Workers.py
-# Authors: Paul Buzaud and Matthew Hovatter
+# Authors: Matthew Hovatter and Paul Buzaud
 #
 # Created: Summer 2018
 #
@@ -29,12 +29,12 @@ import logging
 import sys
 import subprocess
 import socket
+import getpass
 
 
-#logging.basicConfig(level=logging.DEBUG)
-logging.getLogger('paramiko.transport').addHandler(logging.NullHandler())
+class Manual_Timeout_Exception(Exception):
+	"""Used to handle specific timeouts"""
 
-PING_TIMEOUT = 15
 
 #Creates and runs the SSH_Transfer_File_Worker class and its methods
 class SSH_Transfer_File_Worker(QtCore.QObject):
@@ -46,7 +46,7 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 
 	#Definition of a SSH_Transfer_File_Worker
-	def __init__(self, ipIndex, IP, user, parentPackageDirList, gitRepoList, gitUsername, gitPassword, makeOption, password, key):
+	def __init__(self, ipIndex, IP, user, parentPackageDirList, gitRepoList, gitUsername, gitPassword, makeOption, password, branches,key):
 		super(SSH_Transfer_File_Worker, self).__init__()
 		self.ipIndex = ipIndex
 		self.IP = IP
@@ -59,11 +59,14 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 		self.makeOption = makeOption
 		self.terminalRefreshSeconds = 0.75
 		self.stopSignal = False
-		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
 		self.skip = False
 		self.buffer = ""
+		self.branchList = branches
+		self.branchFlag = -1
+		self.start.connect(self.run)
+
 
 	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
 	@QtCore.pyqtSlot()
@@ -81,47 +84,56 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 			#Pull the selected directory and push it to the desired location on the remote robot, catkin operations optional
 			self.channel = ssh.invoke_shell()
-			for i in range(len(self.gitRepoList)):
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
+
+			for index in range(len(self.gitRepoList)):
 				if self.stopSignal:
 					break
 
-				self.prepPath(i)
+				self.prepPath(index)
 
-				self.prepRepo(i)
+				self.prepRepo(index)
 
 				#If there wasn't a problem with the retrieving data from the remote git repository
 				if not self.skip:
 
 					#catkin make option
-					if self.makeOption[i] == 1:
+					if self.makeOption[index] == 1:
 
-						self.prepCatkin(i)
+						self.prepCatkin(index)
 						self.channel.send('catkin_make\n')
 						self.waitFinishCommand()
 
 					#catkin build option
-					elif self.makeOption[i] == 2:
+					elif self.makeOption[index] == 2:
 
-						self.prepCatkin(i)
+						self.prepCatkin(index)
 						self.channel.send('catkin build\n')
 						self.waitFinishCommand()
 
 
 		except paramiko.ssh_exception.AuthenticationException:
+
 			if self.password:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to password mismatch"
+
 			elif self.password is None:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to missing RSA key"
 
 		except paramiko.ssh_exception.BadHostKeyException:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not being verified"
 
 		except paramiko.ssh_exception.NoValidConnectionsError:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
+
+		except Manual_Timeout_Exception:
+			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
+				SSH_TIMEOUT) + " seconds"
 
 		except:
 			e = sys.exc_info()[0]
-			print("GitRepo Error: %s" % e)
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
 
 		#finish thread
 		ssh.close()
@@ -129,61 +141,74 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 
 
 	#Corrects some incorrect user input and/or appends a src directory to hold the local repository
-	def prepPath(self, i):
+	def prepPath(self, index):
 
-		tempList = self.parentPackageDirList[i].split('/')
+		tempList = self.parentPackageDirList[index].split('/')
 		if tempList[-1] != '':
-			self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "/")
+			self.parentPackageDirList[index] = str(self.parentPackageDirList[index] + "/")
 
 		#If a catkin option was selected for this repo
-		if self.makeOption[i] != 0:
+		if self.makeOption[index] != 0:
 			if "src" not in tempList:
-				self.parentPackageDirList[i] = str(self.parentPackageDirList[i] + "src/")
+				self.parentPackageDirList[index] = str(self.parentPackageDirList[index] + "src/")
 
 
 	#Sets up a new local repo or overrides the local existing repo with the remote one
-	def prepRepo(self,i):
-
-		self.channel.send('mkdir -p ' + self.parentPackageDirList[i] + '\n')
+	def prepRepo(self,index):
+		self.channel.send('mkdir -p ' + self.parentPackageDirList[index] + '\n')
 		self.waitFinishCommand()
-		self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+		self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 		self.waitFinishCommand()
 
-		packageName = self.gitRepoList[i].split('/')[-1]
+		packageName = self.gitRepoList[index].split('/')[-1]
 		if ".git" in packageName:
 			packageName = packageName[:-4]
 
-		self.channel.send('cd ' + packageName + '\n')
+		self.channel.send('cd ' + packageName + '/.git\n')
+
+		#This result tells the program if the desired repository is already present on the remote machine or not
 		flag = self.waitFinishCommand()
 
-		# New local repo
+		#New local repo
 		if flag == "no file":
-			self.channel.send('git clone ' + self.gitRepoList[i] + '\n')
+
+			self.channel.send("mkdir " + str(packageName) + "; cd " + str(packageName) + "; git init; git remote add " +
+							  str(packageName) + " "+ self.gitRepoList[index] + "; git fetch " + str(packageName)+ " " + str(self.branchList[index]) +
+							  "; git checkout -b " + str(self.branchList[index]) + "; git pull " + str(packageName) + " " + str(self.branchList[index]) +'\n')
+
+			#This result tells the program if the git pull operation was successful or not
 			flag = self.waitFinishCommand()
 
-			# Successful git clone
-			if flag == "done":
-				self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+			#Successful git clone
+			if flag == "done" or flag == "HEAD":
+				self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 				self.waitFinishCommand()
 			else:
 				self.skip = True
 
-		# Existing local repo
+		#Existing repository on remote machine
 		else:
-			self.channel.send('git stash\n')
+
+			self.channel.send('cd ..; git stash\n')
 			self.waitFinishCommand()
 
-			self.channel.send('git pull\n')
+			self.branchFlag = index
+			self.channel.send("git branch\n")
+
+			#This result tells the program which version of "git checkout" to use
+			flag = self.waitFinishCommand()
+
+			self.channel.send("git " + str(flag) + " " + str(self.branchList[index]) + "; git pull " + str(self.gitRepoList[index]) + " "+str(self.branchList[index]) + "\n")
 			self.waitFinishCommand()
 
-			self.channel.send('cd ' + self.parentPackageDirList[i] + '\n')
+			self.channel.send('cd ' + self.parentPackageDirList[index] + '\n')
 			self.waitFinishCommand()
 
 
 	#Sets up for catkin make or build
-	def prepCatkin(self, i):
+	def prepCatkin(self, index):
 
-		tempList = self.parentPackageDirList[i].split('/')
+		tempList = self.parentPackageDirList[index].split('/')
 		index = tempList.index("src")
 		toSrc = tempList[:index]
 		path = ""
@@ -201,7 +226,22 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 				break
 
 			time.sleep(self.terminalRefreshSeconds)
-			data = self.channel.recv(1024).decode("utf-8")
+
+			try:
+
+				data = self.channel.recv(4096).decode("utf-8")
+
+			except socket.timeout:
+
+				# Ping to see if the remote machine is still receiving
+				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
+
+				# If the remote machine was pinged successfully
+				if response == 0:
+					continue
+
+				else:
+					raise Manual_Timeout_Exception
 
 			splitData = data.split("\n")
 			splitData[0] = self.buffer + splitData[0]
@@ -223,18 +263,131 @@ class SSH_Transfer_File_Worker(QtCore.QObject):
 			elif 'Password for ' in data:
 				self.channel.send(self.gitPassword + '\n')
 
+			elif self.branchFlag != -1:
+				if str(self.branchList[self.branchFlag]) in data:
+					self.branchFlag = -1
+					return "checkout"
+				else:
+					self.branchFlag = -1
+					return "checkout -b"
+
 			elif "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
-				self.waitFinishCommand()
 
-			if "No such file or directory" in data:
+			elif "No such file or directory" in data:
 				return "no file"
 
 			elif "Checking connectivity... done" in data:
 				return "done"
 
-			if self.user + "@" in data:
+			elif "FETCH_HEAD" in data:
+				return "HEAD"
+
+			elif self.user + "@" in data:
 				break
+
+
+#Creates and runs the Transfer_Local_File_Worker class and its methods
+class Transfer_Local_File_Worker(QtCore.QObject):
+
+	#Variables for emitting starting, displaying status, and closing signals
+	start = QtCore.pyqtSignal()
+	terminalSignal = QtCore.pyqtSignal(int, list)
+	finishThread = QtCore.pyqtSignal(int,str)
+
+
+	#Definition of a SSH_Transfer_File_Worker
+	def __init__(self, ipIndex, IP, user, parentPackageDirList, localList, password, key):
+		super(Transfer_Local_File_Worker, self).__init__()
+		self.ipIndex = ipIndex
+		self.IP = IP
+		self.user = user
+		self.password = password
+		self.parentPackageDirList = parentPackageDirList
+		self.localList = localList
+		self.terminalRefreshSeconds = 0.75
+		self.stopSignal = False
+		self.myKey = key
+		self.finishMessage = ""
+		self.buffer = ""
+		self.start.connect(self.run)
+
+
+	#This function connects to the remote robot and performs a git pull operation on the selected remote repository
+	@QtCore.pyqtSlot()
+	def run(self):
+
+		ssh = paramiko.SSHClient()
+
+		#Creating a password or rsa key based ssh connection
+		try:
+			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+			if self.password is not None:
+				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False, look_for_keys=False)
+			else:
+				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
+
+			#Pull the selected directory and push it to the desired location on the remote robot
+			self.channel = ssh.invoke_shell()
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
+
+			for index in range(len(self.localList)):
+				if self.stopSignal:
+					break
+
+				string = []
+
+				try:
+
+					# FIXME rsync problem: can't find directory when not shelled
+					# if self.password is not None:
+					# 	subprocess.check_output(["sshpass", "-p", str(self.password), "rsync", "-r", str(self.localList[index]), self.user+"@"+self.IP+":"+str(self.parentPackageDirList[index])])
+					# else:
+					# 	subprocess.check_output(["rsync", "-r", str(self.localList[index]), self.user+"@"+self.IP+":"+str(self.parentPackageDirList[index])])
+
+
+					if self.password is not None:
+						subprocess.check_output("sshpass -p \"" + str(self.password) + "\" rsync -v -r " + str(
+							self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
+							self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
+					else:
+						subprocess.check_output(
+							"rsync -v -r " + str(self.localList[index]) + " " + self.user + "@" + self.IP + ":" + str(
+								self.parentPackageDirList[index]), stderr=subprocess.STDOUT, shell=True)
+
+
+					string.append("Successfully transferred: " + str(self.localList[index]) + "\nto destination: " + str(self.parentPackageDirList[index]) + "\n\n")
+					self.terminalSignal.emit(self.ipIndex, string)
+
+				except subprocess.CalledProcessError as exc:
+					string.append("Error when transferring: "+str(self.localList[index])+" "+str(exc.output)+"\n")
+					self.terminalSignal.emit(self.ipIndex, string)
+
+		except paramiko.ssh_exception.AuthenticationException:
+
+			ssh.close()
+			if self.password:
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to password mismatch"
+
+			elif self.password is None:
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to missing RSA key"
+
+		except paramiko.ssh_exception.BadHostKeyException:
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not being verified"
+			ssh.close()
+
+		except paramiko.ssh_exception.NoValidConnectionsError:
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
+			ssh.close()
+
+		except:
+			e = sys.exc_info()
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % str(e)
+		ssh.close()
+
+		#Closing the thread
+		self.finishThread.emit(self.ipIndex, self.finishMessage)
 
 
 #Creates and runs the Launch_Worker class and its methods
@@ -244,7 +397,6 @@ class Launch_Worker(QtCore.QObject):
 	start = QtCore.pyqtSignal()
 	terminalSignal = QtCore.pyqtSignal(int, list)
 	finishThread = QtCore.pyqtSignal(int,str)
-
 
 	#Definition of a Launch_Worker
 	def __init__(self, ipIndex, IP, user, commandList, password, key):
@@ -256,11 +408,11 @@ class Launch_Worker(QtCore.QObject):
 		self.commandList = commandList
 		self.terminalRefreshSeconds = 0.75
 		self.stopSignal = False
-		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
 		self.buffer = ""
-		self.x11 = False
+		self.start.connect(self.run)
+
 
 	#This function connects to the remote robot and executes the user's list of commands
 	@QtCore.pyqtSlot()
@@ -273,48 +425,47 @@ class Launch_Worker(QtCore.QObject):
 
 			ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 			if self.password is not None:
-				ssh.connect(self.IP, 22, username=self.user, password=self.password, allow_agent=False, look_for_keys=False)
+				ssh.connect(self.IP, 22, username = self.user, password = self.password, allow_agent = False, look_for_keys = False)
 			else:
-				ssh.connect(self.IP, 22, username=self.user, pkey = self.myKey)
+				ssh.connect(self.IP, 22, username = self.user, pkey = self.myKey)
+
+			self.channel = ssh.invoke_shell()
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
 
 			#Execute the list of commands
-			self.channel = ssh.invoke_shell()
-
-			# local_x11_display = xlib_connect.get_display(os.environ['DISPLAY'])
-			# local_x11_socket = xlib_connect.get_socket(*local_x11_display[:3])
-
-			# transport = ssh.get_transport()
-			# session = transport.open_session()
-            #
-			# session.request_x11()
-			# self.channel = transport.accept()
-
 			for i in self.commandList:
 				if self.stopSignal:
 					break
 				self.channel.send(str(i)+ '\n')
 				self.waitFinishCommand()
 
+			#Allows the user to send additional commands like a terminal until closed
 			while True:
 				if self.stopSignal:
 					break
 				self.waitFinishCommand()
 
-
 		except paramiko.ssh_exception.AuthenticationException:
 			if self.password:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to password mismatch"
+
 			elif self.password is None:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to missing RSA key"
 
 		except paramiko.ssh_exception.BadHostKeyException:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not being verified"
 
 		except paramiko.ssh_exception.NoValidConnectionsError:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (ex: Firewall blocking the connection)"
+
+		except Manual_Timeout_Exception:
+			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
+				SSH_TIMEOUT) + " seconds"
 
 		except:
-			True
+			e = sys.exc_info()[0]
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
 
 		#finish thread
 		ssh.close()
@@ -326,8 +477,24 @@ class Launch_Worker(QtCore.QObject):
 		while True:
 			if self.stopSignal:
 				break
+
 			time.sleep(self.terminalRefreshSeconds)
-			data = self.channel.recv(1024).decode("utf-8")
+
+			try:
+
+				data = self.channel.recv(4096).decode("utf-8")
+
+			except socket.timeout:
+
+				# Ping to see if the remote machine is still receiving
+				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
+
+				# If the remote machine was pinged successfully
+				if response == 0:
+					continue
+
+				else:
+					raise Manual_Timeout_Exception
 
 			splitData = data.split("\n")
 			splitData[0] = self.buffer + splitData[0]
@@ -383,13 +550,13 @@ class ROSMASTER_Worker(QtCore.QObject):
 		self.password = password
 		self.terminalRefreshSeconds = 0.75
 		self.stopSignal = False
-		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
 		self.buffer = ""
+		self.start.connect(self.run)
 
 
-	# This function connects to the remote robot and executes the user's list of commands
+	# This function connects to the remote robot and executes roscore command
 	@QtCore.pyqtSlot()
 	def run(self):
 
@@ -406,6 +573,9 @@ class ROSMASTER_Worker(QtCore.QObject):
 
 			#Execute the roscore command
 			self.channel = ssh.invoke_shell()
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
+
 			self.channel.send('roscore\n')
 			self.waitFinishCommand()
 
@@ -415,18 +585,27 @@ class ROSMASTER_Worker(QtCore.QObject):
 				self.waitFinishCommand()
 
 
-
 		except paramiko.ssh_exception.AuthenticationException:
+
 			if self.password:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to password mismatch"
+
 			elif self.password is None:
-				self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to missing RSA key"
 
 		except paramiko.ssh_exception.BadHostKeyException:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not being verified"
 
 		except paramiko.ssh_exception.NoValidConnectionsError:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
+
+		except Manual_Timeout_Exception:
+			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
+				SSH_TIMEOUT) + " seconds"
+
+		except:
+			e = sys.exc_info()[0]
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
 
 		#finish thread
 		ssh.close()
@@ -440,7 +619,22 @@ class ROSMASTER_Worker(QtCore.QObject):
 				break
 
 			time.sleep(self.terminalRefreshSeconds)
-			data = self.channel.recv(1024).decode("utf-8")
+
+			try:
+
+				data = self.channel.recv(4096).decode("utf-8")
+
+			except socket.timeout:
+
+				# Ping to see if the remote machine is still receiving
+				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
+
+				# If the remote machine was pinged successfully
+				if response == 0:
+					continue
+
+				else:
+					raise Manual_Timeout_Exception
 
 			splitData = data.split("\n")
 			splitData[0] = self.buffer + splitData[0]
@@ -451,6 +645,7 @@ class ROSMASTER_Worker(QtCore.QObject):
 					self.buffer = buffed
 				else:
 					self.buffer = ""
+
 			else:
 				self.buffer = ""
 
@@ -499,10 +694,11 @@ class Bashrc_Worker(QtCore.QObject):
 		self.masterIP = masterIP
 		self.terminalRefreshSeconds = 0.75
 		self.stopSignal = False
-		self.start.connect(self.run)
 		self.myKey = key
 		self.finishMessage = ""
 		self.buffer = ""
+		self.start.connect(self.run)
+
 
 	#This function connects to the remote robot and updates their .bashrc file
 	@QtCore.pyqtSlot()
@@ -520,6 +716,9 @@ class Bashrc_Worker(QtCore.QObject):
 
 			#Start sending the commands to update the remote robot's .bashrc
 			self.channel = ssh.invoke_shell()
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
+
 			self.channel.send('sed -i -E "/export ROS_MASTER_URI=http:\/\/[A-Za-z0-9.]+:11311/d" ~/.bashrc\n')
 			self.waitFinishCommand()
 			self.channel.send('sed -i -E "/export ROS_HOSTNAME=[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/d" ~/.bashrc\n')
@@ -531,17 +730,28 @@ class Bashrc_Worker(QtCore.QObject):
 			self.channel.send(' echo export ROS_MASTER_URI=http://' + self.masterIP + ':11311 >> ~/.bashrc\n')
 			self.waitFinishCommand()
 
+
 		except paramiko.ssh_exception.AuthenticationException:
+
 			if self.password:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to password mismatch"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to password mismatch"
+
 			elif self.password is None:
-				self.finishMessage = self.IP+" SSH Error: Attempt to talk to robot failed due to missing RSA key on remote robot"
+				self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to missing RSA key"
 
 		except paramiko.ssh_exception.BadHostKeyException:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not being verified"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not being verified"
 
 		except paramiko.ssh_exception.NoValidConnectionsError:
-			self.finishMessage = self.IP + " SSH Error: Attempt to talk to robot failed due to remote host not having ssh installed or is unreachable (firewall)"
+			self.finishMessage = self.IP + " SSH Error: Attempt to ssh to remote host failed due to the remote host not having ssh installed or is unreachable (firewall)"
+
+		except Manual_Timeout_Exception:
+			self.finishMessage = self.IP + " Error: Connection to the remote host has been lost due to the remote host not responding within " + str(
+				SSH_TIMEOUT) + " seconds"
+
+		except:
+			e = sys.exc_info()[0]
+			self.finishMessage = self.IP + " SSH Error: An unhandled error has occurred: %s" % e
 
 		#finish thread
 		ssh.close()
@@ -553,8 +763,24 @@ class Bashrc_Worker(QtCore.QObject):
 		while True:
 			if self.stopSignal:
 				break
+
 			time.sleep(self.terminalRefreshSeconds)
-			data = self.channel.recv(1024).decode("utf-8")
+
+			try:
+
+				data = self.channel.recv(4096).decode("utf-8")
+
+			except socket.timeout:
+
+				# Ping to see if the remote machine is still receiving
+				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
+
+				# If the remote machine was pinged successfully
+				if response == 0:
+					continue
+
+				else:
+					raise Manual_Timeout_Exception
 
 			splitData = data.split("\n")
 			splitData[0] = self.buffer + splitData[0]
@@ -573,6 +799,7 @@ class Bashrc_Worker(QtCore.QObject):
 			if "continue connecting (yes/no)" in data:
 				self.channel.send("yes\n")
 				self.waitFinishCommand()
+
 			elif self.user + "@" in data:
 				break
 
@@ -591,10 +818,10 @@ class Ping_Worker(QtCore.QObject):
 		super(Ping_Worker, self).__init__()
 		self.ipIndex = ipIndex
 		self.IP = IP
-		self.start.connect(self.run)
 		self.stopSignal = False
 		self.responseString = ""
 		self.errorString = ""
+		self.start.connect(self.run)
 
 
 	#This function pings the robot
@@ -602,14 +829,14 @@ class Ping_Worker(QtCore.QObject):
 	def run(self):
 
 		#Ping until you reach the set maximum number of pings
-		for x in range(PING_TIMEOUT):
+		for x in range(NUM_OF_PINGS):
 
 			#If the user has pressed the stop unfinished threads button
 			if self.stopSignal:
 				break
 
 			#The actual ping message sent and the response back
-			response = os.system("ping -c1 " + self.IP + " 2>&1 >/dev/null")
+			response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
 			#If the robot was pinged successfully and found
 			if response == 0:
@@ -652,10 +879,10 @@ class GenKey_Worker(QtCore.QObject):
 		self.IP = IP
 		self.user = user
 		self.password = password
-		self.start.connect(self.run)
 		self.finishMessage = ""
 		self.error = False
-		self.sleepTime = 1
+		self.terminalRefreshSeconds = 0.75
+		self.start.connect(self.run)
 
 
 	#This function connects to the remote robot and pushes the new RSA key
@@ -670,13 +897,25 @@ class GenKey_Worker(QtCore.QObject):
 
 			#Create the shell for the current index
 			self.channel = self.ssh.invoke_shell()
-			self.channel.settimeout(1.0)
+			self.channel.get_transport().set_keepalive(KEEPALIVE)
+			self.channel.settimeout(SSH_TIMEOUT)
 
-			#Changes the remote robot's .ssh directory permissions to the user remote user
-			self.launchChmod()
+			if self.checkForKey():
 
-			#Pushes the public key to the remote robot
-			self.launchPushKey()
+				#Update the progress bar
+				self.updateValue.emit(15)
+
+				#Pushes the public key to the remote robot
+				self.pushKey()
+
+			#If the public key is present of remote machine
+			if self.error is False:
+				self.finishMessage = "V - " + self.IP + ": RSA Public Key is set up"
+
+			#If an error occurs, append the error string to the finishMessage
+			else:
+				self.finishMessage = "X - " + self.IP + ": RSA Public Key is not set up, permissions to push the public key may be denied"
+
 
 		except paramiko.ssh_exception.AuthenticationException:
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to password mismatch"
@@ -687,164 +926,86 @@ class GenKey_Worker(QtCore.QObject):
 		except paramiko.ssh_exception.NoValidConnectionsError:
 			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to the remote host not having ssh installed or is unreachable (firewall)"
 
+		except Manual_Timeout_Exception:
+			self.finishMessage = "X - Error in connecting to: " + self.IP + " the remote host did not respond within " + str(SSH_TIMEOUT) + " seconds"
+
+		except:
+			e = sys.exc_info()
+			self.finishMessage = "X - Error in connecting to: " + self.IP + " due to an unhandled error: %s" % e
+
 		#Finish thread
 		self.ssh.close()
 		self.finishThread.emit(self.IP, self.finishMessage, self.error)
 
 
-	#Changes the remote robot's directory permissions to be able to push a public key to the .ssh directory
-	def launchChmod(self):
+	#Checks the remote machine to see if the public key is already present on the remote machine
+	def checkForKey(self):
 
-		# update the progress bar
-		self.updateValue.emit(10)
+		rFile = open("/home/" + str(getpass.getuser()) + "/.ssh/multikey.pub", "r")
+		listOfLines = rFile.readlines()
+		rFile.close()
+		listOfLines = listOfLines[0].splitlines()
+		pubKey = listOfLines[0]
 
-		# ssh into the device
-		self.channel.send("ssh " + str(self.user + "@" + str(self.IP + '\n')))
-		self.waitFinishCommandChmod()
+		self.channel.send("grep -c \""+ str(pubKey) +"\" ~/.ssh/authorized_keys \n")
 
-		# check if the ssh to the device worked properly
-		if self.error is False:
-			# if the ssh command worked then do the permissions modification to the file
+		#Update the progress bar
+		self.updateValue.emit(15)
 
-			# update the progress bar
-			self.updateValue.emit(12)
-
-			# change the owner of ssh directory
-			self.channel.send('sudo chown -R ' + str(self.user) + ' ~/.ssh/\n')
-			self.waitFinishCommandChmod()
-
-			# update the progress bar
-			self.updateValue.emit(8)
-
-			# change the owner of ssh directory
-			self.channel.send('sudo chgrp -R ' + str(self.user) + ' ~/.ssh/\n')
-			self.waitFinishCommandChmod()
-
-			# update the progress bar
-			self.updateValue.emit(10)
-
-			# change the permission of the authorized key file
-			self.channel.send('sudo chmod 700 ~/.ssh\n')
-			self.waitFinishCommandChmod()
-
-			# update the progress bar
-			self.updateValue.emit(10)
-
-			# change the permission of ssh directory
-			self.channel.send('sudo chmod 600 ~/.ssh/authorized_keys\n')
-			self.waitFinishCommandChmod()
+		if self.waitFinishCheck():
+			return True
+		else:
+			return False
 
 
-	#Loops indefinitely until the Chmod commands have finished executing or if the user has interrupted the current shell
-	def waitFinishCommandChmod(self):
+	#Loops indefinitely until the checking commands have finished executing
+	def waitFinishCheck(self):
 		while True:
 
-			#Wait a little bit
-			time.sleep(self.sleepTime)
+			time.sleep(self.terminalRefreshSeconds)
 
-			#Retrieve the data from the shell
-			data = str(self.channel.recv(1024).decode("utf-8"))
+			try:
 
-			#Check the possible different end of commands and adapt the behaviour
-			if self.error is True:
-				break
+				data = self.channel.recv(4096).decode("utf-8")
+				result = data.split("\n")[-2]
 
-			elif '[sudo]' in data:
-				self.channel.send(self.password + "\n")
-				self.waitFinishCommandChmod()
-				break
+			except socket.timeout:
 
-			elif "continue connecting (yes/no)" in data:
-				self.channel.send("yes\n")
-				self.waitFinishCommandChmod()
-				break
+				#Ping to see if the remote machine is still receiving
+				response = os.system("ping -c1 -W 3 " + self.IP + " 2>&1 >/dev/null")
 
-			elif "password:" in data:
-				self.channel.send(self.password + "\n")
-				self.waitFinishCommandChmod()
-				break
+				#If the remote machine was pinged successfully
+				if response == 0:
+					continue
 
-			#If the password is wrong and the user cannot ssh to the device change the boolean error
-			elif "Permission denied" in data:
-				self.channel.send("\x03\n")
+				else:
+					raise Manual_Timeout_Exception
+
+			if "Permission denied" in data:
 				self.error = True
-				self.finishMessage = "X - " + self.IP + ": Wrong Password \n"
-				break
+				return True
 
-			elif "passphrase for key" in data:
-				self.channel.send("\n")
-				self.waitFinishCommandChmod()
-				break
+			#There is no /.ssh/ directory or a copy of the public key present on the remote machine
+			if "No such file or directory" in data or int(result) == 0:
+				return True
 
-			elif self.user+ "@" in data:
-				break
+			#One or more copies of the public key are present on the remote machine
+			elif int(result) >= 1:
+				return False
 
 
 	#Pushes the public RSA key to the remote robots
-	def launchPushKey(self):
-		# update the progress bar
-		self.updateValue.emit(10)
+	def pushKey(self):
 
-		# create the public keys and send it to the right device
-		copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey " + str(self.user + "@" + str(self.IP))) + "\n"
+		#Push the new key to the remote machine
+		copy = "sshpass -p \"" + str(self.password + "\" ssh-copy-id -i ~/.ssh/multikey.pub " + str(self.user + "@" + str(self.IP)))
 		subprocess.call(copy, stdout=open(os.devnull, 'wb'), stderr=open(os.devnull, 'wb'), shell=True)
 
-		# update the progress bar
+		#Update the progress bar
 		self.updateValue.emit(15)
 
-		# wait for the end of the command and check for possible error like : the ip device is wrong or the user device is wrong
-		self.waitFinishCommandKey("Permission denied", self.user + "@")
+		#Confirm that the public key is on the remote machine
+		self.checkForKey()
 
-		# update the progress bar
-		self.updateValue.emit(10)
-
-		# If an error occurs, append the error string to the finishMessage
-		if self.error is False:
-			self.finishMessage = "V - " + self.IP + ": RSA Public Key set up"
-
-
-	#Loops indefinitely until the RSA key has been setup or if the user has interrupted the shell
-	def waitFinishCommandKey(self, errorString, endString):
-		while True:
-			try:
-				# wait a little bit
-				time.sleep(self.sleepTime)
-
-				# retrieve the data from the thread shell
-				data = str(self.channel.recv(1024).decode("utf-8"))
-				# if an error has already occurs finish the thread
-				if self.error is True:
-					break
-
-				# check the possible error during the process and append error message to the output string
-				elif errorString in data:
-					if errorString == "Permission denied":
-						self.channel.send("\x03\n")
-					self.error = True
-					break
-
-				# check the possible different end of commands
-				elif "continue connecting (yes/no)" in data:
-					self.channel.send("yes\n")
-					self.waitFinishCommandKey(errorString, endString)
-					break
-
-				elif "password:" in data:
-					self.channel.send(self.password + "\n")
-					self.waitFinishCommandKey(errorString, endString)
-					break
-
-				elif '[sudo]' in data:
-					self.channel.send(self.password + "\n")
-					self.waitFinishCommandChmod()
-					break
-
-				elif endString in data:
-					break
-
-				elif self.user + "@" in data:
-					break
-
-			except socket.timeout:
-				break
-
+		#Update the progress bar
+		self.updateValue.emit(15)

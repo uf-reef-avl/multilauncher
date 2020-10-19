@@ -1,0 +1,5 @@
+#####
+TYPE: device
+cd catkin_ws/src/wta_demo/launch
+roslaunch -v generated.launch
+

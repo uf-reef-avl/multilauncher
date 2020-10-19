@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>704</width>
-    <height>432</height>
+    <width>971</width>
+    <height>482</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,10 @@
      <item>
       <widget class="QLabel" name="instructionslabel">
        <property name="text">
-        <string>When generating the RSA Key the ownership of the ~/.ssh directory on the 
- remote machine will be set to the remote user and the file permissions will be set to default</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;When generating a new RSA key the following occurs:&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;1. The &amp;quot;~/.ssh&amp;quot; directory, &amp;quot;multikey&amp;quot;, and &amp;quot;multikey.pub&amp;quot; RSA keys are created if not already present on the local machine.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;2. The RSA keys are added to the local ssh-agent's keyring if not automatically added by the operating system.&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;3. The &amp;quot;multikey.pub&amp;quot; is added to the &amp;quot;authorized_keys&amp;quot; file on the remote machine(s) if the public key is not already present.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>

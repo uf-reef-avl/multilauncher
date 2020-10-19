@@ -27,7 +27,7 @@ import Edit_Robot_Design
 #This class creates and runs the Robot Editing Dialog box
 class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog):
 
-	#Sets up to receive the data when closing the Dialog box
+	#Sets up to emit the data when closing the Dialog box
 	save = QtCore.pyqtSignal(list, list, list, list, list)
 
 	#Initializes and defines the Robot Editing Dialog box
@@ -120,6 +120,7 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 
 	#Modifies the currently selected robot with the data in the three input fields
 	def modifyRobot(self):
+
 		if not self.ipCheck():
 
 			#If the three input fields all have some data
@@ -141,10 +142,11 @@ class Edit_Robot_Dialog(QtWidgets.QDialog, Edit_Robot_Design.Ui_robotEditDialog)
 
 	#Loads the currently selected robot's IP Address, Name, and Type into the three input fields
 	def loadEditor(self):
-		x = self.robotTable.currentRow()
-		self.ipEdit.setText(self.robotTable.item(x,1).text())
-		self.nameEdit.setText(self.robotTable.item(x,2).text())
-		self.typeEdit.setText(self.robotTable.item(x,3).text())
+
+		row = self.robotTable.currentRow()
+		self.ipEdit.setText(self.robotTable.item(row,1).text())
+		self.nameEdit.setText(self.robotTable.item(row,2).text())
+		self.typeEdit.setText(self.robotTable.item(row,3).text())
 
 
 	#Saves the current robot table to underlying data-structures that are passed back to the main.py for processing

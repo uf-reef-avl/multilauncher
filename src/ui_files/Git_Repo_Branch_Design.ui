@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>919</width>
+    <height>697</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Git Repo Branch Confirm</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <item row="1" column="0">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="1,1">
+     <item row="3" column="1">
+      <widget class="QPushButton" name="confirmTransferButton">
+       <property name="text">
+        <string>Confirm and Transfer</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="2">
+      <widget class="QProgressBar" name="fetchBar">
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="checkAllButton">
+       <property name="text">
+        <string>Check/Uncheck All Repositories</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0" colspan="2">
+      <widget class="QTableWidget" name="repoTable">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>145</number>
+       </attribute>
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Enabled</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Destination</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Repository URL</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Catkin Option</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Available Branches</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Remote Machine Type</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QPushButton" name="gitFetchButton">
+       <property name="text">
+        <string>Git Fetch Branches from Selected Repositories</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Select which branches you want to Git Pull to the remote machines.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
